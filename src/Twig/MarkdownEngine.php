@@ -1,0 +1,32 @@
+<?php namespace Mopsis\Twig;
+
+class MarkdownEngine implements \Aptoma\Twig\Extension\MarkdownEngineInterface
+{
+	public function transform($content)
+	{
+		if (!strlen(trim($content))) {
+			return $content;
+		}
+
+		// Quick link for tests
+		$content = preg_replace('/test-(\d+)/', '[Test #$1](/search/$1)', $content);
+
+		// Revert double encoding of quotes
+		$content = str_replace(['&quot;', '&#039;'], ['"', '\''], $content);
+
+		// Convert markdown to html
+		$content = \Parsedown::instance()->text($content);
+
+		// Revert encoding of code blocks
+		$content = preg_replace_callback('/(<code>)(.+?)(<\/code>)/s', function ($m) {
+			return $m[1].html_entity_decode($m[2]).$m[3];
+		}, $content);
+
+		return $content;
+	}
+
+	public function getName()
+	{
+		return 'erusev\parsedown';
+	}
+}
