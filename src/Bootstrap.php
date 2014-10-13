@@ -46,7 +46,7 @@ class Bootstrap
 		Core\Registry::load('config/config.php');
 
 		\App::initialize($container = $builder->build());
-		\App::make('capsule');
+		\App::make('database');
 
 		$whoops = new \Whoops\Run;
 		$whoops->pushHandler(new \Whoops\Handler\PrettyPageHandler);

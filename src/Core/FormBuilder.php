@@ -40,7 +40,7 @@ class FormBuilder
 	{
 		$rules = [];
 
-		foreach ($this->_xml->xpath('//form[@id="'.$formId.'"]//item') as $item) {
+		foreach ($this->_xml->xpath('//form[@id="'.$formId.'"]//item[@name]') as $item) {
 			$name = (string) $item->attributes()->name;
 
 			if (!isset($rules[(string) $item->attributes()->name])) {

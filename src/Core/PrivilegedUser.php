@@ -38,7 +38,7 @@ abstract class PrivilegedUser extends \Mopsis\Core\User
 
 		foreach ($this->roles as $role) {
 			foreach (self::_getPrivilegesForRole((string) $role->key) as $privilege) {
-				if (true || !$role->constraint) {
+				if (!$role->constraint) {
 					$result[$privilege] = true;
 				}
 
