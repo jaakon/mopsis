@@ -9,22 +9,22 @@ abstract class PrivilegedUser extends \Mopsis\Core\User
 
 	public function isAllowedTo($privilege, $objectToAccess = null)
 	{
-		if (!($constraints = $this->privileges[strtolower($privilege)])) {
+		if (!($containments = $this->privileges[strtolower($privilege)])) {
 			return false;
 		}
 
-		if ($constraints === true || empty($objectToAccess)) {
+		if ($containments === true || empty($objectToAccess)) {
 			return true;
 		}
 
-		foreach ($constraints as $constraint) {
+		foreach ($containments as $containment) {
 			$object = $objectToAccess;
 
-			while (get_class($object) !== get_class($constraint) && $object instanceof \Mopsis\Extensions\iHierarchical) {
+			while (get_class($object) !== get_class($containment) && $object instanceof \Mopsis\Extensions\iHierarchical) {
 				$object = $object->ancestor;
 			}
 
-			if ((string) $constraint === (string) $object) {
+			if ((string) $containment === (string) $object) {
 				return true;
 			}
 		}
@@ -37,8 +37,8 @@ abstract class PrivilegedUser extends \Mopsis\Core\User
 		$result = [];
 
 		foreach ($this->roles as $role) {
-			foreach (self::_getPrivilegesForRole((string) $role->key) as $privilege) {
-				if (!$role->constraint) {
+			foreach (Security::getPrivilegesForRole($role->key) as $privilege) {
+				if (!$role->containment) {
 					$result[$privilege] = true;
 				}
 
@@ -50,46 +50,10 @@ abstract class PrivilegedUser extends \Mopsis\Core\User
 					$result[$privilege] = [];
 				}
 
-				$result[$privilege][] = $role->constraint;
+				$result[$privilege][] = $role->containment;
 			}
 		}
 
 		return $result;
-	}
-
-	private static function _getPrivilegesForRole($role)
-	{
-		return self::_loadRolesFromRegistry()[$role] ?: [];
-	}
-
-	private static function _loadRolesFromRegistry()
-	{
-		if (\Mopsis\Core\Registry::has('rolesExtracted')) {
-			return \Mopsis\Core\Registry::get('rolesExtracted');
-		}
-
-		if (!\Mopsis\Core\Registry::has('roles')) {
-			throw new \Exception('configuration for roles is missing');
-		}
-
-		$results = [];
-
-		foreach (\Mopsis\Core\Registry::get('roles') as $role => $privileges) {
-			$data = [];
-
-			foreach ($privileges as $objects => $actions) {
-				foreach (explode(',', $objects) as $object) {
-					foreach (explode(',', $actions) as $action) {
-						$data[] = $action.'_'.$object;
-					}
-				}
-			}
-
-			$results[$role] = array_unique($data);
-		}
-
-		\Mopsis\Core\Registry::set('rolesExtracted', $results);
-
-		return $results;
 	}
 }

@@ -68,15 +68,6 @@ abstract class CrudController extends \Mopsis\Core\Controller
 			return false;
 		}
 
-		if ($_POST[$_SESSION['csrf']['key']] !== $_SESSION['csrf']['value']) {
-			$this->_view
-				->prefillForm($formId, $this->_facade)
-				->setFormErrors($formId, [])
-				->assign(['errors' => ['csrf' => 'Ungültiges oder abgelaufenes Sicherheitstoken. Bitte Formular erneut versenden.']]);
-
-			return false;
-		}
-
 		if (!$this->_facade->isValid()) {
 			$this->_view->prefillForm($formId, $this->_facade);
 			return false;

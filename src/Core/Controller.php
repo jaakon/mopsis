@@ -126,6 +126,8 @@ abstract class Controller
 			return;
 		}
 
+		$this->_facade->addRule('csrf', 'error', !isset($_SESSION['csrf']) || $_POST[$_SESSION['csrf']['key']] !== $_SESSION['csrf']['value'])->withMessage('Ungültiges oder abgelaufenes Sicherheitstoken. Bitte Formular erneut versenden.');
+
 		foreach ((new FormBuilder())->getRules(Registry::get('forms/'.$route)) as $field => $validations) {
 			if (!count($validations)) {
 				$this->_addValidation($field, null, null);
