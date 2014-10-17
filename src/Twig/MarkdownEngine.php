@@ -9,7 +9,7 @@ class MarkdownEngine implements \Aptoma\Twig\Extension\MarkdownEngineInterface
 		}
 
 		// Quick link for tests
-		$content = preg_replace('/test-(\d+)/', '[Test #$1](/search/$1)', $content);
+		$content = preg_replace('/test-(\d+)/', '[Test #$1](/search?query=$1)', $content);
 
 		// Revert double encoding of quotes
 		$content = str_replace(['&quot;', '&#039;'], ['"', '\''], $content);
