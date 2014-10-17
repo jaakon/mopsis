@@ -41,19 +41,19 @@ abstract class Controller
 
 	protected function _restrictAccess($allowGooglebot = false, $accessFor = 'user')
 	{
-		if ($allowGooglebot && preg_match('/googlebot/i', $_SERVER['HTTP_USER_AGENT'])) {
-			$host = gethostbyaddr($_SERVER['REMOTE_ADDR']);
-			if (strpos($host, '.googlebot.com') !== false && gethostbyname($host) === $_SERVER['REMOTE_ADDR']) {
-				return;
-			}
-		}
-
 		if ($accessFor === 'user' && $this->_user->isBound()) {
 			return;
 		}
 
 		if ($accessFor === 'admin' && $this->_user->isAuthorized()) {
 			return;
+		}
+
+		if ($allowGooglebot && preg_match('/googlebot/i', $_SERVER['HTTP_USER_AGENT'])) {
+			$host = gethostbyaddr($_SERVER['REMOTE_ADDR']);
+			if (strpos($host, '.googlebot.com') !== false && gethostbyname($host) === $_SERVER['REMOTE_ADDR']) {
+				return;
+			}
 		}
 
 		if (!headers_sent()) {
