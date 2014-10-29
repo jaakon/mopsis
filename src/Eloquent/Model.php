@@ -132,7 +132,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model
 	protected function getCachedAttribute($attribute, \Closure $callback, $ttl = null)
 	{
 		$item  = \App::make('cache')->getItem($this, $attribute);
-		$value = $item->get(\Stash\Invalidation::OLD);
+		$value = $item->get();
 
 		if ($item->isMiss()) {
 			$item->lock();
