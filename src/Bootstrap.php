@@ -36,7 +36,7 @@ class Bootstrap
 
 	private function _initialize()
 	{
-		setlocale(LC_TIME, 'de_DE.UTF8');
+		setlocale(LC_ALL, 'de_DE.UTF8');
 		session_start();
 
 		$builder = new \DI\ContainerBuilder;

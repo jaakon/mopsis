@@ -11,10 +11,13 @@ return [
 	\Stash\Driver\Redis::class => DI\object()
 		->method('setOptions', DI\link('stash.redis.config')),
 
-	League\Flysystem\AdapterInterface::class => DI\object('\League\Flysystem\Adapter\Local')
+	\League\Flysystem\AdapterInterface::class => DI\object('\League\Flysystem\Adapter\Local')
 		->constructor(DI\link('flysystem.local.config')),
 
-	Psr\Log\LoggerInterface::class => DI\link('logger'),
+	\League\Flysystem\CacheInterface::class => DI\object('\League\Flysystem\Cache\Stash')
+		->constructor(DI\link('cache')),
+
+	\Psr\Log\LoggerInterface::class => DI\link('logger'),
 
 	'bouncer'  => DI\object('\Helpers\Bouncer'),
 	'cache'    => DI\object('\Stash\Pool')->constructor(DI\link(Stash\Driver\Redis::class)),
@@ -36,7 +39,7 @@ return [
 
 		return $manager;
 	}),
-	'filesystem' => DI\object('\League\Flysystem\Filesystem'), //->constructorParameter('cache', new \League\Flysystem\Cache\Noop),
+	'filesystem' => DI\object('\League\Flysystem\Filesystem'), //->constructorParameter('cache', DI\link(League\Flysystem\CacheInterface::class)),
 	'logger'     => DI\factory(function () {
 		$logger = new Monolog\Logger('default');
 		$logger->pushHandler(new Monolog\Handler\StreamHandler('storage/logs/application.log', Monolog\Logger::NOTICE));
