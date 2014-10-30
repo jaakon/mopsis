@@ -20,7 +20,9 @@ return [
 	\Psr\Log\LoggerInterface::class => DI\link('logger'),
 
 	'bouncer'  => DI\object('\Helpers\Bouncer'),
-	'cache'    => DI\object('\Stash\Pool')->constructor(DI\link(Stash\Driver\Redis::class)),
+	'cache'    => DI\object('\Stash\Pool')
+		->constructor(DI\link(Stash\Driver\Redis::class))
+		->method('setNamespace', md5($_SERVER['HTTP_HOST'])),
 	'database' => DI\factory(function () {
 		$manager = new \Illuminate\Database\Capsule\Manager;
 		$manager->addConnection([
@@ -39,7 +41,7 @@ return [
 
 		return $manager;
 	}),
-	'filesystem' => DI\object('\League\Flysystem\Filesystem'), //->constructorParameter('cache', DI\link(League\Flysystem\CacheInterface::class)),
+	'filesystem' => DI\object('\League\Flysystem\Filesystem'),	 //->constructorParameter('cache', DI\link(League\Flysystem\CacheInterface::class)),
 	'logger'     => DI\factory(function () {
 		$logger = new Monolog\Logger('default');
 		$logger->pushHandler(new Monolog\Handler\StreamHandler('storage/logs/application.log', Monolog\Logger::NOTICE));
