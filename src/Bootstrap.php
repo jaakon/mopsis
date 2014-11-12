@@ -55,6 +55,12 @@ class Bootstrap
 
 		if (isset($_GET['clearCache'])) {
 			\App::make('cache')->flush();
+
+			$adapter = new \CacheTool\Adapter\FastCGI('127.0.0.1:9000');
+			$cache   = \CacheTool\CacheTool::factory($adapter);
+
+			$cache->apc_clear_cache('both');
+			$cache->opcache_reset();
 		}
 
 		$this->_cacheAssets();

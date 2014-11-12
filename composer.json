@@ -10,6 +10,7 @@
 		"aptoma/twig-markdown": "~0.2",
 		"erusev/parsedown": "~1.0",
 		"filp/whoops": "~1.1",
+		"gordalina/cachetool": "~1.0",
 		"illuminate/database": "~4.2",
 		"kriswallsmith/assetic": "1.2.0-alpha1",
 		"leafo/lessphp": "0.4.*@dev",

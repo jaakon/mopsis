@@ -258,8 +258,8 @@ class FormBuilder
 		$dom = \pQuery::parseStr($html);
 
 		foreach ($dom->query('input,select,textarea') as $node) {
-			$key   = preg_match('/(.+)\[\]$/', $node->attr('name'), $m) ? $m[1] : $node->attr('name');
-			$value = $values[$key];
+			$key   = preg_match('/(.+)\[(.*)\]$/', $node->attr('name'), $m) ? $m[1] : $node->attr('name');
+			$value = empty($m[2]) ? $values[$key] : $values[$key][$m[2]];
 
 			if (in_array($key, $errors)) {
 				$node->addClass('validation-error');
