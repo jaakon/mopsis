@@ -4,6 +4,7 @@ interface iRenderer
 {
 	public function setTemplate($template);
 	public function useCache($boolean);
+	public function clearCache();
 
 	public function assign($data);
 	public function display();

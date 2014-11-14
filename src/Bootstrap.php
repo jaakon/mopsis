@@ -67,6 +67,10 @@ class Bootstrap
 
 		include 'application/initialize.php';
 
+		if (isset($_GET['clearCache'])) {
+			$renderer->clearCache();
+		}
+
 		$container->set(Renderer\iRenderer::class, $renderer);
 	}
 
