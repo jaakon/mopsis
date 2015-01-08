@@ -300,7 +300,7 @@ class FormBuilder
 				$node->prop('checked', $node->attr('value') === $value);
 				break;
 			default:
-				$node->val(escape_html($value));
+				$node->val(str_replace('&quot;', '&amp;quot;', escape_html($value)));
 				break;
 		}
 	}
