@@ -8,6 +8,7 @@
 	"require": {
 		"php": ">=5.6.0",
 		"aptoma/twig-markdown": "~0.2",
+		"asm89/twig-cache-extension": "~1.0",
 		"erusev/parsedown": "~1.0",
 		"filp/whoops": "~1.1",
 		"gordalina/cachetool": "~1.0",
@@ -15,7 +16,7 @@
 		"kriswallsmith/assetic": "1.2.0-alpha1",
 		"leafo/lessphp": "0.4.*@dev",
 		"leafo/scssphp": "~0.0.10",
-        "league/flysystem": "~0.5.5",
+		"league/flysystem": "~0.5.5",
 		"mnapoli/php-di": "~4.0",
 		"monolog/monolog": "~1.10",
 		"natxet/CssMin": "3.0.*",
