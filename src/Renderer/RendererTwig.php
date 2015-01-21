@@ -161,6 +161,10 @@ class RendererTwig implements iRenderer
 			$twig->addFunction(new \Twig_SimpleFunction($name, $function));
 		}
 
+		if ($this->_useCache) {
+			$twig->addExtension($this->_getCacheExtension());
+		}
+
 		$html = $twig->render($this->_template . '.twig', $this->_data);
 
 		while (preg_match('/<(.+?)>\s*<attribute name="(.+?)" value="(.+?)">/', $html, $m)) {
@@ -168,6 +172,11 @@ class RendererTwig implements iRenderer
 		}
 
 		return $html;
+	}
+
+	private function _getCacheExtension()
+	{
+		return \App::make('\Asm89\Twig\CacheExtension\Extension');
 	}
 
 	public function useCache($boolean)

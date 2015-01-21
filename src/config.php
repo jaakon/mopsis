@@ -5,6 +5,14 @@ return [
 	'stash.redis.config'     => [],
 	'flysystem.local.config' => 'storage/files',
 
+	\Asm89\Twig\CacheExtension\CacheProviderInterface::class => DI\object('\Mopsis\Twig\CacheAdapter'),
+
+	\Asm89\Twig\CacheExtension\CacheStrategyInterface::class => DI\object('\Asm89\Twig\CacheExtension\CacheStrategy\GenerationalCacheStrategy'),
+
+	\Asm89\Twig\CacheExtension\CacheStrategy\KeyGeneratorInterface::class => DI\object('\Mopsis\Twig\KeyGenerator'),
+
+	\Stash\Interfaces\PoolInterface::class => DI\link('cache'),
+
 	\Stash\Driver\Apc::class => DI\object()
 		->method('setOptions', DI\link('stash.apc.config')),
 
