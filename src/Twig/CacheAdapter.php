@@ -11,11 +11,14 @@ class CacheAdapter implements \Asm89\Twig\CacheExtension\CacheProviderInterface
 
 	public function fetch($key)
 	{
-		return $this->cache->getItem($key)->get();
+		$item = $this->cache->getItem($key);
+		$data = $item->get();
+
+		return $item->isMiss() ? false : $data;
 	}
 
 	public function save($key, $value, $ttl = 0)
 	{
-		$this->cache->getItem($key)->set($value, $ttl);
+		$this->cache->getItem($key)->set($value, $ttl ?: null);
 	}
 }

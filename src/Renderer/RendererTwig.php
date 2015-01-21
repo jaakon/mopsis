@@ -148,6 +148,7 @@ class RendererTwig implements iRenderer
 		$twig = $this->_getTwig();
 
 		$twig->addExtension(new \Mopsis\Twig\Formbuilder(['forms' => $this->_forms]));
+		$twig->addExtension($this->_getCacheExtension());
 
 		foreach ($this->_extensions as $extension) {
 			$twig->addExtension($extension);
@@ -159,10 +160,6 @@ class RendererTwig implements iRenderer
 
 		foreach ($this->_functions as $name => $function) {
 			$twig->addFunction(new \Twig_SimpleFunction($name, $function));
-		}
-
-		if ($this->_useCache) {
-			$twig->addExtension($this->_getCacheExtension());
 		}
 
 		$html = $twig->render($this->_template . '.twig', $this->_data);
