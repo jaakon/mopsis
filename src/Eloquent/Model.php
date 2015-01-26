@@ -52,7 +52,6 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model
 
 	public function clearCachedAttribute($attribute, $ascending = false)
 	{
-		\App::make('logger')->info('Clearing cache for '.get_class($this).':'.$this->id.'->'.$attribute);
 		\App::make('cache')->getItem($this, $attribute)->clear();
 
 		if ($ascending && $this instanceof \Mopsis\Extensions\iHierarchical) {
@@ -129,14 +128,13 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model
 		return $this;
 	}
 
-	protected function getCachedAttribute($attribute, \Closure $callback, $ttl = null)
+	protected function getCachedAttribute($attribute, callable $callback, $ttl = null)
 	{
 		$item  = \App::make('cache')->getItem($this, $attribute);
 		$value = $item->get();
 
 		if ($item->isMiss()) {
 			$item->lock();
-			\App::make('logger')->info('Building cache for '.get_class($this).':'.$this->id.'->'.$attribute);
 			$value = $callback();
 			$item->set($value, $ttl);
 		}

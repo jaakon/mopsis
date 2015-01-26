@@ -188,13 +188,15 @@ class RendererTwig implements iRenderer
 			$this->_twig = new \Twig_Environment(
 				new \Twig_Loader_Filesystem('application/views/'),
 				$this->_useCache ? [
-					'cache'       => CORE_CACHE,
-					'auto_reload' => false,
-					'autoescape'  => true
+					'cache'            => CORE_CACHE,
+					'auto_reload'      => true,
+					'autoescape'       => true,
+					'strict_variables' => false
 				] : [
-					'cache'       => false,
-					'auto_reload' => true,
-					'autoescape'  => true
+					'cache'            => false,
+					'auto_reload'      => true,
+					'autoescape'       => true,
+					'strict_variables' => false
 				]
 			);
 		}

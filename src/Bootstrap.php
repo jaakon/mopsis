@@ -52,10 +52,11 @@ class Bootstrap
 		$whoops->pushHandler(new \Whoops\Handler\PrettyPageHandler);
 		$whoops->register();
 
-
 		if (isset($_GET['clearCache'])) {
 			\App::make('cache')->flush();
+		}
 
+		if (isset($_GET['clearCache']) || isset($_GET['reload'])) {
 			$adapter = new \CacheTool\Adapter\FastCGI('127.0.0.1:9000');
 			$cache   = \CacheTool\CacheTool::factory($adapter);
 
@@ -67,7 +68,7 @@ class Bootstrap
 
 		include 'application/initialize.php';
 
-		if (isset($_GET['clearCache'])) {
+		if (isset($_GET['clearCache']) || isset($_GET['reload'])) {
 			$renderer->clearCache();
 		}
 
