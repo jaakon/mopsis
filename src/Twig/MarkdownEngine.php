@@ -25,6 +25,11 @@ class MarkdownEngine implements \Aptoma\Twig\Extension\MarkdownEngineInterface
 			return $m[1].html_entity_decode($m[2]).$m[3];
 		}, $content);
 
+		// Revert encoding of ampersands in links
+		$content = preg_replace_callback('/(href=")([^"]+&amp;[^"]+)(")/', function ($m) {
+			return $m[1].html_entity_decode($m[2]).$m[3];
+		}, $content);
+
 		return $content;
 	}
 
