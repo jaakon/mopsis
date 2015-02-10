@@ -10,24 +10,18 @@ class Bootstrap extends \Twig_Extension
 	public function getFunctions()
 	{
 		return [
-			new \Twig_SimpleFunction('generateId', [$this, 'generateId']),
-			new \Twig_SimpleFunction('addModal', [$this, 'addModal']),
-			new \Twig_SimpleFunction('getModals', [$this, 'getModals'])
+			new \Twig_SimpleFunction('serializeAttributes', [$this, 'serializeAttributes'], ['is_safe' => ['html']])
 		];
 	}
 
-	public function generateId($uri)
+	public function serializeAttributes($data, $prefix = '')
 	{
-		return preg_match('/^\/(\w+)\/([a-z\-]+)/i', $uri, $m) ? $m[2].ucfirst($m[1]) : 'modal_'.mt_rand();
-	}
+		$attributes = '';
 
-	public function addModal($id, $title, $size)
-	{
-		\Mopsis\Core\Registry::set('modals/'.$id, ['id' => $id, 'title' => $title, 'size' => $size]);
-	}
+		foreach (array_filter($data) as $key => $value) {
+			$attributes .= ' '.$prefix.$key.'="'.htmlspecialchars($value, ENT_QUOTES).'"';
+		}
 
-	public function getModals()
-	{
-		return \Mopsis\Core\Registry::get('modals') ?: [];
+		return $attributes;
 	}
 }

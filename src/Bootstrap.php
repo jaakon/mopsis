@@ -3,8 +3,8 @@
 use \Assetic\Asset\AssetCollection;
 use \Assetic\Asset\GlobAsset;
 
-class AccessLevel     extends \Addendum\Annotation {}
-class TokenException  extends \UnexpectedValueException {}
+class AccessLevel extends \Addendum\Annotation {}
+class TokenException extends \UnexpectedValueException {}
 class AccessException extends \InvalidArgumentException {}
 
 class Bootstrap
@@ -36,7 +36,8 @@ class Bootstrap
 
 	private function _initialize()
 	{
-		setlocale(LC_ALL, 'de_DE.UTF8');
+		setlocale(LC_CTYPE, 'de_DE.UTF8');
+		setlocale(LC_TIME, 'de_DE.UTF8');
 		session_start();
 
 		$builder = new \DI\ContainerBuilder;

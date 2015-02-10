@@ -49,7 +49,7 @@ return [
 
 		return $manager;
 	}),
-	'filesystem' => DI\object('\League\Flysystem\Filesystem'),	 //->constructorParameter('cache', DI\link(League\Flysystem\CacheInterface::class)),
+	'filesystem' => DI\object('\League\Flysystem\Filesystem'),
 	'logger'     => DI\factory(function () {
 		$logger = new Monolog\Logger('default');
 		$logger->pushHandler(new Monolog\Handler\StreamHandler('storage/logs/application.log', Monolog\Logger::NOTICE));

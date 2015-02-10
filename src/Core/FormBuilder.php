@@ -2,6 +2,8 @@
 
 class FormBuilder
 {
+	const NO_GROUPS   = '@@no-groups@@';
+
 	private $_xml     = null;
 	private $_options = [];
 
@@ -126,12 +128,9 @@ class FormBuilder
 
 	private function _buildOptions($item, $inheritedData, $layout)
 	{
-		if (!count($options = $item->xpath('option')) && !count($this->_options[$inheritedData['item.name']])) {
-			return '';
-		}
-
-		$html   = '';
-		$layout = $this->_getItemLayout($layout, $inheritedData['item.type']);
+		$html    = '';
+		$layout  = $this->_getItemLayout($layout, $inheritedData['item.type']);
+		$options = $item->xpath('option');
 
 		if (count($options)) {
 			foreach ($options as $i => $option) {
@@ -142,17 +141,55 @@ class FormBuilder
 			}
 		}
 
-		if (count($this->_options[$inheritedData['item.name']])) {
-			foreach ($this->_options[$inheritedData['item.name']] as $key => $text) {
-				list($value, $group) = explode('|', $key);
-				$data                = $this->_addValues($inheritedData, 'option', ['no' => ++$i, 'value' => $value, 'group' => $group]);
-				$data['option.id']   = $data['item.id'].'-'.$i;
-				$data['option.text'] = htmlentities(($text ?: $value));
-				$html               .= $this->_fillPlaceholder($layout['options'], $data);
+		$optGroups = $this->_prepareOptions($this->_options[$inheritedData['item.name']]);
+
+		if (count($optGroups, \COUNT_RECURSIVE) > 1) {
+			foreach ($optGroups as $group => $options) {
+				if ($group !== static::NO_GROUPS) {
+					$html .= '<optgroup label="'.htmlentities($group).'">';
+				}
+
+				foreach ($options as $value => $text) {
+					$data                = $this->_addValues($inheritedData, 'option', ['no' => ++$i, 'value' => $value]);
+					$data['option.id']   = $data['item.id'].'-'.$i;
+					$data['option.text'] = htmlentities($text ?: $value);
+					$html               .= $this->_fillPlaceholder($layout['options'], $data);
+				}
+
+				if ($group !== static::NO_GROUPS) {
+					$html .= '</optgroup>';
+				}
 			}
 		}
 
 		return $html;
+	}
+
+	private function _prepareOptions($options)
+	{
+		if (!isset($options['data'])) {
+			return [static::NO_GROUPS => $options];
+		}
+
+		$results = [];
+
+		if (!isset($options['group'])) {
+			foreach ($options['data'] as $entry) {
+				$results[$entry[$options['key']]] = $entry[$options['value']];
+			}
+
+			return [static::NO_GROUPS => $results];
+		}
+
+		foreach ($options['data'] as $entry) {
+			if (!is_array($results[$entry[$options['group']]])) {
+				$results[$entry[$options['group']]] = [];
+			}
+
+			$results[$entry[$options['group']]][$entry[$options['key']]] = $entry[$options['value']];
+		}
+
+		return $results;
 	}
 
 	private function _buildRows($block, $inheritedData, $layout)
@@ -322,7 +359,5 @@ class FormBuilder
 		if ($node->tagName() === 'select' && $node->attr('size') === 'auto') {
 			$node->attr('size', count($node->query('option,optgroup')));
 		}
-
-		$node->query('option')->removeAttr('group');
 	}
 }
