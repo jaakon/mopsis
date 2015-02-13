@@ -79,40 +79,6 @@ class RendererTwig implements iRenderer
 		return $this;
 	}
 
-	public function setFormOptionsX($formId, $select, $data, $key = null, $value = null, $optgroup = null)
-	{
-		$this->_initializeForm($formId);
-
-		if ($data instanceof \Mopsis\Core\Collection) {
-			$data = $data->toArray();
-		}
-
-		if (!is_array($data) || !count($data)) {
-			return $this;
-		}
-
-		if ($key === null || $value === null) {
-			$this->_forms[$formId]['options'][$select] = array_map(function ($element) {
-				return htmlspecialchars($element, ENT_COMPAT, 'UTF-8', false);
-			}, $data);
-			return $this;
-		}
-
-		$options = [];
-
-		foreach ($data as $entry) {
-			if (is_array($entry)) {
-				$entry = (object) $entry;
-			}
-
-			$options[$entry->{ $key} . ($optgroup === null ? '' : '|' . $entry->{ $optgroup})] = htmlspecialchars($entry->{ $value}, ENT_COMPAT, 'UTF-8', false);
-		}
-
-		$this->_forms[$formId]['options'][$select] = $options;
-
-		return $this;
-	}
-
 	public function setFormOptions($formId, array $data)
 	{
 		$this->_initializeForm($formId);
