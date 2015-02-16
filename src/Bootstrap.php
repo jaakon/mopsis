@@ -53,11 +53,13 @@ class Bootstrap
 		$whoops->pushHandler(new \Whoops\Handler\PrettyPageHandler);
 		$whoops->register();
 
-		if (isset($_GET['clearCache'])) {
+		$flushMode = $_GET['flush'] ?: (isset($_GET['clearCache']) ? 'all' : null);
+
+		if ($flushMode === 'all') {
 			\App::make('cache')->flush();
 		}
 
-		if (isset($_GET['clearCache']) || isset($_GET['reload'])) {
+		if ($flushMode === 'all' || $flushMode === 'app') {
 			$adapter = new \CacheTool\Adapter\FastCGI('127.0.0.1:9000');
 			$cache   = \CacheTool\CacheTool::factory($adapter);
 
@@ -65,23 +67,26 @@ class Bootstrap
 			$cache->opcache_reset();
 		}
 
-		$this->_cacheAssets();
+		$this->_cacheAssets(
+			$flushMode === 'css' || !file_exists('public/static/main.css'),
+			$flushMode === 'js' || !file_exists('public/static/main.js')
+		);
 
 		include 'application/initialize.php';
 
-		if (isset($_GET['clearCache']) || isset($_GET['reload'])) {
+		if ($flushMode === 'all' || $flushMode === 'app') {
 			$renderer->clearCache();
 		}
 
 		$container->set(Renderer\iRenderer::class, $renderer);
 	}
 
-	private function _cacheAssets()
+	private function _cacheAssets($refreshCss, $refreshJs)
 	{
 		$cache = \App::make('cache');
 
 		$item = $cache->getItem('files/css/version');
-		if (!$item->get() || isset($_GET['clearCss'])) {
+		if (!$item->get() || $refreshCss) {
 			$assets = new AssetCollection([
 				new GlobAsset('public/css/*.css'),
 				new GlobAsset('public/css/*.less', [new \Assetic\Filter\LessphpFilter]),
@@ -95,7 +100,7 @@ class Bootstrap
 		}
 
 		$item = $cache->getItem('files/javascript/version');
-		if (!$item->get() || isset($_GET['clearJs'])) {
+		if (!$item->get() || $refreshJs) {
 			$assets = new AssetCollection([
 				new GlobAsset('public/js/plugins/*.js'),
 				new GlobAsset('public/js/scripts/*.js')
