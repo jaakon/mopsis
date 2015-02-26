@@ -1,4 +1,4 @@
-<?php namespace Mopsis\Twig;
+<?php namespace Mopsis\Twig\Extensions\Markdown;
 
 class MarkdownEngine implements \Aptoma\Twig\Extension\MarkdownEngineInterface
 {

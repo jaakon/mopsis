@@ -1,10 +1,10 @@
-<?php namespace Mopsis\Twig;
+<?php namespace Mopsis\Twig\Extensions;
 
 class Formbuilder extends \Twig_Extension
 {
 	private $_options = [];
 
-	public function __construct(Array $options)
+	public function __construct(array $options)
 	{
 		$this->_options = $options;
 	}

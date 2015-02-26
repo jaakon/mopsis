@@ -1,4 +1,4 @@
-<?php namespace Mopsis\Twig;
+<?php namespace Mopsis\Twig\Extensions\Markdown;
 
 class Parsedown extends \Parsedown
 {

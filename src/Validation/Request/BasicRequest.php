@@ -25,7 +25,7 @@ abstract class BasicRequest
 	}
 
 	/** @SuppressWarnings(PHPMD.UnusedFormalParameter) */
-   	public function __set($var, $value)
+	public function __set($var, $value)
 	{
 		throw new \Exception('write access for Request->'.$var.' denied!');
 	}
@@ -46,7 +46,7 @@ abstract class BasicRequest
 				$newKeys[]     = $m[1];
 			}
 
-			$data->{$m[1]}->{$m[2]} = is_string($value) ? strip_tags($value) : $value;
+			$data->{$m[1]}->{$m[2]} = is_string($value) ? trim(strip_tags($value)) : $value;
 		}
 
 		if (count($newKeys)) {

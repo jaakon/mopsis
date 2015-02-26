@@ -1,4 +1,4 @@
-<?php namespace Mopsis\Twig;
+<?php namespace Mopsis\Twig\Extensions\Cache;
 
 class KeyGenerator implements \Asm89\Twig\CacheExtension\CacheStrategy\KeyGeneratorInterface
 {

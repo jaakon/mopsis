@@ -1,6 +1,6 @@
-<?php namespace Mopsis\Twig;
+<?php namespace Mopsis\Twig\Extensions;
 
-class MarkdownExtension extends \Aptoma\Twig\Extension\MarkdownExtension
+class Markdown extends \Aptoma\Twig\Extension\MarkdownExtension
 {
 	public function getFilters()
 	{

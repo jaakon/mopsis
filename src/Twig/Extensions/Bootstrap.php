@@ -1,4 +1,4 @@
-<?php namespace Mopsis\Twig;
+<?php namespace Mopsis\Twig\Extensions;
 
 class Bootstrap extends \Twig_Extension
 {

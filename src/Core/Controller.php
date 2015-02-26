@@ -7,10 +7,10 @@ abstract class Controller
 	protected $_facade   = null;
 	protected $_logger   = null;
 
-	public function __construct(\Mopsis\Core\User $user, \Mopsis\Renderer\iRenderer $renderer, \Mopsis\Validation\ValidationFacade $facade)
+	public function __construct(User $user, View $view, \Mopsis\Validation\ValidationFacade $facade)
 	{
 		$this->_user   = $user;
-		$this->_view   = $renderer;
+		$this->_view   = $view;
 		$this->_facade = $facade;
 
 		$this->_init();
