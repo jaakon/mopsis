@@ -108,18 +108,18 @@ return [
 	'filesystem' => object(\League\Flysystem\Filesystem::class),
 
 	'logger' => factory(function (DI\ContainerInterface $c) {
-		$errorHandler  = new Monolog\Handler\StreamHandler('storage/logs/error.log', Monolog\Logger::ERROR, false);
+		$errorHandler  = new Monolog\Handler\StreamHandler(CORE_ERROR_LOG, Monolog\Logger::ERROR, false);
 		$errorHandler->setFormatter($c->get(\Monolog\Formatter\LineFormatter::class));
 
-		$noticeHandler = new Monolog\Handler\StreamHandler('storage/logs/application.log', Monolog\Logger::NOTICE, false);
+		$noticeHandler = new Monolog\Handler\StreamHandler(CORE_APPLICATION_LOG, Monolog\Logger::NOTICE, false);
 		$noticeHandler->setFormatter($c->get(\Monolog\Formatter\LineFormatter::class));
 
 		$logger = new Monolog\Logger('default');
 
-		$logger->pushHandler(new Monolog\Handler\PushoverHandler('aw6zvva5hvy67Y1gvnagx7y3GZzEDA', 'uF1VyiRtDd1XXnEKA41imF2P88gxJ4', DEFAULT_TITLE, Monolog\Logger::ERROR, false));
-		$logger->pushHandler($errorHandler);
-		$logger->pushHandler($noticeHandler);
 		$logger->pushHandler(new Monolog\Handler\ChromePHPHandler(Monolog\Logger::DEBUG));
+		$logger->pushHandler($noticeHandler);
+		$logger->pushHandler($errorHandler);
+		$logger->pushHandler(new Monolog\Handler\PushoverHandler('aw6zvva5hvy67Y1gvnagx7y3GZzEDA', 'uF1VyiRtDd1XXnEKA41imF2P88gxJ4', DEFAULT_TITLE, Monolog\Logger::ERROR, false));
 
 		return $logger;
 	})

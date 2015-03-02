@@ -19,7 +19,7 @@
 		"league/flysystem":           "~0.5",
 		"mnapoli/php-di":             "~4.0",
 		"monolog/monolog":            "~1.10",
-		"natxet/CssMin":              "3.0.*",
+		"natxet/CssMin":              "~3.0",
 		"niktux/addendum":            "~0.4",
 		"patchwork/utf8":             "~1.1",
 		"swiftmailer/swiftmailer":    "~5.0",
