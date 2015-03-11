@@ -57,7 +57,7 @@ namespace Mopsis {
 
 			$flushMode = $_GET['flush'] ?: (isset($_GET['clearCache']) ? 'all' : null);
 
-			if ($flushMode === 'all') {
+			if ($flushMode === 'all' || $flushMode === 'data') {
 				App::make('cache')->flush();
 			}
 

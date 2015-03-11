@@ -4,11 +4,6 @@ class Formbuilder extends \Twig_Extension
 {
 	private $_options = [];
 
-	public function __construct(array $options)
-	{
-		$this->_options = $options;
-	}
-
 	public function getName()
 	{
 		return 'formbuilder';
@@ -31,5 +26,10 @@ class Formbuilder extends \Twig_Extension
 	public function getFormBuilder($id, $uri)
 	{
 		return (new \Mopsis\Core\FormBuilder())->getForm($id, $uri, $this->_options['forms'][$id]);
+	}
+
+	public function setOptions(array $options)
+	{
+		$this->_options = $options;
 	}
 }

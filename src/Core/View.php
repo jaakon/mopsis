@@ -14,26 +14,28 @@ class View
 	private $_functions  = [];
 	private $_filters    = [];
 
-	public function __construct(Renderer $renderer)
+	public function __construct(Renderer $renderer, array $extensions = [])
 	{
-		$this->renderer = $renderer;
+		$this->renderer    = $renderer;
+		$this->_extensions = $extensions;
 	}
 
 	public function __invoke()
 	{
-		$this->renderer->addExtension(new \Mopsis\Twig\Extensions\Formbuilder(['forms' => $this->_forms]));
-		$this->renderer->addExtension(\App::make(\Asm89\Twig\CacheExtension\Extension::class));
-
 		foreach ($this->_extensions as $extension) {
 			$this->renderer->addExtension($extension);
 		}
 
 		foreach ($this->_filters as $name => $filter) {
-			$this->renderer->addFilter(new \Twig_SimpleFilter($name, $filter));
+			$this->renderer->addFilter(new \Twig_SimpleFilter($name, $filter, ['is_safe' => ['html']]));
 		}
 
 		foreach ($this->_functions as $name => $function) {
-			$this->renderer->addFunction(new \Twig_SimpleFunction($name, $function));
+			$this->renderer->addFunction(new \Twig_SimpleFunction($name, $function, ['is_safe' => ['html']]));
+		}
+
+		if ($this->renderer->hasExtension('formbuilder')) {
+			$this->renderer->getExtension('formbuilder')->setOptions(['forms' => $this->_forms]);
 		}
 
 		$html = $this->renderer->render($this->_template, $this->_data);

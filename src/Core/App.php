@@ -11,13 +11,13 @@ namespace Mopsis\Core
 			static::$_container = $container;
 		}
 
-		public static function make($type, array $parameters = [])
+		public static function make($type, array $parameters = null)
 		{
 			switch ($type) {
 				case 'db':
 					return static::$_container->get('database')->getConnection();
 				default:
-					return count($parameters) ? static::$_container->make($type, $parameters) : static::$_container->get($type);
+					return is_array($parameters) ? static::$_container->make($type, $parameters) : static::$_container->get($type);
 			}
 		}
 	}
@@ -27,7 +27,7 @@ namespace
 {
 	class App
 	{
-		public static function make($type, array $parameters = [])
+		public static function make($type, array $parameters = null)
 		{
 			switch ($type) {
 				case 'config':

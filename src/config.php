@@ -15,13 +15,11 @@ return [
 	'twig.dev.config'        => [
 		'cache'            => false,
 		'auto_reload'      => true,
-		'autoescape'       => true,
-		'strict_variables' => false
+		'strict_variables' => true
 	],
 	'twig.live.config'       => [
 		'cache'            => 'storage/cache/',
-		'auto_reload'      => true,
-		'autoescape'       => true,
+		'auto_reload'      => false,
 		'strict_variables' => false
 	],
 
@@ -33,6 +31,28 @@ return [
 
 	\Asm89\Twig\CacheExtension\CacheStrategy\KeyGeneratorInterface::class => object(\Mopsis\Twig\Extensions\Cache\KeyGenerator::class),
 
+	\Aura\Filter\Filter::class => factory(function (DI\ContainerInterface $c) {
+		return $c->get(\Aura\Filter\FilterFactory::class)->newFilter();
+	}),
+
+	\Aura\Web\Request::class => factory(function (DI\ContainerInterface $c) {
+		return $c->get(\Aura\Web\WebFactory::class)->newRequest();
+	}),
+
+	\Aura\Web\Response::class => factory(function (DI\ContainerInterface $c) {
+		return $c->get(\Aura\Web\WebFactory::class)->newResponse();
+	}),
+
+	\Aura\Web\WebFactory::class => factory(function () {
+		return new \Aura\Web\WebFactory([
+			'_ENV'    => $_ENV,
+			'_GET'    => $_GET,
+			'_POST'   => $_POST,
+			'_COOKIE' => $_COOKIE,
+			'_SERVER' => $_SERVER
+		]);
+	}),
+
 	\League\Flysystem\AdapterInterface::class => object(\League\Flysystem\Adapter\Local::class)
 		->constructor(link('flysystem.local.config')),
 
@@ -43,11 +63,22 @@ return [
 		->constructorParameter('format', link('monolog.lineformat'))
 		->constructorParameter('allowInlineLineBreaks', true),
 
-	\Mopsis\Validation\Request\BasicRequest::class => object(\Mopsis\Validation\Request\RawRequest::class),
-
 	\Mopsis\Core\User::class => factory(function () {
 		return Mopsis\Auth::user();
 	}),
+
+	\Mopsis\Core\View::class => factory(function (DI\ContainerInterface $c) {
+		return new \Mopsis\Core\View(
+			$c->get(\Twig_Environment::class),
+			[
+				$c->get(\Asm89\Twig\CacheExtension\Extension::class),
+				$c->get(\Mopsis\Twig\Extensions\Formbuilder::class),
+				$c->get(\Mopsis\Twig\Extensions\Markdown::class)
+			]
+		);
+	}),
+
+	\Mopsis\Validation\Request\BasicRequest::class => object(\Mopsis\Validation\Request\RawRequest::class),
 
 	\Psr\Log\LoggerInterface::class => link('logger'),
 
@@ -59,10 +90,11 @@ return [
 	\Stash\Driver\Redis::class => object()
 		->method('setOptions', link('stash.redis.config')),
 
+	\Twig_LoaderInterface::class => object(\Twig_Loader_Filesystem::class)
+		->constructor(['resources/views', 'application/views']),
+
 	\Twig_Environment::class => object()
-		->constructor(new \Twig_Loader_Filesystem(['application/views']), link('twig.live.config'))
-		->method('addExtension', link(\Asm89\Twig\CacheExtension\Extension::class))
-		->method('addExtension', link(\Mopsis\Twig\Extensions\Markdown::class)),
+		->constructor(link(\Twig_LoaderInterface::class), link('twig.live.config')),
 
 	\Whoops\Handler\PlainTextHandler::class => object()
 		->constructor(link('logger')),
