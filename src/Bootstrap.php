@@ -55,7 +55,7 @@ namespace Mopsis {
 			App::make('database');
 			App::make('errorHandler');
 
-			$flushMode = $_GET['flush'] ?: (isset($_GET['clearCache']) ? 'all' : null);
+			$flushMode = $_GET['flush'];
 
 			if ($flushMode === 'all' || $flushMode === 'data') {
 				App::make('cache')->flush();
@@ -76,7 +76,7 @@ namespace Mopsis {
 
 			include 'application/initialize.php';
 
-			if ($flushMode === 'all' || $flushMode === 'app') {
+			if ($flushMode === 'all' || $flushMode === 'app' || $flushMode === 'twig') {
 				$renderer->clearCache();
 			}
 		}

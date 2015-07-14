@@ -6,6 +6,30 @@ function __($keyword, $domain = null, $args = null)
 	return $args === null ? $text : vnsprintf($text, array_wrap($args));
 }
 
+function array_concat(array $array, ...$values)
+{
+	foreach ($values as $value) {
+		switch (gettype($value)) {
+			case 'array':
+				$array = array_merge_recursive($array, $value);
+				break;
+			case 'object':
+				if ($value instanceof \ArrayObject) {
+					$array = array_merge_recursive($array, $value->getArrayCopy());
+					break;
+				}
+				if (method_exists($value, 'toArray')) {
+					$array = array_merge_recursive($array, $value->toArray());
+				}
+			// no break
+			default:
+				$array[] = $value;
+		}
+	}
+
+	return $array;
+}
+
 function array_diff_values(array $array1, array $array2)
 {
 	$diff = [];
@@ -91,6 +115,16 @@ function convertObjectToArray($input)
 	}
 
 	return is_array($input) ? array_map(__FUNCTION__, $input) : $input;
+}
+
+function debug(...$args)
+{
+	echo '<pre class="debug">';
+	foreach ($args as $i => $arg) {
+		echo $i > 0 ? '<hr>' : '';
+		print_r($arg);
+	}
+	echo '</pre>';
 }
 
 function escape_html($string)
@@ -288,6 +322,15 @@ function param_encode($string)
 function plainText($string)
 {
 	return htmlspecialchars(trim(strip_tags($string)));
+}
+
+function pluralize($count, $singular, $plural = null)
+{
+	if ($plural === null) {
+		$plural = $singular.'e';
+	}
+
+	return sprintf('%s %s', str_replace('.', ',', $count), abs($count) == 1 ? $singular : $plural);
 }
 
 function preg_grep_keys($pattern, $input, $flags = 0)

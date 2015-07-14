@@ -34,6 +34,10 @@ class View
 			$this->renderer->addFunction(new \Twig_SimpleFunction($name, $function, ['is_safe' => ['html']]));
 		}
 
+		$this->_extensions = [];
+		$this->_filters    = [];
+		$this->_functions  = [];
+
 		if ($this->renderer->hasExtension('formbuilder')) {
 			$this->renderer->getExtension('formbuilder')->setOptions(['forms' => $this->_forms]);
 		}

@@ -14,11 +14,14 @@ class MarkdownEngine implements \Aptoma\Twig\Extension\MarkdownEngineInterface
 		// Revert double encoding of quotes
 		$content = str_replace(['&quot;', '&#039;'], ['"', '\''], $content);
 
+		// Fixing backticks without leading return
+		$content = preg_replace('/([^\n])(```)/', "$1\n$2", $content);
+
 		// Setup ParseDown
 		Parsedown::instance('bootstrap')->setAttributes('Table', ['class' => 'table table-bordered table-condensed']);
 
 		// Convert markdown to html
-		$content = Parsedown::instance('bootstrap')->text($content);
+		$content = Parsedown::instance('bootstrap')->text(trim($content));
 
 		// Revert encoding of code blocks
 		$content = preg_replace_callback('/(<code>)(.+?)(<\/code>)/s', function ($m) {

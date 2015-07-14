@@ -2,33 +2,21 @@
 
 class Auth
 {
-	private static $_user;
+	protected static $user;
 
 	public static function login(Core\User $user)
 	{
-		self::$_user = $user;
+		self::$user = $user;
 	}
 
 	public static function user()
 	{
-		return self::$_user ?: self::$_user = \Models\User::autoload();
+		return self::$user ?: self::$user = \Models\User::autoload();
 	}
 
 	public static function checkAccess($permission, $model = null, $redirect = null)
 	{
-		if (is_bool($permission)) {
-			if ($permission) {
-				return true;
-			}
-
-			if ($redirect) {
-				redirect($redirect);
-			}
-
-			throw new \AccessException('user has no access');
-		}
-
-		if (self::user()->isAllowedTo($permission, $model)) {
+		if ((is_bool($permission) && $permission) || self::user()->isAllowedTo($permission, $model)) {
 			return true;
 		}
 
@@ -36,6 +24,6 @@ class Auth
 			redirect($redirect);
 		}
 
-		throw new \AccessException('user has no "'.$permission.'" permission for model "'.$model.'"');
+		throw new \AccessException($model ? 'user has no "'.$permission.'" permission for model "'.$model.'"' : 'user has no permission');
 	}
 }

@@ -139,6 +139,8 @@ return [
 
 	'filesystem' => object(\League\Flysystem\Filesystem::class),
 
+	'Flash' => object(\Mopsis\Core\Flash::class),
+
 	'logger' => factory(function (DI\ContainerInterface $c) {
 		$errorHandler  = new Monolog\Handler\StreamHandler(CORE_ERROR_LOG, Monolog\Logger::ERROR, false);
 		$errorHandler->setFormatter($c->get(\Monolog\Formatter\LineFormatter::class));

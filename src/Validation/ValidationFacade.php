@@ -145,7 +145,7 @@ class ValidationFacade
 				break;
 			case 'isTicketId':
 				return new BasicValidator(
-					new Specification\SingleField($fieldname, new Specification\RegExp('/^\d{4,5}|\w{3,}\-\d{1,3}$/', false)),
+					new Specification\SingleField($fieldname, new Specification\RegExp('/^\d{4,5}|\w{3,}\-\d{1,5}$/', false)),
 					'"'.$fieldname.'" must contain a valid ticket id.'
 				);
 				break;
