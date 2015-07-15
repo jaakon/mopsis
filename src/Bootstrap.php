@@ -52,13 +52,13 @@ namespace Mopsis {
 
 			App::initialize($container = $builder->build());
 
-			App::make('database');
-			App::make('errorHandler');
+			App::make('Database');
+			App::make('ErrorHandler');
 
 			$flushMode = $_GET['flush'];
 
 			if ($flushMode === 'all' || $flushMode === 'data') {
-				App::make('cache')->flush();
+				App::make('Cache')->flush();
 			}
 
 			if ($flushMode === 'all' || $flushMode === 'app') {
@@ -83,7 +83,7 @@ namespace Mopsis {
 
 		private function _cacheAssets($refreshCss, $refreshJs)
 		{
-			$cache = App::make('cache');
+			$cache = App::make('Cache');
 
 			$item = $cache->getItem('files/css/version');
 			if (!$item->get() || $refreshCss) {
@@ -130,7 +130,7 @@ namespace Mopsis {
 				die($result);
 			}
 
-			App::make('logger')->error('file not found: '.$_SERVER['REQUEST_METHOD'].' '.$_SERVER['ROUTE'].' ['.$_SERVER['HTTP_USER_AGENT'].']');
+			App::make('Logger')->error('file not found: '.$_SERVER['REQUEST_METHOD'].' '.$_SERVER['ROUTE'].' ['.$_SERVER['HTTP_USER_AGENT'].']');
 
 			http_response_code(404);
 			die(defined('CORE_MISSINGPAGE') ? file_get_contents(CORE_MISSINGPAGE) : '<span style="color:#E00;font-weight:bold;">ROUTE NOT FOUND!</span>');

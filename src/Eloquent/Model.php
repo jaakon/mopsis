@@ -52,7 +52,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model
 
 	public function clearCachedAttribute($attribute, $ascending = false)
 	{
-		\App::make('cache')->getItem($this, $attribute)->clear();
+		\App::make('Cache')->getItem($this, $attribute)->clear();
 
 		if ($ascending && $this instanceof \Mopsis\Extensions\iHierarchical) {
 			$this->ancestor->clearCachedAttribute($attribute, true);
@@ -78,8 +78,8 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model
 		$columns = [];
 
 		foreach ($this->getConnection()->select('SHOW COLUMNS FROM '.$this->getTable()) as $entry) {
-			if ($this->isFillable($entry['Field'])) {
-				$columns[] = $entry['Field'];
+			if ($this->isFillable($entry->Field)) {
+				$columns[] = $entry->Field;
 			}
 		}
 
@@ -130,7 +130,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model
 
 	protected function getCachedAttribute($attribute, callable $callback, $ttl = null)
 	{
-		$item  = \App::make('cache')->getItem($this, $attribute);
+		$item  = \App::make('Cache')->getItem($this, $attribute);
 		$value = $item->get();
 
 		if ($item->isMiss()) {

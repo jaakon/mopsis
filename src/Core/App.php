@@ -2,11 +2,13 @@
 
 namespace Mopsis\Core
 {
+	use Interop\Container\ContainerInterface as ContainerInterface;
+
 	class App
 	{
 		private static $_container;
 
-		public static function initialize(\DI\ContainerInterface $container)
+		public static function initialize(ContainerInterface $container)
 		{
 			static::$_container = $container;
 		}
@@ -15,7 +17,7 @@ namespace Mopsis\Core
 		{
 			switch ($type) {
 				case 'db':
-					return static::$_container->get('database')->getConnection();
+					return static::$_container->get('Database')->getConnection();
 				default:
 					return is_array($parameters) ? static::$_container->make($type, $parameters) : static::$_container->get($type);
 			}

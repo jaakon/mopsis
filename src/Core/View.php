@@ -113,17 +113,21 @@ class View
 		$this->_initializeForm($formId);
 
 		foreach ($data as $select => $options) {
+			if (is_object($options) && method_exists($options, 'toArray')) {
+				$options = $options->toArray();
+			}
+
 			$this->_forms[$formId]['options'][$select] = $options;
 		}
 
 		return $this;
 	}
 
-	public function setFormValues($formId, array $data1)
+	public function setFormValues($formId, ...$dataSets)
 	{
 		$this->_initializeForm($formId);
 
-		foreach (array_slice(func_get_args(), 1) as $data) {
+		foreach ($dataSets as $data) {
 			foreach ($data as $key => $value) {
 				$this->_forms[$formId]['values'] = array_merge($this->_forms[$formId]['values'], implode_objects($value, $key, '.'));
 			}

@@ -19,7 +19,7 @@ class Security
 
 	private static function _loadRoles()
 	{
-		$item  = \App::make('cache')->getItem('user_roles');
+		$item  = \App::make('Cache')->getItem('user_roles');
 		$value = $item->get(\Stash\Invalidation::OLD);
 
 		if ($item->isMiss()) {

@@ -371,7 +371,7 @@ function resolve_path($path)
 	// resolve /a/b/../c => /a/c
 	$path = preg_replace('/\/\w+\/\.\.\//', '/', $path);
 
-	return $_SERVER['SITE'] ? preg_replace('/^(\/'.$_SERVER['SITE'].')*\//i', '/'.$_SERVER['SITE'].'/', $path) : $path;
+	return $path;
 }
 
 function send_http_request($method, $url, $data = [], $referer = null, $timeout = 10)
