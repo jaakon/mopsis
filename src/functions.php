@@ -1,9 +1,32 @@
 <?php
-
-function __($keyword, $domain = null, $args = null)
+function __($key, array $replace = [])
 {
-	$text = \Mopsis\Extensions\Translator::getText($keyword, $domain);
-	return $args === null ? $text : vnsprintf($text, array_wrap($args));
+	return \App::make('i18n')->get($key, $replace);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
 
 function array_concat(array $array, ...$values)
@@ -30,6 +53,91 @@ function array_concat(array $array, ...$values)
 	return $array;
 }
 
+function debug(...$args)
+{
+	echo '<pre class="debug">';
+	foreach ($args as $i => $arg) {
+		echo $i > 0 ? '<hr>' : '';
+		print_r($arg);
+	}
+	echo '</pre>';
+}
+
+function getClassName($class)
+{
+	$temp = explode('\\', is_object($class) ? get_class($class) : $class);
+	return end($temp);
+}
+
+function object2array($object)
+{
+	if (is_array($object)) {
+		return $object;
+	}
+
+	if (is_null($object)) {
+		return [];
+	}
+
+	if (!is_object($object)) {
+		throw new \Exception('cannot cast given object to array');
+	}
+
+	if ($object instanceof \ArrayObject) {
+		return $object->getArrayCopy();
+	}
+
+	if (method_exists($object, 'toArray')) {
+		return $object->toArray();
+	}
+
+	return get_object_vars($object);
+}
+
+function pluralize($count, $singular, $plural = null)
+{
+	if ($plural === null) {
+		$plural = $singular.'e';
+	}
+
+	return sprintf('%s %s', str_replace('.', ',', $count), abs($count) == 1 ? $singular : $plural);
+}
+
+function redirect($url = null, $responseCode = 302)
+{
+	if (preg_match('/^(ht|f)tps?:\/\//', $url) === 0) {
+		$url = ($_SERVER['REQUEST_SCHEME'] ?: 'http').'://'.$_SERVER['HTTP_HOST'].resolvePath(preg_replace('/\/+$/', '', $_SERVER['REQUEST_URI']).'/'.$url);
+	}
+
+	if (!headers_sent($file, $line)) {
+		http_response_code($responseCode);
+		header('Location: '.$url);
+		exit;
+	}
+
+	echo 'ERROR: Headers already sent in '.$file.' on line '.$line."!<br/>\n";
+	echo 'Cannot redirect, please click <a href="'.$url.'">[this link]</a> instead.';
+	exit;
+}
+
+function resolvePath($path)
+{
+	// replace backslashes with forward slashes
+	$path = str_replace('\\', '/', $path);
+
+	// resolve /a/b//c => /c
+	$path = preg_replace('/.*\/\//', '/', $path);
+
+	// resolve /a/b/./c => /a/b/c
+	$path = preg_replace('/(\/\.)+\//', '/', $path);
+
+	// resolve /a/b/../c => /a/c
+	$path = preg_replace('/\/\w+\/\.\.\//', '/', $path);
+
+	return $path;
+}
+
+/*
 function array_diff_values(array $array1, array $array2)
 {
 	$diff = [];
@@ -117,25 +225,9 @@ function convertObjectToArray($input)
 	return is_array($input) ? array_map(__FUNCTION__, $input) : $input;
 }
 
-function debug(...$args)
-{
-	echo '<pre class="debug">';
-	foreach ($args as $i => $arg) {
-		echo $i > 0 ? '<hr>' : '';
-		print_r($arg);
-	}
-	echo '</pre>';
-}
-
 function escape_html($string)
 {
 	return htmlspecialchars($string, ENT_COMPAT | ENT_HTML5, 'UTF-8', false);
-}
-
-function getClassName($class)
-{
-	$temp = explode('\\', is_object($class) ? get_class($class) : $class);
-	return end($temp);
 }
 
 function getClosestMatch($input, $words)
@@ -288,27 +380,6 @@ function object_merge(stdClass $object1, stdClass $object2)
 	return $result;
 }
 
-function object2array($object)
-{
-	if (is_array($object)) {
-		return $object;
-	}
-
-	if (is_null($object)) {
-		return [];
-	}
-
-	if (!is_object($object)) {
-		throw new \Exception('cannot cast given object to array');
-	}
-
-	if (method_exists($object, 'toArray')) {
-		return $object->toArray();
-	}
-
-	return get_object_vars($object);
-}
-
 function param_decode($string)
 {
 	return base64_decode(str_replace('~', '/', $string));
@@ -324,15 +395,6 @@ function plainText($string)
 	return htmlspecialchars(trim(strip_tags($string)));
 }
 
-function pluralize($count, $singular, $plural = null)
-{
-	if ($plural === null) {
-		$plural = $singular.'e';
-	}
-
-	return sprintf('%s %s', str_replace('.', ',', $count), abs($count) == 1 ? $singular : $plural);
-}
-
 function preg_grep_keys($pattern, $input, $flags = 0)
 {
 	return array_intersect_key($input, array_flip(preg_grep($pattern, array_keys($input), $flags)));
@@ -340,38 +402,7 @@ function preg_grep_keys($pattern, $input, $flags = 0)
 
 function realurl($url, $scheme, $host, $path = '/')
 {
-	return preg_match('/^(ht|f)tps?:\/\/|(mailto:|javascript:|#)/i', $url) > 0 ? $url : $scheme.'://'.$host.resolve_path($path.$url);
-}
-
-function redirect($url = null, $responseCode = 302)
-{
-	if (preg_match('/^(ht|f)tps?:\/\//', $url) === 0) {
-		$url = ($_SERVER['REQUEST_SCHEME'] ?: 'http').'://'.$_SERVER['HTTP_HOST'].resolve_path(preg_replace('/\/+$/', '', $_SERVER['REQUEST_URI']).'/'.$url);
-	}
-
-	if (!headers_sent($file, $line)) {
-		http_response_code($responseCode);
-		header('Location: '.$url);
-		exit;
-	}
-
-	echo 'ERROR: Headers already sent in '.$file.' on line '.$line."!<br/>\n";
-	echo 'Cannot redirect, please click <a href="'.$url.'">[this link]</a> instead.';
-	exit;
-}
-
-function resolve_path($path)
-{
-	// resolve /a/b//c => /c
-	$path = preg_replace('/.*\/\//', '/', $path);
-
-	// resolve /a/b/./c => /a/b/c
-	$path = preg_replace('/(\/\.)+\//', '/', $path);
-
-	// resolve /a/b/../c => /a/c
-	$path = preg_replace('/\/\w+\/\.\.\//', '/', $path);
-
-	return $path;
+	return preg_match('/^(ht|f)tps?:\/\/|(mailto:|javascript:|#)/i', $url) > 0 ? $url : $scheme.'://'.$host.resolvePath($path.$url);
 }
 
 function send_http_request($method, $url, $data = [], $referer = null, $timeout = 10)
@@ -462,3 +493,4 @@ function wget($url, $data = [], $referer = null, $timeout = 10)
 	$result = send_http_request('GET', $url, $data, $referer, $timeout);
 	return $result[0]['http_code'] === 200 ? $result[1] : false;
 }
+*/

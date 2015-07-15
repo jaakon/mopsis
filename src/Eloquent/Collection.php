@@ -2,7 +2,26 @@
 
 class Collection extends \Illuminate\Database\Eloquent\Collection
 {
-	public function length()
+	protected $privilege;
+
+	public function __get($key)
+	{
+		return $this->hasGetMutator($key) ? $this->mutateAttribute($key) : null;
+	}
+
+	public function __isset($key)
+	{
+		return $this->hasGetMutator($key);
+	}
+
+	public function accessibleFor(\Mopsis\Core\PrivilegedUser $user, $privilege = null)
+	{
+		return $this->filter(function ($item) use ($user, $privilege) {
+			return $user->may($privilege ?: $this->privilege, $item);
+		});
+	}
+
+	public function getLengthAttribute()
 	{
 		return $this->count();
 	}
@@ -32,10 +51,21 @@ class Collection extends \Illuminate\Database\Eloquent\Collection
 		});
 	}
 
-	public function whereUserHasPrivilege(\Mopsis\Core\User $user, $privilege)
+	public function whereNot($key, $value, $strict = true)
 	{
-		return $this->filter(function ($item) use ($user, $privilege) {
-			return $user->isAllowedTo($privilege, $item);
+		return $this->filter(function ($item) use ($key, $value, $strict) {
+			return $strict ? data_get($item, $key) !== $value
+						   : data_get($item, $key) != $value;
 		});
+	}
+
+	protected function hasGetMutator($key)
+	{
+		return method_exists($this, 'get'.studly_case($key).'Attribute');
+	}
+
+	protected function mutateAttribute($key)
+	{
+		return $this->{'get'.studly_case($key).'Attribute'}();
 	}
 }

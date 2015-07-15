@@ -2,31 +2,35 @@
 
 class Token
 {
-	private $model;
-	private $session;
+	protected $instance;
+	protected $session;
 
-	public static function extract($string, $salt = null)
+	public static function extract($string)
 	{
 		$string = (string) $string;
 
-		if (!preg_match('/^((\w+):(\d+)):[a-f0-9]+$/i', $string, $m)) {
+		if (!preg_match('/^(\w+):(\d+):[a-f0-9]+$/i', $string, $m)) {
 			return false;
 		}
 
 		try {
-			$class    = '\\Models\\'.$m[2];
-			$instance = $class::findOrFail($m[3]);
+			$class    = sprintf('\\App\\%1$s\\Domain\\%1$sModel', $m[1]);
+			$instance = $class::findOrFail($m[2]);
 		} catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
 			return false;
 		}
 
-		return $string === $instance->token->generate($salt) || $string === $instance->hash->generate($salt) ? $instance : false;
+		if ($string !== $instance->token->generate() && $string !== $instance->hash->generate()) {
+			return false;
+		}
+
+		return $instance;
 	}
 
-	public function __construct(\Mopsis\Eloquent\Model $model, $session = null)
+	public function __construct(\Mopsis\Eloquent\Model $instance, $session = null)
 	{
-		$this->model   = $model;
-		$this->session = $session;
+		$this->instance = $instance;
+		$this->session  = $session;
 	}
 
 	public function __toString()
@@ -34,8 +38,8 @@ class Token
 		return $this->generate();
 	}
 
-	public function generate($salt = null)
+	public function generate()
 	{
-		return $this->model.':'.sha1(get_class($this->model).$this->model->id.CORE_SALT.$salt);
+		return $this->instance.':'.sha1(get_class($this->instance).$this->instance->id.CORE_SALT.$this->session);
 	}
 }

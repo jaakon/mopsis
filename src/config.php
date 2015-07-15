@@ -2,8 +2,7 @@
 
 use Interop\Container\ContainerInterface as ContainerInterface;
 
-use function DI\factory;
-use function DI\link;
+use function DI\get;
 use function DI\object;
 
 return [
@@ -14,16 +13,25 @@ return [
 		'namespace' => md5($_SERVER['HTTP_HOST'])
 	],
 	'stash.redis.config' => [],
+	'stash.sqlite.config'    => [
+		'path' => 'storage/cache/'
+	],
+	'translator.locale'  => 'de',
+	'translator.path'    => 'resources/lang/',
 	'twig.dev.config' => [
+		'debug'            => true,
 		'cache'            => false,
 		'auto_reload'      => true,
 		'strict_variables' => true
 	],
 	'twig.live.config' => [
+		'debug'            => false,
 		'cache'            => 'storage/cache/',
 		'auto_reload'      => false,
 		'strict_variables' => false
 	],
+	'twig.config'        => get('twig.dev.config'),
+	'twigloader.config'  => ['resources/views', 'application/views'],
 
 	\Aptoma\Twig\Extension\MarkdownEngineInterface::class
 		=> object(\Mopsis\Twig\Extensions\Markdown\MarkdownEngine::class),
@@ -39,7 +47,31 @@ return [
 
 	\Aura\Filter\Filter::class
 		=> function (ContainerInterface $c) {
-			return $c->get(\Aura\Filter\FilterFactory::class)->newFilter();
+			$filterFactory = $c->get(\Aura\Filter\FilterFactory::class);
+
+			$validateLocator = $filterFactory->getValidateLocator();
+			$validateLocator->set('bic', function () use ($c) {
+				return $c->get(\Mopsis\Filter\Rule\Validate\Bic::class);
+			});
+			$validateLocator->set('iban', function () use ($c) {
+				return $c->get(\Mopsis\Filter\Rule\Validate\Iban::class);
+			});
+			$validateLocator->set('money', function () use ($c) {
+				return $c->get(\Mopsis\Filter\Rule\Validate\Money::class);
+			});
+			$validateLocator->set('optional', function () use ($c) {
+				return $c->get(\Mopsis\Filter\Rule\Validate\Optional::class);
+			});
+			$validateLocator->set('zipcode', function () use ($c) {
+				return $c->get(\Mopsis\Filter\Rule\Validate\ZipCode::class);
+			});
+
+			$sanitizeLocator = $filterFactory->getSanitizeLocator();
+			$sanitizeLocator->set('float', function () use ($c) {
+				return $c->get(\Mopsis\Filter\Rule\Sanitize\Float::class);
+			});
+
+			return $filterFactory->newFilter();
 		},
 
 	\Aura\Web\Request::class
@@ -54,26 +86,44 @@ return [
 
 	\Aura\Web\WebFactory::class
 		=> function () {
+			if (count($_POST) && !count($_FILES)) {
+				// php://input is not available with enctype="multipart/form-data"
+				// perhaps "enable_post_data_reading = off" can help?
+
+				$_POST = [];
+
+				foreach (explode('&', file_get_contents('php://input')) as $entry) {
+					list($key,)    = array_map('urldecode', explode('=', $entry));
+					$key           = preg_replace('/\[(.*)\]$/', '', $key);
+					$_POST[$key]   = $_REQUEST[str_replace(['.', ' '], '_', $key)];
+				}
+			}
+
 			return new \Aura\Web\WebFactory([
-				'_ENV'    => $_ENV,
-				'_GET'    => $_GET,
-				'_POST'   => $_POST,
 				'_COOKIE' => $_COOKIE,
+				'_ENV'    => $_ENV,
+				'_FILES'  => $_FILES,
+				'_POST'   => $_POST,
+				'_GET'    => $_GET,
 				'_SERVER' => $_SERVER
 			]);
 		},
 
+	\Illuminate\Translation\LoaderInterface::class
+		=> object(\Illuminate\Translation\FileLoader::class)
+		->constructorParameter('path', get('translator.path')),
+
 	\League\Flysystem\AdapterInterface::class
 		=> object(\League\Flysystem\Adapter\Local::class)
-		->constructor(link('flysystem.local.config')),
+		->constructor(get('flysystem.local.config')),
 
 	\League\Flysystem\CacheInterface::class
 		=> object(\League\Flysystem\Cache\Stash::class)
-		->constructor(link('Cache')),
+		->constructor(get('Cache')),
 
 	\Monolog\Formatter\LineFormatter::class
 		=> object()
-		->constructorParameter('format', link('monolog.lineformat'))
+		->constructorParameter('format', get('monolog.lineformat'))
 		->constructorParameter('allowInlineLineBreaks', true),
 
 	\Mopsis\Core\User::class
@@ -83,44 +133,56 @@ return [
 
 	\Mopsis\Core\View::class
 		=> function (ContainerInterface $c) {
-			return new \Mopsis\Core\View(
-				$c->get(\Twig_Environment::class),
-				[
-					$c->get(\Asm89\Twig\CacheExtension\Extension::class),
-					$c->get(\Mopsis\Twig\Extensions\Formbuilder::class),
-					$c->get(\Mopsis\Twig\Extensions\Markdown::class)
-				]
-			);
+			$extensions = [
+				$c->get(\Asm89\Twig\CacheExtension\Extension::class),
+				$c->get(\Mopsis\Twig\Extensions\Formbuilder::class),
+				$c->get(\Mopsis\Twig\Extensions\Markdown::class)
+			];
+
+			if ($c->get('twig.config')['debug']) {
+				$extensions[] = $c->get(\Twig_Extension_Debug::class);
+			}
+
+			return new \Mopsis\Core\View($c->get(\Twig_Environment::class), $extensions);
 		},
 
 	\Mopsis\Validation\Request\BasicRequest::class
 		=> object(\Mopsis\Validation\Request\RawRequest::class),
 
 	\Psr\Log\LoggerInterface::class
-		=> link('Logger'),
+		=> get('Logger'),
 
 	\Stash\Interfaces\PoolInterface::class
-		=> link('Cache'),
+		=> get('Cache'),
 
 	\Stash\Driver\Apc::class
 		=> object()
-		->method('setOptions', link('stash.apc.config')),
+		->method('setOptions', get('stash.apc.config')),
 
 	\Stash\Driver\Redis::class
 		=> object()
-		->method('setOptions', link('stash.redis.config')),
+		->method('setOptions', get('stash.redis.config')),
+
+	\Stash\Driver\Sqlite::class
+		=> object()
+		->method('setOptions', get('stash.sqlite.config')),
 
 	\Twig_LoaderInterface::class
 		=> object(\Twig_Loader_Filesystem::class)
-		->constructor(['resources/views', 'application/views']),
+		->constructor(get('twigloader.config')),
 
 	\Twig_Environment::class
 		=> object()
-		->constructor(link(\Twig_LoaderInterface::class), link('twig.live.config')),
+		->constructor(get(\Twig_LoaderInterface::class), get('twig.config')),
+
+	\Whoops\Handler\JsonResponseHandler::class
+		=> object()
+		->method('addTraceToOutput', true)
+		->method('onlyForAjaxRequests', true),
 
 	\Whoops\Handler\PlainTextHandler::class
 		=> object()
-		->constructor(link('Logger')),
+		->constructor(get('Logger')),
 
 	\Whoops\Handler\PrettyPageHandler::class
 		=> object()
@@ -131,7 +193,7 @@ return [
 
 	'Cache'
 		=> object(\Stash\Pool::class)
-		->constructor(link(Stash\Driver\Redis::class))
+		->constructor(get(Stash\Driver\Redis::class))
 		->method('setNamespace', md5($_SERVER['HTTP_HOST'])),
 
 	'Database'
@@ -158,8 +220,11 @@ return [
 	'ErrorHandler'
 		=> function (ContainerInterface $c) {
 			$whoops = new \Whoops\Run;
+
 			$whoops->pushHandler($c->get(\Whoops\Handler\PrettyPageHandler::class));
 			$whoops->pushHandler($c->get(\Whoops\Handler\PlainTextHandler::class));
+			$whoops->pushHandler($c->get(\Whoops\Handler\JsonResponseHandler::class));
+
 			$whoops->register();
 
 			return $whoops;
@@ -187,5 +252,11 @@ return [
 			$logger->pushHandler(new Monolog\Handler\PushoverHandler('aw6zvva5hvy67Y1gvnagx7y3GZzEDA', 'uF1VyiRtDd1XXnEKA41imF2P88gxJ4', DEFAULT_TITLE, Monolog\Logger::ERROR, false));
 
 			return $logger;
-		}
+		},
+	'Renderer'
+		=> object(\Twig_Environment::class),
+
+	'Translator'
+		=> object(\Illuminate\Translation\Translator::class)
+		->constructorParameter('locale', get('translator.locale'))
 ];

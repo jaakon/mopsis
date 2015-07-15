@@ -1,5 +1,7 @@
 <?php namespace Mopsis\Core;
 
+use Mopsis\Exceptions\TokenException;
+
 abstract class Controller
 {
 	protected $_user     = null;
@@ -29,7 +31,7 @@ abstract class Controller
 
 		try {
 			return $this->{$method}(...$funcArgs) ?: $this->_view;
-		} catch (\TokenException $e) {
+		} catch (TokenException $e) {
 			return 'The session token is no longer valid.';
 		}
 	}

@@ -6,43 +6,43 @@ class View
 {
 	protected $renderer;
 
-	private $_template   = null;
-	private $_useCache   = false;
-	private $_data       = [];
-	private $_forms      = [];
-	private $_extensions = [];
-	private $_functions  = [];
-	private $_filters    = [];
+	private $template;
+	private $useCache   = false;
+	private $data       = [];
+	private $forms      = [];
+	private $extensions = [];
+	private $functions  = [];
+	private $filters    = [];
 
 	public function __construct(Renderer $renderer, array $extensions = [])
 	{
-		$this->renderer    = $renderer;
-		$this->_extensions = $extensions;
+		$this->renderer   = $renderer;
+		$this->extensions = $extensions;
 	}
 
 	public function __invoke()
 	{
-		foreach ($this->_extensions as $extension) {
+		foreach ($this->extensions as $extension) {
 			$this->renderer->addExtension($extension);
 		}
 
-		foreach ($this->_filters as $name => $filter) {
+		foreach ($this->filters as $name => $filter) {
 			$this->renderer->addFilter(new \Twig_SimpleFilter($name, $filter, ['is_safe' => ['html']]));
 		}
 
-		foreach ($this->_functions as $name => $function) {
+		foreach ($this->functions as $name => $function) {
 			$this->renderer->addFunction(new \Twig_SimpleFunction($name, $function, ['is_safe' => ['html']]));
 		}
 
-		$this->_extensions = [];
-		$this->_filters    = [];
-		$this->_functions  = [];
+		$this->extensions = [];
+		$this->filters    = [];
+		$this->functions  = [];
 
 		if ($this->renderer->hasExtension('formbuilder')) {
-			$this->renderer->getExtension('formbuilder')->setOptions(['forms' => $this->_forms]);
+			$this->renderer->getExtension('formbuilder')->setOptions(['forms' => $this->forms]);
 		}
 
-		$html = $this->renderer->render($this->_template, $this->_data);
+		$html = $this->renderer->render($this->template, $this->data);
 
 		while (preg_match('/<(.+?)>\s*<attribute name="(.+?)" value="(.+?)">/', $html, $m)) {
 			$html = str_replace($m[0], '<' . $m[1] . ' ' . $m[2] . '="' . $m[3] . '">', $html);
@@ -53,31 +53,31 @@ class View
 
 	public function addExtension($extension)
 	{
-		$this->_extensions[] = $extension;
+		$this->extensions[] = $extension;
 		return $this;
 	}
 
 	public function addFilter($name, $filter = null)
 	{
-		$this->_filters[$name] = $filter ?: $name;
+		$this->filters[$name] = $filter ?: $name;
 		return $this;
 	}
 
 	public function addFunction($name, $function = null)
 	{
-		$this->_functions[$name] = $function ?: $name;
+		$this->functions[$name] = $function ?: $name;
 		return $this;
 	}
 
 	public function assign($data)
 	{
-		$this->_data = array_merge($this->_data, object2array($data));
+		$this->data = array_merge($this->data, object2array($data));
 		return $this;
 	}
 
 	public function clearCache()
 	{
-		if ($this->_useCache) {
+		if ($this->useCache) {
 			$this->renderer->clearCacheFiles();
 		}
 
@@ -86,7 +86,7 @@ class View
 
 	public function prefillForm($formId, \Mopsis\Validation\ValidationFacade $facade)
 	{
-		$this->_initializeForm($formId);
+		$this->initializeForm($formId);
 
 		if ($facade->isValid()) {
 			return $this;
@@ -100,62 +100,50 @@ class View
 		return $this;
 	}
 
-	public function setFormErrors($formId, array $data)
+	public function setFormErrors($formId, ...$data)
 	{
-		$this->_initializeForm($formId);
-		$this->_forms[$formId]['errors'] = $data;
+		$this->initializeForm($formId);
+		$this->forms[$formId]['errors'] = array_merge($this->forms[$formId]['errors'], ...$data);
 
 		return $this;
 	}
 
-	public function setFormOptions($formId, array $data)
+	public function setFormOptions($formId, ...$data)
 	{
-		$this->_initializeForm($formId);
-
-		foreach ($data as $select => $options) {
-			if (is_object($options) && method_exists($options, 'toArray')) {
-				$options = $options->toArray();
-			}
-
-			$this->_forms[$formId]['options'][$select] = $options;
-		}
+		$this->initializeForm($formId);
+		$this->forms[$formId]['options'] = array_merge($this->forms[$formId]['options'], ...$data);
 
 		return $this;
 	}
 
-	public function setFormValues($formId, ...$dataSets)
+	public function setFormValues($formId, ...$data)
 	{
-		$this->_initializeForm($formId);
-
-		foreach ($dataSets as $data) {
-			foreach ($data as $key => $value) {
-				$this->_forms[$formId]['values'] = array_merge($this->_forms[$formId]['values'], implode_objects($value, $key, '.'));
-			}
-		}
+		$this->initializeForm($formId);
+		$this->forms[$formId]['values'] = array_merge($this->forms[$formId]['values'], ...$data);
 
 		return $this;
 	}
 
 	public function setTemplate($template)
 	{
-		$this->_template = $template.'.twig';
+		$this->template = preg_replace('/^App\\\/', '', $template);
 		return $this;
 	}
 
 	public function useCache($boolean)
 	{
-		$this->_useCache = $boolean;
+		$this->useCache = $boolean;
 		return $this;
 	}
 
-	private function _initializeForm($formId)
+	private function initializeForm($formId)
 	{
 		if (empty($formId)) {
 			throw new \Exception('form id must not be empty');
 		}
 
-		if (!isset($this->_forms[$formId])) {
-			$this->_forms[$formId] = ['values' => [], 'options' => [], 'errors' => []];
+		if (!isset($this->forms[$formId])) {
+			$this->forms[$formId] = ['values' => [], 'options' => [], 'errors' => []];
 		}
 	}
 }

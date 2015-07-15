@@ -40,7 +40,7 @@ class Mailer extends \Swift_Mailer
 
 	public function __construct()
 	{
-		$transport = null;
+		$transport = \Swift_MailTransport::newInstance();
 
 		if (defined('MAIL_SERVER') && defined('MAIL_PORT')) {
 			$transport = \Swift_SmtpTransport::newInstance(MAIL_SERVER, MAIL_PORT, MAIL_ENCRYPTION);
@@ -48,8 +48,6 @@ class Mailer extends \Swift_Mailer
 			if (defined('MAIL_USERNAME') && defined('MAIL_PASSWORD')) {
 				$transport->setUsername(MAIL_USERNAME)->setPassword(MAIL_PASSWORD);
 			}
-		} else {
-			$transport = \Swift_MailTransport::newInstance();
 		}
 
 		parent::__construct($transport);

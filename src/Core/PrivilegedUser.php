@@ -4,56 +4,37 @@ abstract class PrivilegedUser extends \Mopsis\Core\User
 {
 	public function roles()
 	{
-		return $this->hasMany('\Models\Role');
+		return $this->hasMany('App\Role\Domain\RoleModel')->orderBy('constraint_id');
 	}
 
-	public function isAllowedTo($privilege, $objectToAccess = null)
+	public function may($actionOnObject, \Mopsis\Eloquent\Model $objectToAccess = null)
 	{
-		if (!($containments = $this->privileges[strtolower($privilege)])) {
-			return false;
-		}
+		foreach ($this->roles as $role) {
+			if (!Security::isRoleAllowedTo($role->key, $actionOnObject)) {
+				continue;
+			}
 
-		if ($containments === true || empty($objectToAccess)) {
-			return true;
-		}
+			if (!$role->hasConstraint()) {
+				return true;
+			}
 
-		foreach ($containments as $containment) {
+			if ($objectToAccess === null) { // empty() for Collections?
+				throw new \Exception('cannot determine privileges without a target object');
+			}
+
 			$object = $objectToAccess;
 
-			while (get_class($object) !== get_class($containment) && $object instanceof \Mopsis\Extensions\iHierarchical) {
+			while ((string) $role->constraint !== (string) $object // get_class() vs. identical classes in hierarchy
+				&& $object instanceof \Mopsis\Extensions\iHierarchical
+			) {
 				$object = $object->ancestor;
 			}
 
-			if ((string) $containment === (string) $object) {
+			if ((string) $role->constraint === (string) $object) {
 				return true;
 			}
 		}
 
 		return false;
-	}
-
-	public function getPrivilegesAttribute()
-	{
-		$result = [];
-
-		foreach ($this->roles as $role) {
-			foreach (Security::getPrivilegesForRole($role->key) as $privilege) {
-				if (!$role->containment) {
-					$result[$privilege] = true;
-				}
-
-				if ($result[$privilege] === true) {
-					continue;
-				}
-
-				if (!is_array($result[$privilege])) {
-					$result[$privilege] = [];
-				}
-
-				$result[$privilege][] = $role->containment;
-			}
-		}
-
-		return $result;
 	}
 }

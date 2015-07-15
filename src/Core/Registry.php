@@ -2,23 +2,21 @@
 
 abstract class Registry
 {
-	private static $_data = null;
+	protected static $data = null;
 
-	public static function load($configFile)
+	public static function load(...$configFiles)
 	{
-		if (self::$_data !== null) {
+		if (self::$data !== null) {
 			throw new \Exception('registry already loaded');
 		}
 
-		self::$_data = self::_loadFile($configFile);
+		self::$data = [];
 
-		if ($_SERVER['SITE'] && self::has($_SERVER['SITE'], 'sites')) {
-			self::$_data = array_replace_recursive(self::$_data, parse_ini_file(pathinfo($configFile, PATHINFO_DIRNAME).'/'.self::get($_SERVER['SITE'], 'sites'), true));
-			self::$_data['*core']['site'] = $_SERVER['SITE'];
-			unset(self::$_data['sites']);
+		foreach ($configFiles as $configFile) {
+			self::loadFile($configFile);
 		}
 
-		self::_defineConstants();
+		self::defineConstants();
 	}
 
 	public static function has($path)
@@ -28,7 +26,7 @@ abstract class Registry
 
 	public static function get($path)
 	{
-		$current = &self::$_data;
+		$current = &self::$data;
 
 		foreach (explode('/', $path) as $key) {
 			$current = &$current[$key];
@@ -39,7 +37,7 @@ abstract class Registry
 
 	public static function set($path, $value)
 	{
-		$current = &self::$_data;
+		$current = &self::$data;
 
 		foreach (explode('/', $path) as $key) {
 			$current = &$current[$key];
@@ -48,23 +46,23 @@ abstract class Registry
 		$current = $value;
 	}
 
-	private static function _loadFile($configFile)
+	protected static function loadFile($configFile)
 	{
 		if (!file_exists($configFile)) {
 			throw new \Exception('configuration file "'.$configFile.'" not found');
 		}
 
-		return (include $configFile);
+		self::$data = array_merge_recursive(self::$data, (include $configFile));
 	}
 
-	private static function _defineConstants()
+	protected static function defineConstants()
 	{
-		foreach (self::$_data as $category => $entries) {
+		foreach (self::$data as $category => $entries) {
 			if (!isset($entries['@sticky'])) {
 				continue;
 			}
 
-			unset(self::$_data[$category]['@sticky']);
+			unset(self::$data[$category]['@sticky']);
 			unset($entries['@sticky']);
 
 			foreach ($entries as $key => $value) {

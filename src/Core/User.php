@@ -2,7 +2,7 @@
 
 abstract class User extends \Mopsis\Eloquent\Model
 {
-	private $_isAuthorized = false;
+	protected $isAuthorized = false;
 
 	public static function autoLoad()
 	{
@@ -71,11 +71,11 @@ abstract class User extends \Mopsis\Eloquent\Model
 
 	public function authorize($bool)
 	{
-		$this->_isAuthorized = $this->isBound() && $bool;
+		$this->isAuthorized = $this->exists && $bool;
 	}
 
 	public function isAuthorized()
 	{
-		return $this->isBound() && $this->_isAuthorized;
+		return $this->exists && $this->isAuthorized;
 	}
 }

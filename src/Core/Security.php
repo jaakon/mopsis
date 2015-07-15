@@ -1,7 +1,11 @@
 <?php namespace Mopsis\Core;
 
+use Mopsis\Core\Cache;
+
 class Security
 {
+	protected static $roles;
+
 	public static function generateToken()
 	{
 		$key   = substr(sha1(uniqid(rand(), true)), 0, 8);
@@ -12,41 +16,41 @@ class Security
 		return (object) $_SESSION['csrf'];
 	}
 
-	public static function getPrivilegesForRole($role)
+	public static function isRoleAllowedTo($role, $actionOnObject)
 	{
-		return self::_loadRoles()[$role] ?: [];
+		if (!isset(static::$roles)) {
+			static::loadRoles();
+		}
+
+		list($action, $object) = explode('_', $actionOnObject);
+
+		return static::$roles[$role][$action][$object];
 	}
 
-	private static function _loadRoles()
+	protected static function loadRoles()
 	{
-		$item  = \App::make('Cache')->getItem('user_roles');
-		$value = $item->get(\Stash\Invalidation::OLD);
-
-		if ($item->isMiss()) {
+		static::$roles = Cache::get('user_roles', function () {
 			if (!Registry::has('roles')) {
 				throw new \Exception('configuration for roles is missing');
 			}
 
-			$item->lock();
-			$value = [];
+			$roles = [];
 
 			foreach (Registry::get('roles') as $role => $privileges) {
-				$data = [];
+				$roles[$role] = [];
 
-				foreach ($privileges as $objects => $actions) {
-					foreach (explode(',', $objects) as $object) {
-						foreach (explode(',', $actions) as $action) {
-							$data[] = $action.'_'.$object;
+				foreach ($privileges as $actions => $objects) {
+					foreach (explode(',', $actions) as $action) {
+						$roles[$role][$action] = $roles[$role][$action] ?: [];
+
+						foreach (explode(',', $objects) as $object) {
+							$roles[$role][$action][$object] = true;
 						}
 					}
 				}
-
-				$value[$role] = array_unique($data);
 			}
 
-			$item->set($value, 3600);
-		}
-
-		return $value;
+			return $roles;
+		});
 	}
 }
