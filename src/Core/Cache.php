@@ -2,6 +2,16 @@
 
 class Cache
 {
+	public static function clear($key)
+	{
+		return \App::make('Cache')->getItem($key)->clear();
+	}
+
+	public static function flush()
+	{
+		return \App::make('Cache')->flush();
+	}
+
 	public static function get($key, callable $callback, $ttl = null)
 	{
 		$item  = \App::make('Cache')->getItem($key);
@@ -14,10 +24,5 @@ class Cache
 		}
 
 		return $value;
-	}
-
-	public static function clear($key)
-	{
-		return \App::make('Cache')->getItem($key)->clear();
 	}
 }

@@ -126,6 +126,12 @@ return [
 		->constructorParameter('format', get('monolog.lineformat'))
 		->constructorParameter('allowInlineLineBreaks', true),
 
+	\Mopsis\Core\I18N::class
+		=> object()
+		->constructor('de', 'en')
+		->method('setFilePath', 'resources/lang/')
+		->method('init'),
+
 	\Mopsis\Core\User::class
 		=> function () {
 			return Mopsis\Auth::user();
@@ -187,9 +193,6 @@ return [
 	\Whoops\Handler\PrettyPageHandler::class
 		=> object()
 		->method('setEditor', 'sublime'),
-
-	'Bouncer'
-		=> object(\Helpers\Bouncer::class),
 
 	'Cache'
 		=> object(\Stash\Pool::class)
@@ -253,6 +256,7 @@ return [
 
 			return $logger;
 		},
+
 	'Renderer'
 		=> object(\Twig_Environment::class),
 

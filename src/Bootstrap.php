@@ -3,21 +3,24 @@
 use Assetic\Asset\AssetCollection;
 use Assetic\Asset\GlobAsset;
 use Mopsis\Core\App;
+use Mopsis\Core\Cache;
 
 class Bootstrap
 {
-	public function kickstart()
+	public function kickstart($flushMode)
 	{
 		if (parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) === '/@info') {
 			return phpinfo();
 		}
 
 		$this->initialize();
-		$this->updateCache($_GET['flush']);
+		$this->updateCache($flushMode);
+
+		include 'app/initialize.php';
 
 		$response = $this->doRouting();
+		$sender   = new \Aura\Web\ResponseSender($response);
 
-		$sender = new \Aura\Web\ResponseSender($response);
 		$sender->__invoke();
 	}
 
@@ -29,8 +32,9 @@ class Bootstrap
 
 		$builder = new \DI\ContainerBuilder;
 		$builder->addDefinitions(__DIR__.'/config.php');
+		$builder->addDefinitions('config/definitions.php');
 
-		Core\Registry::load('config/config.php', 'config/credentials.php');
+		Core\Registry::load('config/environment.php', 'config/credentials.php');
 
 		App::initialize($builder->build());
 		App::make('Database');
@@ -39,10 +43,6 @@ class Bootstrap
 
 	protected function updateCache($flushMode)
 	{
-		if ($flushMode === 'all' || $flushMode === 'data') {
-			App::make('Cache')->flush();
-		}
-
 		if ($flushMode === 'all' || $flushMode === 'app') {
 			$adapter = new \CacheTool\Adapter\FastCGI('127.0.0.1:9000');
 			$cache   = \CacheTool\CacheTool::factory($adapter);
@@ -51,24 +51,25 @@ class Bootstrap
 			$cache->opcache_reset();
 		}
 
-		$this->cacheAssets(
-			$flushMode === 'css' || !file_exists('public/static/main.css'),
-			$flushMode === 'js' || !file_exists('public/static/main.js')
-		);
+		if ($flushMode === 'all' || $flushMode === 'assets') {
+			Cache::clear('files/css/version');
+			Cache::clear('files/javascript/version');
 
-		include 'app/initialize.php';
+			$this->cacheAssets();
+		}
 
-		if ($flushMode === 'all' || $flushMode === 'app') {
+		if ($flushMode === 'all' || $flushMode === 'data') {
+			Cache::flush();
+		}
+
+		if ($flushMode === 'all' || $flushMode === 'views') {
 			App::make('Renderer')->clearCacheFiles();
 		}
 	}
 
-	protected function cacheAssets($refreshCss, $refreshJs)
+	protected function cacheAssets()
 	{
-		$cache = App::make('Cache');
-
-		$item = $cache->getItem('files/css/version');
-		if (!$item->get() || $refreshCss) {
+		Cache::get('files/css/version', function () {
 			$assets = new AssetCollection([
 				new GlobAsset('public/css/*.css'),
 				new GlobAsset('public/css/*.less', [new \Assetic\Filter\LessphpFilter]),
@@ -78,19 +79,20 @@ class Bootstrap
 			]);
 
 			file_put_contents('public/static/main.css', $assets->dump());
-			$item->set(time());
-		}
 
-		$item = $cache->getItem('files/javascript/version');
-		if (!$item->get() || $refreshJs) {
-				$assets = new AssetCollection([
-					new GlobAsset('public/js/plugins/*.js'),
-					new GlobAsset('public/js/scripts/*.js')
-				]);
+			return time();
+		});
 
-				file_put_contents('public/static/main.js', $assets->dump());
-			$item->set(time());
-		}
+		Cache::get('files/javascript/version', function () {
+			$assets = new AssetCollection([
+				new GlobAsset('public/js/plugins/*.js'),
+				new GlobAsset('public/js/scripts/*.js')
+			]);
+
+			file_put_contents('public/static/main.js', $assets->dump());
+
+			return time();
+		});
 	}
 
 	protected function doRouting()
