@@ -21,7 +21,6 @@ class Cache
 			$item->lock();
 			$value = $callback();
 			$item->set($value, $ttl);
-			debug($key, $value);
 		}
 
 		return $value;
