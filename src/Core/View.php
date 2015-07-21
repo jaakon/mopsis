@@ -1,6 +1,6 @@
 <?php namespace Mopsis\Core;
 
-use \Twig_Environment as Renderer;
+use Twig_Environment as Renderer;
 
 class View
 {
@@ -35,8 +35,8 @@ class View
 		}
 
 		$this->extensions = [];
-		$this->filters    = [];
-		$this->functions  = [];
+		$this->filters = [];
+		$this->functions = [];
 
 		if ($this->renderer->hasExtension('formbuilder')) {
 			$this->renderer->getExtension('formbuilder')->setOptions(['forms' => $this->forms]);
@@ -54,24 +54,28 @@ class View
 	public function addExtension($extension)
 	{
 		$this->extensions[] = $extension;
+
 		return $this;
 	}
 
 	public function addFilter($name, $filter = null)
 	{
 		$this->filters[$name] = $filter ?: $name;
+
 		return $this;
 	}
 
 	public function addFunction($name, $function = null)
 	{
 		$this->functions[$name] = $function ?: $name;
+
 		return $this;
 	}
 
 	public function assign($data)
 	{
 		$this->data = array_merge($this->data, object2array($data));
+
 		return $this;
 	}
 
@@ -127,12 +131,14 @@ class View
 	public function setTemplate($template)
 	{
 		$this->template = preg_replace('/^App\\\/', '', $template);
+
 		return $this;
 	}
 
 	public function useCache($boolean)
 	{
 		$this->useCache = $boolean;
+
 		return $this;
 	}
 

@@ -12,15 +12,16 @@ class Cache
 		return \App::make('Cache')->flush();
 	}
 
-	public static function get($key, callable $callback, $ttl = null)
+	public static function get($key, callable $callback = null, $ttl = null)
 	{
 		$item  = \App::make('Cache')->getItem($key);
 		$value = $item->get();
 
-		if ($item->isMiss()) {
+		if ($item->isMiss() && $callback !== null) {
 			$item->lock();
 			$value = $callback();
 			$item->set($value, $ttl);
+			debug($key, $value);
 		}
 
 		return $value;

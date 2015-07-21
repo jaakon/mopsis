@@ -6,12 +6,12 @@ class Container
 
 	public function __get($key)
 	{
-		return $this->hasGetMutator($key) ? $this->{'get'.studly_case($key).'Attribute'}() : null;
+		return $this->hasGetMutator($key) ? $this->{'get' . studly_case($key) . 'Attribute'}() : null;
 	}
 
 	public function __set($key, $value)
 	{
-		return $this->hasSetMutator($key) ? $this->{'set'.studly_case($key).'Attribute'}($value) : null;
+		return $this->hasSetMutator($key) ? $this->{'set' . studly_case($key) . 'Attribute'}($value) : null;
 	}
 
 	public function __isset($key)
@@ -19,18 +19,18 @@ class Container
 		return $this->hasGetMutator($key);
 	}
 
+	public function stringify()
+	{
+		return $this->stringifier ?: $this->stringifier = new Stringifier($this);
+	}
+
 	protected function hasGetMutator($key)
 	{
-		return method_exists($this, 'get'.studly_case($key).'Attribute');
+		return method_exists($this, 'get' . studly_case($key) . 'Attribute');
 	}
 
 	protected function hasSetMutator($key)
 	{
-		return method_exists($this, 'set'.studly_case($key).'Attribute');
-	}
-
-	public function stringify()
-	{
-		return $this->stringifier ?: $this->stringifier = new Stringifier($this);
+		return method_exists($this, 'set' . studly_case($key) . 'Attribute');
 	}
 }

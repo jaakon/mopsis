@@ -8,30 +8,31 @@ use function DI\object;
 return [
 	'flysystem.local.config' => 'storage/files',
 	'monolog.lineformat'     => "[%datetime%] %level_name%: %message% %context% %extra%\n",
+	'namespacedModels'       => '\\App\\%1$s\\Domain\\%1$sModel',
 	'stash.apc.config'       => [
-		'ttl'       => 3600,
-		'namespace' => md5($_SERVER['HTTP_HOST'])
+	'ttl'       => 3600,
+	'namespace' => md5($_SERVER['HTTP_HOST'])
 	],
-	'stash.redis.config' => [],
+	'stash.redis.config'     => [],
 	'stash.sqlite.config'    => [
-		'path' => 'storage/cache/'
+	'path' => 'storage/cache/'
 	],
-	'translator.locale'  => 'de',
-	'translator.path'    => 'resources/lang/',
-	'twig.dev.config' => [
-		'debug'            => true,
-		'cache'            => false,
-		'auto_reload'      => true,
-		'strict_variables' => true
+	'translator.locale'      => 'de',
+	'translator.path'        => 'resources/lang/',
+	'twig.dev.config'        => [
+	'debug'            => true,
+	'cache'            => false,
+	'auto_reload'      => true,
+	'strict_variables' => true
 	],
-	'twig.live.config' => [
-		'debug'            => false,
-		'cache'            => 'storage/cache/',
-		'auto_reload'      => false,
-		'strict_variables' => false
+	'twig.live.config'       => [
+	'debug'            => false,
+	'cache'            => 'storage/cache/',
+	'auto_reload'      => false,
+	'strict_variables' => false
 	],
-	'twig.config'        => get('twig.dev.config'),
-	'twigloader.config'  => ['resources/views', 'application/views'],
+	'twig.config'            => get('twig.dev.config'),
+	'twigloader.config'      => ['resources/views', 'application/views'],
 
 	\Aptoma\Twig\Extension\MarkdownEngineInterface::class
 		=> object(\Mopsis\Twig\Extensions\Markdown\MarkdownEngine::class),
@@ -93,9 +94,9 @@ return [
 				$_POST = [];
 
 				foreach (explode('&', file_get_contents('php://input')) as $entry) {
-					list($key,)    = array_map('urldecode', explode('=', $entry));
-					$key           = preg_replace('/\[(.*)\]$/', '', $key);
-					$_POST[$key]   = $_REQUEST[str_replace(['.', ' '], '_', $key)];
+					list($key,) = array_map('urldecode', explode('=', $entry));
+					$key = preg_replace('/\[(.*)\]$/', '', $key);
+					$_POST[$key] = $_REQUEST[str_replace(['.', ' '], '_', $key)];
 				}
 			}
 
@@ -194,12 +195,12 @@ return [
 		=> object()
 		->method('setEditor', 'sublime'),
 
-	'Cache'
+	Cache::class
 		=> object(\Stash\Pool::class)
 		->constructor(get(Stash\Driver\Redis::class))
 		->method('setNamespace', md5($_SERVER['HTTP_HOST'])),
 
-	'Database'
+	Database::class
 		=> function () {
 			$manager = new \Illuminate\Database\Capsule\Manager;
 			$manager->addConnection([
@@ -220,7 +221,7 @@ return [
 			return $manager;
 		},
 
-	'ErrorHandler'
+	ErrorHandler::class
 		=> function (ContainerInterface $c) {
 			$whoops = new \Whoops\Run;
 
@@ -233,15 +234,15 @@ return [
 			return $whoops;
 		},
 
-	'FileSystem'
+	FileSystem::class
 		=> object(\League\Flysystem\Filesystem::class),
 
-	'Flash'
+	Flash::class
 		=> object(\Mopsis\Core\Flash::class),
 
-	'Logger'
+	Logger::class
 		=> function (ContainerInterface $c) {
-			$errorHandler  = new Monolog\Handler\StreamHandler(CORE_ERROR_LOG, Monolog\Logger::ERROR, false);
+			$errorHandler = new Monolog\Handler\StreamHandler(CORE_ERROR_LOG, Monolog\Logger::ERROR, false);
 			$errorHandler->setFormatter($c->get(\Monolog\Formatter\LineFormatter::class));
 
 			$noticeHandler = new Monolog\Handler\StreamHandler(CORE_APPLICATION_LOG, Monolog\Logger::NOTICE, false);
@@ -257,10 +258,10 @@ return [
 			return $logger;
 		},
 
-	'Renderer'
+	Renderer::class
 		=> object(\Twig_Environment::class),
 
-	'Translator'
+	Translator::class
 		=> object(\Illuminate\Translation\Translator::class)
 		->constructorParameter('locale', get('translator.locale'))
 ];

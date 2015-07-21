@@ -24,8 +24,8 @@ class FormBuilder
 
 	public function getForm($id, $url, $data = null)
 	{
-		if (!($xml = $this->xml->xpath('//form[@id="'.$id.'"]')[0])) {
-			throw new \Exception('form "'.$id.'" not found');
+		if (!($xml = $this->xml->xpath('//form[@id="' . $id . '"]')[0])) {
+			throw new \Exception('form "' . $id . '" not found');
 		}
 
 		if (is_array($data) && count($data['options'])) {
@@ -33,6 +33,7 @@ class FormBuilder
 		}
 
 		$form = $this->buildForm($xml, $url, $this->loadLayout($xml->attributes()->layout));
+
 		return is_array($data) ? $this->setFormData($form, $data['values'], $data['errors']) : $form;
 	}
 
@@ -40,15 +41,15 @@ class FormBuilder
 	{
 		$results = [];
 
-		foreach ($this->xml->xpath('//form[@id="'.$formId.'"]//item[@name]') as $item) {
-			$field = (string) $item->attributes()->name;
+		foreach ($this->xml->xpath('//form[@id="' . $formId . '"]//item[@name]') as $item) {
+			$field = (string)$item->attributes()->name;
 			$rules = [];
 
 			foreach ($item->xpath('rule[@type="sanitize"]') as $rule) {
 				$rules[] = [
-					'spec'  => (string) $rule->attributes()->spec,
-					'args'  => (string) $rule->attributes()->args,
-					'blank' => isset($rule->attributes()->blankValue) ? (string) $rule->attributes()->blankValue : null
+					'spec'  => (string)$rule->attributes()->spec,
+					'args'  => (string)$rule->attributes()->args,
+					'blank' => isset($rule->attributes()->blankValue) ? (string)$rule->attributes()->blankValue : null
 				];
 			}
 
@@ -64,15 +65,15 @@ class FormBuilder
 	{
 		$results = [];
 
-		foreach ($this->xml->xpath('//form[@id="'.$formId.'"]//item[@type="files" and @name]') as $item) {
-			$field = (string) $item->attributes()->name;
+		foreach ($this->xml->xpath('//form[@id="' . $formId . '"]//item[@type="files" and @name]') as $item) {
+			$field = (string)$item->attributes()->name;
 			$rules = [];
 
 			foreach ($item->xpath('rule[@type="upload"]') as $rule) {
 				$rules[] = [
-					'spec'  => (string) $rule->attributes()->spec,
-					'args'  => (string) $rule->attributes()->args,
-					'message' => (string) $rule
+					'spec'    => (string)$rule->attributes()->spec,
+					'args'    => (string)$rule->attributes()->args,
+					'message' => (string)$rule
 				];
 			}
 
@@ -86,16 +87,16 @@ class FormBuilder
 	{
 		$results = [];
 
-		foreach ($this->xml->xpath('//form[@id="'.$formId.'"]//item[@name]') as $item) {
-			$field = (string) $item->attributes()->name;
+		foreach ($this->xml->xpath('//form[@id="' . $formId . '"]//item[@name]') as $item) {
+			$field = (string)$item->attributes()->name;
 			$rules = [];
 
 			foreach ($item->xpath('rule[@type="validate"]') as $rule) {
 				$rules[] = [
-					'spec'    => (string) $rule->attributes()->spec,
-					'args'    => (string) $rule->attributes()->args,
-					'message' => (string) $rule,
-					'mode'    => (string) $rule->attributes()->failureMode ?: 'hard'
+					'spec'    => (string)$rule->attributes()->spec,
+					'args'    => (string)$rule->attributes()->args,
+					'message' => (string)$rule,
+					'mode'    => (string)$rule->attributes()->failureMode ?: 'hard'
 				];
 			}
 
@@ -108,17 +109,18 @@ class FormBuilder
 	protected function addCsrfToken()
 	{
 		$token = Security::generateToken();
-		return '<input type="hidden" name="'.$token->key.'" value="'.$token->value.'">';
+
+		return '<input type="hidden" name="' . $token->key . '" value="' . $token->value . '">';
 	}
 
 	protected function addValues($data, $prefix, $attributes1, $attributes2 = [])
 	{
 		foreach ($attributes1 as $key => $value) {
-			$data[$prefix.'.'.$key] = (string) $value;
+			$data[$prefix . '.' . $key] = (string)$value;
 		}
 
 		foreach ($attributes2 as $key => $value) {
-			$data[$prefix.'.'.$key] = (string) $value;
+			$data[$prefix . '.' . $key] = (string)$value;
 		}
 
 		return $data;
@@ -129,8 +131,8 @@ class FormBuilder
 		$html = '';
 
 		foreach ($form->xpath('block') as $i => $block) {
-			$data  = $this->addValues($inheritedData, 'block', $block->attributes(), ['no' => $i]);
-			$html .= $this->fillPlaceholder($layout['block']['before'].$this->buildRows($block, $data, $layout).$layout['block']['after'], $data);
+			$data = $this->addValues($inheritedData, 'block', $block->attributes(), ['no' => $i]);
+			$html .= $this->fillPlaceholder($layout['block']['before'] . $this->buildRows($block, $data, $layout) . $layout['block']['after'], $data);
 		}
 
 		return $html;
@@ -139,7 +141,7 @@ class FormBuilder
 	protected function buildForm($form, $url, $layout)
 	{
 		$data = $this->addValues($this->loadDefaults($form), 'form', $form->attributes(), ['url' => $url]);
-		$html = $layout['form']['before'].$this->addCsrfToken().$this->buildBlocks($form, $data, $layout).$layout['form']['after'];
+		$html = $layout['form']['before'] . $this->addCsrfToken() . $this->buildBlocks($form, $data, $layout) . $layout['form']['after'];
 
 		return preg_replace('/\{\w+\.\w+\}/', '', $this->fillPlaceholder($html, $data));
 	}
@@ -152,22 +154,22 @@ class FormBuilder
 			$data = $this->addValues($inheritedData, 'item', $item->attributes(), [
 				'no'       => $i,
 				'required' => count($item->xpath('rule[@spec="required"]')) ? 'required' : null,
-				'text'     => (string) $item
+				'text'     => (string)$item
 			]);
 
-			$data['item.id']      = $data['form.id'].'-'.$data['item.name'];
+			$data['item.id'] = $data['form.id'] . '-' . $data['item.name'];
 			$data['item.options'] = $this->buildOptions($item, $data, $layout);
 
-			if ($data['item.requires'] && !$data['item.'.$data['item.requires']]) {
+			if ($data['item.requires'] && !$data['item.' . $data['item.requires']]) {
 				continue;
 			}
 
 			if (count($help = $item->xpath('help'))) {
-				$data['item.help'] = $this->fillPlaceholder($layout['help']['before'].$help[0].$layout['help']['after'], $data);
+				$data['item.help'] = $this->fillPlaceholder($layout['help']['before'] . $help[0] . $layout['help']['after'], $data);
 			}
 
 			$itemLayout = $this->getItemLayout($layout, $data['item.type']);
-			$html      .= $this->fillPlaceholder($itemLayout['before'].$itemLayout['element'].$itemLayout['after'], $data);
+			$html .= $this->fillPlaceholder($itemLayout['before'] . $itemLayout['element'] . $itemLayout['after'], $data);
 		}
 
 		return $html;
@@ -175,16 +177,16 @@ class FormBuilder
 
 	protected function buildOptions($item, $inheritedData, $layout)
 	{
-		$html    = '';
-		$layout  = $this->getItemLayout($layout, $inheritedData['item.type']);
+		$html = '';
+		$layout = $this->getItemLayout($layout, $inheritedData['item.type']);
 		$options = $item->xpath('option');
 
 		if (count($options)) {
 			foreach ($options as $i => $option) {
-				$data                = $this->addValues($inheritedData, 'option', $option->attributes(), ['no' => $i]);
-				$data['option.id']   = $data['item.id'].'-'.$i;
+				$data = $this->addValues($inheritedData, 'option', $option->attributes(), ['no' => $i]);
+				$data['option.id'] = $data['item.id'] . '-' . $i;
 				$data['option.text'] = htmlentities($option ?: $data['option.value']);
-				$html               .= $this->fillPlaceholder($layout['options'], $data);
+				$html .= $this->fillPlaceholder($layout['options'], $data);
 			}
 		}
 
@@ -193,14 +195,14 @@ class FormBuilder
 		if (count($optGroups, \COUNT_RECURSIVE) > 1) {
 			foreach ($optGroups as $group => $options) {
 				if ($group !== static::NO_GROUPS) {
-					$html .= '<optgroup label="'.htmlentities($group).'">';
+					$html .= '<optgroup label="' . htmlentities($group) . '">';
 				}
 
 				foreach ($options as $value => $text) {
-					$data                = $this->addValues($inheritedData, 'option', ['no' => ++$i, 'value' => $value]);
-					$data['option.id']   = $data['item.id'].'-'.$i;
+					$data = $this->addValues($inheritedData, 'option', ['no' => ++$i, 'value' => $value]);
+					$data['option.id'] = $data['item.id'] . '-' . $i;
 					$data['option.text'] = htmlentities($text ?: $value);
-					$html               .= $this->fillPlaceholder($layout['options'], $data);
+					$html .= $this->fillPlaceholder($layout['options'], $data);
 				}
 
 				if ($group !== static::NO_GROUPS) {
@@ -217,10 +219,10 @@ class FormBuilder
 		$html = '';
 
 		foreach ($block->xpath('row') as $i => $row) {
-			$data  = $this->addValues($inheritedData, 'row', $row->attributes(), ['no' => $i]);
+			$data = $this->addValues($inheritedData, 'row', $row->attributes(), ['no' => $i]);
 
 			if ($items = $this->buildItems($row, $data, $layout)) {
-				$html .= $this->fillPlaceholder($layout['row']['before'].$items.$layout['row']['after'], $data);
+				$html .= $this->fillPlaceholder($layout['row']['before'] . $items . $layout['row']['after'], $data);
 			}
 		}
 
@@ -250,7 +252,7 @@ class FormBuilder
 	protected function fillPlaceholder($html, $data)
 	{
 		foreach ($data as $key => $value) {
-			$html = str_replace('{'.$key.'}', $value, $html);
+			$html = str_replace('{' . $key . '}', $value, $html);
 		}
 
 		return $html;
@@ -260,6 +262,7 @@ class FormBuilder
 	{
 		if (!is_array($value)) {
 			$node->val($value);
+
 			return;
 		}
 
@@ -275,7 +278,7 @@ class FormBuilder
 
 	protected function getStringFromXml($xml, $path, $default = null)
 	{
-		return ($node = $xml->xpath($path)) ? (string) $node[0] : $default;
+		return ($node = $xml->xpath($path)) ? (string)$node[0] : $default;
 	}
 
 	protected function loadDefaults($form)
@@ -287,7 +290,7 @@ class FormBuilder
 		$defaults = [];
 
 		foreach ($attributes as $attribute) {
-			$defaults[(string) $attribute->attributes()->name] = (string) $attribute->attributes()->value;
+			$defaults[(string)$attribute->attributes()->name] = (string)$attribute->attributes()->value;
 		}
 
 		return $defaults;
@@ -295,9 +298,9 @@ class FormBuilder
 
 	protected function loadLayout($layoutId, $anchestors = [])
 	{
-		$xml       = $this->xml->xpath('//layout[@id="'.$layoutId.'"]')[0];
-		$extends   = $xml->attributes()->extends;
-		$layout    = [
+		$xml = $this->xml->xpath('//layout[@id="' . $layoutId . '"]')[0];
+		$extends = $xml->attributes()->extends;
+		$layout = [
 			'form'  => ['before' => null, 'after' => null],
 			'block' => ['before' => null, 'after' => null],
 			'row'   => ['before' => null, 'after' => null],
@@ -307,17 +310,17 @@ class FormBuilder
 
 		if ($extends) {
 			if (in_array($extends, $anchestors)) {
-				throw new \Exception('loop detected while extending "'.$layoutId.'"');
+				throw new \Exception('loop detected while extending "' . $layoutId . '"');
 			}
 
 			$anchestors[] = $extends;
-			$layout       = $this->loadLayout($extends, $anchestors);
+			$layout = $this->loadLayout($extends, $anchestors);
 		}
 
 		foreach (['form', 'block', 'row', 'help'] as $element) {
 			$layout[$element] = [
-				'before' => $this->getStringFromXml($xml, $element.'/before', $layout[$element]['before']),
-				'after'  => $this->getStringFromXml($xml, $element.'/after', $layout[$element]['after'])
+				'before' => $this->getStringFromXml($xml, $element . '/before', $layout[$element]['before']),
+				'after'  => $this->getStringFromXml($xml, $element . '/after', $layout[$element]['after'])
 			];
 		}
 
@@ -374,7 +377,7 @@ class FormBuilder
 		$dom = \pQuery::parseStr($html);
 
 		foreach ($dom->query('input,select,textarea') as $node) {
-			$key   = preg_match('/(.+)\[(.*)\]$/', $node->attr('name'), $m) ? $m[1] : $node->attr('name');
+			$key = preg_match('/(.+)\[(.*)\]$/', $node->attr('name'), $m) ? $m[1] : $node->attr('name');
 			$value = preg_match('/(.+?)\.(.+)/', $key, $n) && isset($values[$n[1]]) ? $values[$n[1]][$n[2]] : $values[$key];
 
 			if (!empty($m[2])) {

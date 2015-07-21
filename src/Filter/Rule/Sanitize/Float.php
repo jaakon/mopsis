@@ -11,18 +11,20 @@ class Float
 		}
 
 		if (ctype_digit($value)) {
-			$subject->$field = (float) $value;
+			$subject->$field = (float)$value;
+
 			return true;
 		}
 
 		$locales = ['de_DE', 'en_US', 'fr_FR']; //\ResourceBundle::getLocales('');
 
 		foreach ($locales as $locale) {
-			$fmt   = new \NumberFormatter($locale, \NumberFormatter::DECIMAL);
+			$fmt = new \NumberFormatter($locale, \NumberFormatter::DECIMAL);
 			$float = $fmt->parse($value);
 
 			if ($float !== false) {
-				$subject->$field = (float) $float;
+				$subject->$field = (float)$float;
+
 				return true;
 			}
 		}

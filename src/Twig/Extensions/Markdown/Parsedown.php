@@ -3,8 +3,13 @@ namespace Mopsis\Twig\Extensions\Markdown;
 
 class Parsedown extends \Parsedown
 {
-	private static $instances = [];
-	private $_attributes      = [];
+	private static $instances   = [];
+	private        $_attributes = [];
+
+	public function __construct()
+	{
+		$this->BlockTypes['{'][] = 'Placeholder';
+	}
 
 	public static function instance($name = 'default')
 	{
@@ -19,11 +24,6 @@ class Parsedown extends \Parsedown
 		return $instance;
 	}
 
-	public function __construct()
-	{
-		$this->BlockTypes['{'][] = 'Placeholder';
-	}
-
 	public function setAttributes($blockType, array $attributes)
 	{
 		$this->_attributes[$blockType] = $attributes;
@@ -33,6 +33,7 @@ class Parsedown extends \Parsedown
 	{
 		if (preg_match('/^\{(.+?)\}:[ ]*(.+?)[ ]*$/', $line['text'], $matches)) {
 			$this->DefinitionData['Placeholder'][$matches[1]] = $matches[2];
+
 			return ['hidden' => true];
 		}
 	}
@@ -43,7 +44,7 @@ class Parsedown extends \Parsedown
 
 		if (isset($this->DefinitionData['Placeholder'])) {
 			foreach ($this->DefinitionData['Placeholder'] as $key => $value) {
-				$pattern = '/\{'.preg_quote($key, '/').'\}/i';
+				$pattern = '/\{' . preg_quote($key, '/') . '\}/i';
 				$text = preg_replace($pattern, $value, $text);
 			}
 		}
@@ -68,7 +69,8 @@ class Parsedown extends \Parsedown
 
 	private function _identifyBlock($blockType, $line, array $block = null)
 	{
-		$block = parent::{'identify' . $blockType}($line, $block);
+		$block = parent::{
+		'identify' . $blockType}($line, $block);
 
 		if (count($block) && count($this->_attributes[$blockType])) {
 			$block['element']['attributes'] = $this->_attributes[$blockType];

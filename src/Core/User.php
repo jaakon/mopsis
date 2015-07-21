@@ -17,7 +17,8 @@ abstract class User extends \Mopsis\Eloquent\Model
 		if (isset($_COOKIE['user'])) {
 			try {
 				$user = static::unpack($_COOKIE['user']);
-				$_SESSION['user'] = (string) $user->token;
+				$_SESSION['user'] = (string)$user->token;
+
 				return $user;
 			} catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
 				setcookie('user', '', time() - 3600, '/');
@@ -37,10 +38,10 @@ abstract class User extends \Mopsis\Eloquent\Model
 
 		// Update old passwords
 		if ($user->password === sha1($password)) {
-			$user->password = sha1($user->id.CORE_SALT.$password);
+			$user->password = sha1($user->id . CORE_SALT . $password);
 		}
 
-		if ($user->password !== sha1($user->id.CORE_SALT.$password)) {
+		if ($user->password !== sha1($user->id . CORE_SALT . $password)) {
 			return false;
 		}
 
@@ -55,7 +56,7 @@ abstract class User extends \Mopsis\Eloquent\Model
 
 	public static function login(User $user, $permanent)
 	{
-		$_SESSION['user'] = (string) $user->token;
+		$_SESSION['user'] = (string)$user->token;
 
 		if ($permanent) {
 			setcookie('user', $user->hash, time() + 365 * 86400, '/', $_SERVER['HTTP_HOST'], false, true);

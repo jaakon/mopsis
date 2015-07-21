@@ -19,6 +19,6 @@ class Iban
 			return false;
 		}
 
-		return (bool) $this->ibanValidator->validate(str_replace(' ', '', $value));
+		return (bool)$this->ibanValidator->validate(str_replace(' ', '', $value));
 	}
 }

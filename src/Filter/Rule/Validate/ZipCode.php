@@ -10,6 +10,6 @@ class ZipCode
 			return false;
 		}
 
-		return (bool) preg_match('/^[0-9]{5}$/', $value);
+		return (bool)preg_match('/^[0-9]{5}$/', $value);
 	}
 }

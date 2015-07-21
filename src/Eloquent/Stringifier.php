@@ -39,12 +39,12 @@ class Stringifier
 
 	protected function objectGetAsStringMutator($key)
 	{
-		return $this->object->{'get'.studly_case($key).'AsStringAttribute'}();
+		return $this->object->{'get' . studly_case($key) . 'AsStringAttribute'}();
 	}
 
 	protected function objectHasAsStringMutator($key)
 	{
-		return method_exists($this->object, 'get'.studly_case($key).'AsStringAttribute');
+		return method_exists($this->object, 'get' . studly_case($key) . 'AsStringAttribute');
 	}
 
 	protected function objectToString($object)
@@ -64,7 +64,7 @@ class Stringifier
 		}
 
 		if (is_scalar($value)) {
-			return $value === false ? '0' : (string) $value;
+			return $value === false ? '0' : (string)$value;
 		}
 
 		if (is_object($value)) {
@@ -79,7 +79,7 @@ class Stringifier
 			return $this->stringify($value());
 		}
 
-		throw new \Exception('cannot stringify value of type "'.gettype($value).'"');
+		throw new \Exception('cannot stringify value of type "' . gettype($value) . '"');
 	}
 
 	protected function stringifyArray(array $data)

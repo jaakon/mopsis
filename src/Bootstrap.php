@@ -19,7 +19,7 @@ class Bootstrap
 		include 'app/initialize.php';
 
 		$response = $this->doRouting();
-		$sender   = new \Aura\Web\ResponseSender($response);
+		$sender = new \Aura\Web\ResponseSender($response);
 
 		$sender->__invoke();
 	}
@@ -31,13 +31,13 @@ class Bootstrap
 		session_start();
 
 		$builder = new \DI\ContainerBuilder;
-		$builder->addDefinitions(__DIR__.'/config.php');
+		$builder->addDefinitions(__DIR__ . '/config.php');
 		$builder->addDefinitions('config/definitions.php');
 
 		Core\Registry::load('config/environment.php', 'config/credentials.php');
 
 		App::initialize($builder->build());
-		App::make('Database');
+		App::make(\Database::class);
 		App::make('ErrorHandler');
 	}
 
@@ -51,15 +51,15 @@ class Bootstrap
 			$cache->opcache_reset();
 		}
 
+		if ($flushMode === 'all') {
+			Cache::flush();
+		}
+
 		if ($flushMode === 'all' || $flushMode === 'assets') {
 			Cache::clear('files/css/version');
 			Cache::clear('files/javascript/version');
 
 			$this->cacheAssets();
-		}
-
-		if ($flushMode === 'all' || $flushMode === 'data') {
-			Cache::flush();
 		}
 
 		if ($flushMode === 'all' || $flushMode === 'views') {
@@ -103,7 +103,16 @@ class Bootstrap
 			return $response;
 		}
 
-		App::make('Logger')->error('file not found: '.$_SERVER['REQUEST_METHOD'].' '.$_SERVER['REQUEST_URI'].' ['.$_SERVER['HTTP_USER_AGENT'].']');
+		if ($response === null) {
+			$response = App::make('Aura\Web\Response');
+			$response->status->setCode(400);
+			$response->content->set('Undefined Response!');
+
+			return $response;
+		}
+
+		App::make('Logger')
+		   ->error('file not found: ' . $_SERVER['REQUEST_METHOD'] . ' ' . $_SERVER['REQUEST_URI'] . ' [' . $_SERVER['HTTP_USER_AGENT'] . ']');
 
 		$response = App::make('Aura\Web\Response');
 		$response->status->setCode(400);

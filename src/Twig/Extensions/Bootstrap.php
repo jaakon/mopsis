@@ -19,7 +19,7 @@ class Bootstrap extends \Twig_Extension
 		$attributes = '';
 
 		foreach (array_filter($data) as $key => $value) {
-			$attributes .= ' '.$prefix.$key.'="'.htmlspecialchars($value, ENT_QUOTES).'"';
+			$attributes .= ' ' . $prefix . $key . '="' . htmlspecialchars($value, ENT_QUOTES) . '"';
 		}
 
 		return $attributes;

@@ -1,7 +1,5 @@
 <?php namespace Mopsis\Core;
 
-use Symfony\Component\Translation\TranslatorInterface as Translator;
-
 class I18N
 {
 	protected $preferredLanguage;
@@ -14,8 +12,8 @@ class I18N
 	public function __construct($preferredLanguage, $fallbackLanguage)
 	{
 		$this->preferredLanguage = strtolower($preferredLanguage);
-		$this->fallbackLanguage  = strtolower($fallbackLanguage);
-		$this->appliedLanguage   = $this->preferredLanguage;
+		$this->fallbackLanguage = strtolower($fallbackLanguage);
+		$this->appliedLanguage = $this->preferredLanguage;
 	}
 
 	public function get($key, array $replace = [], $locale = null)
@@ -34,7 +32,7 @@ class I18N
 			function ($dir) {
 				return strtolower(str_replace($this->filePath, '', $dir));
 			},
-			glob($this->filePath.'*', GLOB_ONLYDIR)
+			glob($this->filePath . '*', GLOB_ONLYDIR)
 		);
 
 		return $languages;
@@ -61,7 +59,7 @@ class I18N
 		}
 
 		if (!in_array($this->fallbackLanguage, $availableLanguages)) {
-			throw new \RuntimeException('Invalid fallback language "'.$this->fallbackLanguage.'"');
+			throw new \RuntimeException('Invalid fallback language "' . $this->fallbackLanguage . '"');
 		}
 
 		if (count($availableLanguages) === 1) {
@@ -108,21 +106,21 @@ class I18N
 		}
 
 		$currentLang = $defaultLanguage;
-		$currentQ    = 0;
+		$currentQ = 0;
 
 		foreach (preg_split('/,\s*/', $_SERVER['HTTP_ACCEPT_LANGUAGE']) as $language) {
 			if (!preg_match('/^([a-z]{1,8}(?:-[a-z]{1,8})*)(?:;\s*q=(0(?:\.[0-9]{1,3})?|1(?:\.0{1,3})?))?$/i', $language, $m)) {
 				continue;
 			}
 
-			$langCodes   = explode('-', $m[1]);
+			$langCodes = explode('-', $m[1]);
 			$langQuality = isset($m[2]) ? (float)$m[2] : 1.0;
 
 			while (count($langCodes)) {
 				if (in_array(strtolower(implode('-', $langCodes)), $allowedLanguages)) {
 					if ($langQuality > $currentQ) {
 						$currentLang = strtolower(implode('-', $langCodes));
-						$currentQ    = $langQuality;
+						$currentQ = $langQuality;
 						break;
 					}
 				}

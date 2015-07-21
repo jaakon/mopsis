@@ -21,7 +21,7 @@ class Flash
 
 	public function flush()
 	{
-		$messages             = $_SESSION[$this->key];
+		$messages = $_SESSION[$this->key];
 		$_SESSION[$this->key] = [];
 
 		return $messages;
@@ -30,7 +30,7 @@ class Flash
 	public function message($level, $message, $url = null)
 	{
 		if (!in_array($level, $this->levels)) {
-			throw new \InvalidArgumentException('unknown level: '.$level);
+			throw new \InvalidArgumentException('unknown level: ' . $level);
 		}
 
 		$this->addMessage($level, $message, $url);

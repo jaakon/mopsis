@@ -1,32 +1,15 @@
 <?php
+
+use Mopsis\Core\App;
+
 function __($key, array $replace = [])
 {
-	return \App::make('i18n')->get($key, $replace);
+	return App::make('i18n')->get($key, $replace);
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+function app($type)
+{
+	return App::make($type);
 }
 
 function array_concat(array $array, ...$values)
@@ -53,6 +36,13 @@ function array_concat(array $array, ...$values)
 	return $array;
 }
 
+function camelCase($string)
+{
+	return ucfirst(preg_replace_callback('/-([a-z])/i', function ($match) {
+		return strtoupper($match[1]);
+	}, strtolower($string)));
+}
+
 function debug(...$args)
 {
 	echo '<pre class="debug">';
@@ -66,6 +56,7 @@ function debug(...$args)
 function getClassName($class)
 {
 	$temp = explode('\\', is_object($class) ? get_class($class) : $class);
+
 	return end($temp);
 }
 
@@ -97,7 +88,7 @@ function object2array($object)
 function pluralize($count, $singular, $plural = null)
 {
 	if ($plural === null) {
-		$plural = $singular.'e';
+		$plural = $singular . 'e';
 	}
 
 	return sprintf('%s %s', str_replace('.', ',', $count), abs($count) == 1 ? $singular : $plural);
@@ -106,17 +97,17 @@ function pluralize($count, $singular, $plural = null)
 function redirect($url = null, $responseCode = 302)
 {
 	if (preg_match('/^(ht|f)tps?:\/\//', $url) === 0) {
-		$url = ($_SERVER['REQUEST_SCHEME'] ?: 'http').'://'.$_SERVER['HTTP_HOST'].resolvePath(preg_replace('/\/+$/', '', $_SERVER['REQUEST_URI']).'/'.$url);
+		$url = ($_SERVER['REQUEST_SCHEME'] ?: 'http') . '://' . $_SERVER['HTTP_HOST'] . resolvePath(preg_replace('/\/+$/', '', $_SERVER['REQUEST_URI']) . '/' . $url);
 	}
 
 	if (!headers_sent($file, $line)) {
 		http_response_code($responseCode);
-		header('Location: '.$url);
+		header('Location: ' . $url);
 		exit;
 	}
 
-	echo 'ERROR: Headers already sent in '.$file.' on line '.$line."!<br/>\n";
-	echo 'Cannot redirect, please click <a href="'.$url.'">[this link]</a> instead.';
+	echo 'ERROR: Headers already sent in ' . $file . ' on line ' . $line . "!<br/>\n";
+	echo 'Cannot redirect, please click <a href="' . $url . '">[this link]</a> instead.';
 	exit;
 }
 

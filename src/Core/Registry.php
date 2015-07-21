@@ -49,7 +49,7 @@ abstract class Registry
 	protected static function loadFile($configFile)
 	{
 		if (!file_exists($configFile)) {
-			throw new \Exception('configuration file "'.$configFile.'" not found');
+			throw new \Exception('configuration file "' . $configFile . '" not found');
 		}
 
 		self::$data = array_merge_recursive(self::$data, (include $configFile));
@@ -66,8 +66,8 @@ abstract class Registry
 			unset($entries['@sticky']);
 
 			foreach ($entries as $key => $value) {
-				if (!define(strtoupper($category.'_'.$key), $value)) {
-					throw new \Exception('constant '.strtoupper($category.'_'.$key).' cannot be defined');
+				if (!define(strtoupper($category . '_' . $key), $value)) {
+					throw new \Exception('constant ' . strtoupper($category . '_' . $key) . ' cannot be defined');
 				}
 			}
 		}

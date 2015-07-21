@@ -14,7 +14,12 @@ class Auth
 
 	public static function user()
 	{
-		return self::$user ?: self::$user = \App\User\Domain\UserModel::autoload();
+		if (self::$user === null) {
+			$model = \Mopsis\Core\App::make('User');
+			self::$user = $model::autoload();
+		}
+
+		return self::$user;
 	}
 
 	public static function checkAccess($permission, $model = null, $redirect = null)
@@ -31,7 +36,7 @@ class Auth
 			throw new AccessException('user has no access');
 		}
 
-		if (self::user()->isAllowedTo($permission, $model)) {
+		if (self::user()->may($permission, $model)) {
 			return true;
 		}
 
@@ -39,6 +44,6 @@ class Auth
 			redirect($redirect);
 		}
 
-		throw new AccessException('user has no "'.$permission.'" permission for model "'.$model.'"');
+		throw new AccessException('user has no "' . $permission . '" permission for model "' . $model . '"');
 	}
 }

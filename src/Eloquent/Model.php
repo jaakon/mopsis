@@ -10,8 +10,8 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model
 	const UPDATED_BY = 'updated_by';
 	const DELETED_AT = 'deleted_at';
 
-	protected $guarded     = ['id'];
-	protected $sluggable   = ['on_update' => true];
+	protected $guarded   = ['id'];
+	protected $sluggable = ['on_update' => true];
 	protected $orderBy;
 	protected $stringifier;
 
@@ -21,11 +21,16 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model
 		parent::boot();
 		static::observe(new ModelObserver);
 
-		if (class_exists($observer = str_replace('Model', 'Observer', get_called_class()))) {
+		if (class_exists($observer = get_called_class() . 'Observer')) {
 			static::observe(new $observer);
 		}
 	}
 
+	/**
+	 * @param string $token
+	 *
+	 * @return \Mopsis\Eloquent\Model
+	 */
 	public static function unpack($token)
 	{
 		$instance = \Mopsis\Types\Token::extract($token);
@@ -34,7 +39,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model
 			return $instance;
 		}
 
-		throw new \Illuminate\Database\Eloquent\ModelNotFoundException('Token "'.$token.'" is invalid or outdated.');
+		throw new \Illuminate\Database\Eloquent\ModelNotFoundException('Token "' . $token . '" is invalid or outdated.');
 	}
 
 	/** @Override */
@@ -75,7 +80,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model
 
 	public function __toString()
 	{
-		return substr((new \ReflectionClass($this))->getShortName(), 0, -5).':'.($this->id ?: 0);
+		return substr((new \ReflectionClass($this))->getShortName(), 0, -5) . ':' . ($this->id ?: 0);
 	}
 
 	public function clearCachedAttribute($attribute)
@@ -111,7 +116,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model
 
 	public function findRelations(Model $model)
 	{
-		$class     = new ReflectionClass($this);
+		$class = new ReflectionClass($this);
 		$className = $class->getName();
 		$modelName = get_class($model);
 
@@ -123,8 +128,8 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model
 				$class->getMethods(\ReflectionMethod::IS_PUBLIC),
 				function ($method) use ($className, $modelName) {
 					return $method->class === $className
-						&& !preg_match('/^[gs]et\w+Attribute$/', $method->name)
-						&& strpos($method->getBody(), $modelName) !== false;
+					&& !preg_match('/^[gs]et\w+Attribute$/', $method->name)
+					&& strpos($method->getBody(), $modelName) !== false;
 				}
 			)
 		);
@@ -148,7 +153,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model
 		return Cache::get([get_called_class(), '@dataTypes'], function () {
 			$columns = [];
 
-			foreach ($this->getConnection()->select('SHOW COLUMNS FROM '.$this->getTable()) as $column) {
+			foreach ($this->getConnection()->select('SHOW COLUMNS FROM ' . $this->getTable()) as $column) {
 				if (!$this->isFillable($column->Field)) {
 					continue;
 				}
@@ -181,6 +186,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model
 	public function getDates()
 	{
 		$defaults = [static::CREATED_AT, static::UPDATED_AT, static::DELETED_AT];
+
 		return array_merge($this->dates, $defaults);
 	}
 
@@ -196,7 +202,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model
 	/** @Override */
 	public function getForeignKey()
 	{
-		return isset($this->table) ? str_singular($this->table).'_id' : parent::getForeignKey();
+		return isset($this->table) ? str_singular($this->table) . '_id' : parent::getForeignKey();
 	}
 
 	public function getHashAttribute()
@@ -217,8 +223,11 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model
 	/** @Override */
 	public function newCollection(array $models = [])
 	{
-		$class = str_replace('Model', 'Collection', get_called_class());
-		return new $class($models);
+		if (class_exists($collection = get_called_class() . 'Collection')) {
+			return new $collection($models);
+		}
+
+		return new Collection($models);
 	}
 
 	/** @Override */
@@ -236,6 +245,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model
 	public function set($key, $value)
 	{
 		$this->{$key} = $value;
+
 		return $this;
 	}
 

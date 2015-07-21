@@ -5,16 +5,23 @@ class Token
 	protected $instance;
 	protected $session;
 
+	public function __construct(\Mopsis\Eloquent\Model $instance, $session = null)
+	{
+		$this->instance = $instance;
+		$this->session = $session;
+	}
+
 	public static function extract($string)
 	{
-		$string = (string) $string;
+		$string = (string)$string;
 
 		if (!preg_match('/^(\w+):(\d+):[a-f0-9]+$/i', $string, $m)) {
 			return false;
 		}
 
 		try {
-			$class    = sprintf('\\App\\%1$s\\Domain\\%1$sModel', $m[1]);
+			$namespaced = \Mopsis\Core\App::make('namespacedModels');
+			$class = sprintf($namespaced, str_plural($m[1]), $m[1]);
 			$instance = $class::findOrFail($m[2]);
 		} catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
 			return false;
@@ -27,12 +34,6 @@ class Token
 		return $instance;
 	}
 
-	public function __construct(\Mopsis\Eloquent\Model $instance, $session = null)
-	{
-		$this->instance = $instance;
-		$this->session  = $session;
-	}
-
 	public function __toString()
 	{
 		return $this->generate();
@@ -40,6 +41,6 @@ class Token
 
 	public function generate()
 	{
-		return $this->instance.':'.sha1(get_class($this->instance).$this->instance->id.CORE_SALT.$this->session);
+		return $this->instance . ':' . sha1(get_class($this->instance) . $this->instance->id . CORE_SALT . $this->session);
 	}
 }

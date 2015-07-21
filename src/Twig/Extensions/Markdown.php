@@ -4,7 +4,7 @@ class Markdown extends \Aptoma\Twig\Extension\MarkdownExtension
 {
 	public function getFilters()
 	{
-		return array(
+		return [
 			'markdown' => new \Twig_Filter_Method(
 				$this,
 				'parseMarkdown',
@@ -13,6 +13,6 @@ class Markdown extends \Aptoma\Twig\Extension\MarkdownExtension
 					'is_safe'    => ['html']
 				]
 			)
-		);
+		];
 	}
 }

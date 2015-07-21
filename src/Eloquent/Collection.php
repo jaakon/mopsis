@@ -55,17 +55,17 @@ class Collection extends \Illuminate\Database\Eloquent\Collection
 	{
 		return $this->filter(function ($item) use ($key, $value, $strict) {
 			return $strict ? data_get($item, $key) !== $value
-						   : data_get($item, $key) != $value;
+				: data_get($item, $key) != $value;
 		});
 	}
 
 	protected function hasGetMutator($key)
 	{
-		return method_exists($this, 'get'.studly_case($key).'Attribute');
+		return method_exists($this, 'get' . studly_case($key) . 'Attribute');
 	}
 
 	protected function mutateAttribute($key)
 	{
-		return $this->{'get'.studly_case($key).'Attribute'}();
+		return $this->{'get' . studly_case($key) . 'Attribute'}();
 	}
 }
