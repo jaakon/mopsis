@@ -56,14 +56,4 @@ abstract class AbstractController
 
 		redirect(CORE_LOGIN_PAGE . '?redirect=' . urlencode($_SERVER['REQUEST_URI']));
 	}
-
-	protected function setTemplate($page)
-	{
-		$this->_view->setTemplate($this->getRoute($page));
-	}
-
-	protected function getRoute($page)
-	{
-		return resolve_path(getClassName(get_called_class()) . '/' . $page);
-	}
 }

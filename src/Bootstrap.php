@@ -7,7 +7,7 @@ use Mopsis\Core\Cache;
 
 class Bootstrap
 {
-	public function kickstart($flushMode)
+	public function kickstart($flushMode = null)
 	{
 		if (parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) === '/@info') {
 			return phpinfo();
@@ -37,7 +37,7 @@ class Bootstrap
 		Core\Registry::load('config/environment.php', 'config/credentials.php');
 
 		App::initialize($builder->build());
-		App::make(\Database::class);
+		App::make('Database');
 		App::make('ErrorHandler');
 	}
 
@@ -105,8 +105,8 @@ class Bootstrap
 
 		if ($response === null) {
 			$response = App::make('Aura\Web\Response');
-			$response->status->setCode(400);
-			$response->content->set('Undefined Response!');
+			$response->status->setCode(502);
+			$response->content->set('Bad Gateway');
 
 			return $response;
 		}

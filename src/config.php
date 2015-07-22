@@ -10,43 +10,43 @@ return [
 	'monolog.lineformat'     => "[%datetime%] %level_name%: %message% %context% %extra%\n",
 	'namespacedModels'       => '\\App\\%1$s\\Domain\\%1$sModel',
 	'stash.apc.config'       => [
-	'ttl'       => 3600,
-	'namespace' => md5($_SERVER['HTTP_HOST'])
+		'ttl'       => 3600,
+		'namespace' => md5($_SERVER['HTTP_HOST'])
 	],
 	'stash.redis.config'     => [],
 	'stash.sqlite.config'    => [
-	'path' => 'storage/cache/'
+		'path' => 'storage/cache/'
 	],
 	'translator.locale'      => 'de',
 	'translator.path'        => 'resources/lang/',
 	'twig.dev.config'        => [
-	'debug'            => true,
-	'cache'            => false,
-	'auto_reload'      => true,
-	'strict_variables' => true
+		'debug'            => true,
+		'cache'            => false,
+		'auto_reload'      => true,
+		'strict_variables' => true
 	],
 	'twig.live.config'       => [
-	'debug'            => false,
-	'cache'            => 'storage/cache/',
-	'auto_reload'      => false,
-	'strict_variables' => false
+		'debug'            => false,
+		'cache'            => 'storage/cache/',
+		'auto_reload'      => false,
+		'strict_variables' => false
 	],
 	'twig.config'            => get('twig.dev.config'),
 	'twigloader.config'      => ['resources/views', 'application/views'],
 
-	\Aptoma\Twig\Extension\MarkdownEngineInterface::class
+	Aptoma\Twig\Extension\MarkdownEngineInterface::class
 		=> object(\Mopsis\Twig\Extensions\Markdown\MarkdownEngine::class),
 
-	\Asm89\Twig\CacheExtension\CacheProviderInterface::class
+	Asm89\Twig\CacheExtension\CacheProviderInterface::class
 		=> object(\Mopsis\Twig\Extensions\Cache\CacheAdapter::class),
 
-	\Asm89\Twig\CacheExtension\CacheStrategyInterface::class
+	Asm89\Twig\CacheExtension\CacheStrategyInterface::class
 		=> object(\Asm89\Twig\CacheExtension\CacheStrategy\GenerationalCacheStrategy::class),
 
-	\Asm89\Twig\CacheExtension\CacheStrategy\KeyGeneratorInterface::class
+	Asm89\Twig\CacheExtension\CacheStrategy\KeyGeneratorInterface::class
 		=> object(\Mopsis\Twig\Extensions\Cache\KeyGenerator::class),
 
-	\Aura\Filter\Filter::class
+	Aura\Filter\Filter::class
 		=> function (ContainerInterface $c) {
 			$filterFactory = $c->get(\Aura\Filter\FilterFactory::class);
 
@@ -75,17 +75,17 @@ return [
 			return $filterFactory->newFilter();
 		},
 
-	\Aura\Web\Request::class
+	Aura\Web\Request::class
 		=> function (ContainerInterface $c) {
 			return $c->get(\Aura\Web\WebFactory::class)->newRequest();
 		},
 
-	\Aura\Web\Response::class
+	Aura\Web\Response::class
 		=> function (ContainerInterface $c) {
 			return $c->get(\Aura\Web\WebFactory::class)->newResponse();
 		},
 
-	\Aura\Web\WebFactory::class
+	Aura\Web\WebFactory::class
 		=> function () {
 			if (count($_POST) && !count($_FILES)) {
 				// php://input is not available with enctype="multipart/form-data"
@@ -110,35 +110,35 @@ return [
 			]);
 		},
 
-	\Illuminate\Translation\LoaderInterface::class
+	Illuminate\Translation\LoaderInterface::class
 		=> object(\Illuminate\Translation\FileLoader::class)
 		->constructorParameter('path', get('translator.path')),
 
-	\League\Flysystem\AdapterInterface::class
+	League\Flysystem\AdapterInterface::class
 		=> object(\League\Flysystem\Adapter\Local::class)
 		->constructor(get('flysystem.local.config')),
 
-	\League\Flysystem\CacheInterface::class
+	League\Flysystem\CacheInterface::class
 		=> object(\League\Flysystem\Cache\Stash::class)
 		->constructor(get('Cache')),
 
-	\Monolog\Formatter\LineFormatter::class
+	Monolog\Formatter\LineFormatter::class
 		=> object()
 		->constructorParameter('format', get('monolog.lineformat'))
 		->constructorParameter('allowInlineLineBreaks', true),
 
-	\Mopsis\Core\I18N::class
+	Mopsis\Core\I18N::class
 		=> object()
 		->constructor('de', 'en')
 		->method('setFilePath', 'resources/lang/')
 		->method('init'),
 
-	\Mopsis\Core\User::class
+	Mopsis\Core\User::class
 		=> function () {
 			return Mopsis\Auth::user();
 		},
 
-	\Mopsis\Core\View::class
+	Mopsis\Core\View::class
 		=> function (ContainerInterface $c) {
 			$extensions = [
 				$c->get(\Asm89\Twig\CacheExtension\Extension::class),
@@ -153,51 +153,51 @@ return [
 			return new \Mopsis\Core\View($c->get(\Twig_Environment::class), $extensions);
 		},
 
-	\Mopsis\Validation\Request\BasicRequest::class
+	Mopsis\Validation\Request\BasicRequest::class
 		=> object(\Mopsis\Validation\Request\RawRequest::class),
 
-	\Psr\Log\LoggerInterface::class
+	Psr\Log\LoggerInterface::class
 		=> get('Logger'),
 
-	\Stash\Interfaces\PoolInterface::class
+	Stash\Interfaces\PoolInterface::class
 		=> get('Cache'),
 
-	\Stash\Driver\Apc::class
+	Stash\Driver\Apc::class
 		=> object()
 		->method('setOptions', get('stash.apc.config')),
 
-	\Stash\Driver\Redis::class
+	Stash\Driver\Redis::class
 		=> object()
 		->method('setOptions', get('stash.redis.config')),
 
-	\Stash\Driver\Sqlite::class
+	Stash\Driver\Sqlite::class
 		=> object()
 		->method('setOptions', get('stash.sqlite.config')),
 
-	\Twig_LoaderInterface::class
+	Twig_LoaderInterface::class
 		=> object(\Twig_Loader_Filesystem::class)
 		->constructor(get('twigloader.config')),
 
-	\Twig_Environment::class
+	Twig_Environment::class
 		=> object()
 		->constructor(get(\Twig_LoaderInterface::class), get('twig.config')),
 
-	\Whoops\Handler\JsonResponseHandler::class
+	Whoops\Handler\JsonResponseHandler::class
 		=> object()
 		->method('addTraceToOutput', true)
 		->method('onlyForAjaxRequests', true),
 
-	\Whoops\Handler\PlainTextHandler::class
+	Whoops\Handler\PlainTextHandler::class
 		=> object()
 		->constructor(get('Logger')),
 
-	\Whoops\Handler\PrettyPageHandler::class
+	Whoops\Handler\PrettyPageHandler::class
 		=> object()
 		->method('setEditor', 'sublime'),
 
 	Cache::class
 		=> object(\Stash\Pool::class)
-		->constructor(get(Stash\Driver\Redis::class))
+		->constructor(get('StashDriver'))
 		->method('setNamespace', md5($_SERVER['HTTP_HOST'])),
 
 	Database::class
@@ -260,6 +260,9 @@ return [
 
 	Renderer::class
 		=> object(\Twig_Environment::class),
+
+	StashDriver::class
+		=> object(\Stash\Driver\Redis::class),
 
 	Translator::class
 		=> object(\Illuminate\Translation\Translator::class)

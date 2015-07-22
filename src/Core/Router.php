@@ -14,7 +14,7 @@ class Router
 	public function get()
 	{
 		$requestMethod = $this->request->method->get();
-		$route         = $this->request->url->get(PHP_URL_PATH);
+		$route         = urldecode($this->request->url->get(PHP_URL_PATH));
 
 		if ($route === '/') {
 			$route = '/home';
@@ -29,7 +29,7 @@ class Router
 
 			$test = preg_replace('/\\\{(.+?)\\\}/', '(?<$1>[^\/]*)', preg_quote($rule['path'], '/'));
 			if (!preg_match('/^' . $test . '(?:\/(?<params>.*))?/', rtrim($route, '/'), $m)) {
-				$this->logger->info($rule[3] . ' => path does not match [' . $route . ']');
+				$this->logger->debug($rule[3] . ' => path does not match [' . $route . ']');
 				continue;
 			}
 
@@ -40,33 +40,36 @@ class Router
 			}, $rule[3]));
 
 			if (!class_exists($class)) {
-				$this->logger->info($rule[3] . ' => class "' . $class . '" not found [' . $route . ']');
+				$this->logger->debug($rule[3] . ' => class "' . $class . '" not found [' . $route . ']');
 				continue;
 			}
 
-			$funcArgs = $this->getFunctionArguments($class, $m, $method);
+			$reflectionClass = new \ReflectionClass($class);
+
+			if (!$reflectionClass->hasMethod($method)) {
+				$this->logger->debug($rule[3] . ' => method "' . $class . '->' . $method . '" not found [' . $route . ']');
+				continue;
+			}
+
+			$funcArgs = $this->getFunctionArguments($reflectionClass->getMethod($method), $m);
 
 			if ($funcArgs === false) {
 				continue;
 			}
 
+			$this->logger->debug($route . ' ==> ' . $class . '->' . $method);
 			return App::make($class)->__invoke($method, $funcArgs);
 		}
 
 		return false;
 	}
 
-	protected function getFunctionArguments($class, $m, $method = '__invoke')
+	protected function getFunctionArguments(\ReflectionMethod $method, $m)
 	{
-		$rm          = (new \ReflectionClass($class))->getMethod($method);
 		$m['params'] = isset($m['params']) ? explode('/', $m['params']) : [];
 		$funcArgs    = [];
 
-		foreach ($rm->getParameters() as $param) {
-			if (in_array($param->name, ['controller', 'action', 'method'])) {
-				throw new \Exception('cannot use reserved keyword "' . $param->name . '" as function parameter: ' . $class . '->' . $action . '()');
-			}
-
+		foreach ($method->getParameters() as $param) {
 			if ($param->isVariadic()) {
 				return array_merge($funcArgs, $m['params']);
 			}
@@ -76,14 +79,14 @@ class Router
 			} elseif (count($m['params'])) {
 				$funcArgs[] = urldecode(array_shift($m['params']));
 			} elseif (!$param->isOptional()) {
-				$this->logger->info($method . ' => missing parameter "' . $param->name . '" [' . $route . ']');
+				$this->logger->debug($method->name . ' => missing parameter "' . $param->name . '" [' . $route . ']');
 
 				return false;
 			}
 		}
 
 		if (count($m['params'])) {
-			$this->logger->info($method . ' => unexpected parameters "' . implode('", "', $m['params']) . '" [' . $route . ']');
+			$this->logger->debug($method->name . ' => unexpected parameters "' . implode('", "', $m['params']) . '" [' . $route . ']');
 
 			return false;
 		}
