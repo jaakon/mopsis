@@ -3,8 +3,8 @@
 use Aura\Filter\SubjectFilter as Filter;
 use FileUpload\FileUpload;
 use FileUpload\FileUploadAggregator;
-use Mopsis\Core\FormBuilder;
-use Mopsis\Core\UploadValidator;
+use Mopsis\FormBuilder\FormBuilder;
+use Mopsis\FormBuilder\UploadValidator;
 
 abstract class AbstractFilter
 {

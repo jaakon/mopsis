@@ -1,4 +1,4 @@
-<?php namespace Mopsis\Core;
+<?php namespace Mopsis\FormBuilder;
 
 class FormBuilder
 {
@@ -178,8 +178,8 @@ class FormBuilder
 
 	protected function buildOptions($item, $inheritedData, $layout)
 	{
-		$html = '';
-		$layout = $this->getItemLayout($layout, $inheritedData['item.type']);
+		$html    = '';
+		$layout  = $this->getItemLayout($layout, $inheritedData['item.type']);
 		$options = $item->xpath('option');
 
 		if (count($options)) {
@@ -230,26 +230,6 @@ class FormBuilder
 		return $html;
 	}
 
-	protected function escapeHtml($string)
-	{
-		return htmlspecialchars($string, ENT_COMPAT | ENT_HTML5, 'UTF-8', false);
-	}
-
-	protected function fillInputNode($node, $value)
-	{
-		switch ($node->attr('type')) {
-			case 'checkbox':
-				$node->prop('checked', is_array($value) ? in_array($node->attr('value'), $value) : !!$value);
-				break;
-			case 'radio':
-				$node->prop('checked', $node->attr('value') === $value);
-				break;
-			default:
-				$node->val(str_replace('&quot;', '&amp;quot;', $this->escapeHtml($value)));
-				break;
-		}
-	}
-
 	protected function fillPlaceholder($html, $data)
 	{
 		foreach ($data as $key => $value) {
@@ -257,19 +237,6 @@ class FormBuilder
 		}
 
 		return $html;
-	}
-
-	protected function fillSelectNode($node, $value)
-	{
-		if (!is_array($value)) {
-			$node->val($value);
-
-			return;
-		}
-
-		foreach ($node->query('option') as $option) {
-			$option->prop('selected', in_array($option->attr('value'), $value));
-		}
 	}
 
 	protected function getItemLayout($layout, $type)
@@ -380,10 +347,11 @@ class FormBuilder
 
 	protected function setFormData($html, $values, $errors)
 	{
-		$dom = \pQuery::parseStr($html);
+		$dom = \FluentDOM::QueryCss(utf8_decode($html), 'text/html');
 
-		foreach ($dom->query('input,select,textarea') as $node) {
-			$key = preg_match('/(.+)\[(.*)\]$/', $node->attr('name'), $m) ? $m[1] : $node->attr('name');
+		foreach ($dom->find('input,select,textarea') as $node) {
+			$field = FieldFactory::create($node);
+			$key   = preg_match('/(.+)\[(.*)\]$/', $field->attr('name'), $m) ? $m[1] : $field->attr('name');
 			$value = preg_match('/(.+?)\.(.+)/', $key, $n) && isset($values[$n[1]]) ? $values[$n[1]][$n[2]] : $values[$key];
 
 			if (!empty($m[2])) {
@@ -391,38 +359,20 @@ class FormBuilder
 			}
 
 			if (in_array($key, $errors)) {
-				$node->addClass($this->config->errorClass ?: 'validation-error');
+				$field->addClass($this->config->errorClass ?: 'validation-error');
 			}
 
-			$this->updateSelectOptions($node);
-
+			if ($field instanceof Fields\Select) {
+				$field->updateSize();
+			}
+/*
 			if ($value === null) {
 				continue;
 			}
-
-			switch ($node->tagName()) {
-				case 'input':
-					$this->fillInputNode($node, $value);
-					break;
-				case 'select':
-					$this->fillSelectNode($node, $value);
-					break;
-				case 'textarea':
-					if (is_array($value)) {
-						$value = implode(PHP_EOL, $value);
-					}
-					$node->val($node->attr('data-encoding') === 'base64' ? base64_encode($value) : $this->escapeHtml($value));
-					break;
-			}
+*/
+			$field->val($value);
 		}
 
-		return $dom->html();
-	}
-
-	protected function updateSelectOptions($node)
-	{
-		if ($node->tagName() === 'select' && $node->attr('size') === 'auto') {
-			$node->attr('size', count($node->query('option,optgroup')));
-		}
+		return $dom;
 	}
 }
