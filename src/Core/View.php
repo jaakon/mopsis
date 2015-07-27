@@ -35,8 +35,8 @@ class View
 		}
 
 		$this->extensions = [];
-		$this->filters = [];
-		$this->functions = [];
+		$this->filters    = [];
+		$this->functions  = [];
 
 		if ($this->renderer->hasExtension('formbuilder')) {
 			$this->renderer->getExtension('formbuilder')->setOptions(['forms' => $this->forms]);

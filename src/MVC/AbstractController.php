@@ -1,9 +1,6 @@
 <?php namespace Mopsis\MVC;
 
-use App\WebResponder;
-use Aura\Web\Request;
 use Mopsis\Exceptions\TokenException;
-use Mopsis\MVC\PayloadFactory as PayloadFactory;
 
 abstract class AbstractController
 {
@@ -11,19 +8,9 @@ abstract class AbstractController
 	const ACCESS_PUBLIC  = 'public';
 
 	protected $access = ACCESS_PRIVATE;
-	protected $service;
 	protected $request;
 	protected $responder;
-	protected $payload;
-
-	public function __construct(Request $request, WebResponder $responder, PayloadFactory $payload)
-	{
-		$this->request   = $request;
-		$this->responder = $responder;
-		$this->payload   = $payload;
-
-		$this->init();
-	}
+	protected $service;
 
 	public function __invoke($method, Array $args = [])
 	{

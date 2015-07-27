@@ -30,9 +30,13 @@ class Bootstrap
 		setlocale(LC_TIME, 'de_DE.UTF8');
 		session_start();
 
+		if (!defined('APPLICATION_PATH')) {
+			define('APPLICATION_PATH', realpath($_SERVER['DOCUMENT_ROOT'] . '/..'));
+		}
+
 		$builder = new \DI\ContainerBuilder;
 		$builder->addDefinitions(__DIR__ . '/config.php');
-		$builder->addDefinitions('config/definitions.php');
+		$builder->addDefinitions(APPLICATION_PATH . '/config/definitions.php');
 
 		Core\Registry::load('config/environment.php', 'config/credentials.php');
 

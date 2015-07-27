@@ -2,7 +2,7 @@
 
 class Formbuilder extends \Twig_Extension
 {
-	private $_options = [];
+	protected $options = [];
 
 	public function getName()
 	{
@@ -25,11 +25,11 @@ class Formbuilder extends \Twig_Extension
 
 	public function getFormBuilder($id, $uri)
 	{
-		return (new \Mopsis\Core\FormBuilder())->getForm($id, $uri, $this->_options['forms'][$id]);
+		return (new \Mopsis\Core\FormBuilder())->getForm($id, $uri, $this->options['forms'][$id]);
 	}
 
 	public function setOptions(array $options)
 	{
-		$this->_options = $options;
+		$this->options = $options;
 	}
 }

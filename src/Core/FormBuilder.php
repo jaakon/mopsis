@@ -5,6 +5,7 @@ class FormBuilder
 	const NO_GROUPS = '@@no-groups@@';
 
 	protected $xml     = null;
+	protected $config  = null;
 	protected $options = [];
 
 	public function __construct($configFile = null)
@@ -298,9 +299,9 @@ class FormBuilder
 
 	protected function loadLayout($layoutId, $anchestors = [])
 	{
-		$xml = $this->xml->xpath('//layout[@id="' . $layoutId . '"]')[0];
+		$xml     = $this->xml->xpath('//layout[@id="' . $layoutId . '"]')[0];
 		$extends = $xml->attributes()->extends;
-		$layout = [
+		$layout  = [
 			'form'  => ['before' => null, 'after' => null],
 			'block' => ['before' => null, 'after' => null],
 			'row'   => ['before' => null, 'after' => null],
@@ -308,13 +309,18 @@ class FormBuilder
 			'items' => []
 		];
 
+		if ($xml->attributes()->config) {
+			$config       = json_decode((string) $xml->attributes()->config, true);
+			$this->config = (object) array_merge($config, (array) $this->config);
+		}
+
 		if ($extends) {
 			if (in_array($extends, $anchestors)) {
 				throw new \Exception('loop detected while extending "' . $layoutId . '"');
 			}
 
 			$anchestors[] = $extends;
-			$layout = $this->loadLayout($extends, $anchestors);
+			$layout       = $this->loadLayout($extends, $anchestors);
 		}
 
 		foreach (['form', 'block', 'row', 'help'] as $element) {
@@ -385,7 +391,7 @@ class FormBuilder
 			}
 
 			if (in_array($key, $errors)) {
-				$node->addClass('validation-error');
+				$node->addClass($this->config->errorClass ?: 'validation-error');
 			}
 
 			$this->updateSelectOptions($node);

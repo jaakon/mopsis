@@ -46,33 +46,34 @@ return [
 	Asm89\Twig\CacheExtension\CacheStrategy\KeyGeneratorInterface::class
 		=> object(\Mopsis\Twig\Extensions\Cache\KeyGenerator::class),
 
-	Aura\Filter\Filter::class
+	Aura\Filter\FilterFactory::class
+		=> object()
+		->constructorParameter('validate_factories', [
+			'bic' => function () {
+				return app(\Mopsis\Filter\Rule\Validate\Bic::class);
+			},
+			'iban' => function () {
+				return app(\Mopsis\Filter\Rule\Validate\Iban::class);
+			},
+			'money' => function () {
+				return app(\Mopsis\Filter\Rule\Validate\Money::class);
+			},
+			'optional' => function () {
+				return app(\Mopsis\Filter\Rule\Validate\Optional::class);
+			},
+			'zipcode' => function () {
+				return app(\Mopsis\Filter\Rule\Validate\ZipCode::class);
+			}
+		])
+		->constructorParameter('sanitize_factories', [
+			'float' => function () {
+				return app(\Mopsis\Filter\Rule\Sanitize\Float::class);
+			}
+		]),
+
+	Aura\Filter\SubjectFilter::class
 		=> function (ContainerInterface $c) {
-			$filterFactory = $c->get(\Aura\Filter\FilterFactory::class);
-
-			$validateLocator = $filterFactory->getValidateLocator();
-			$validateLocator->set('bic', function () use ($c) {
-				return $c->get(\Mopsis\Filter\Rule\Validate\Bic::class);
-			});
-			$validateLocator->set('iban', function () use ($c) {
-				return $c->get(\Mopsis\Filter\Rule\Validate\Iban::class);
-			});
-			$validateLocator->set('money', function () use ($c) {
-				return $c->get(\Mopsis\Filter\Rule\Validate\Money::class);
-			});
-			$validateLocator->set('optional', function () use ($c) {
-				return $c->get(\Mopsis\Filter\Rule\Validate\Optional::class);
-			});
-			$validateLocator->set('zipcode', function () use ($c) {
-				return $c->get(\Mopsis\Filter\Rule\Validate\ZipCode::class);
-			});
-
-			$sanitizeLocator = $filterFactory->getSanitizeLocator();
-			$sanitizeLocator->set('float', function () use ($c) {
-				return $c->get(\Mopsis\Filter\Rule\Sanitize\Float::class);
-			});
-
-			return $filterFactory->newFilter();
+			return $c->get(\Aura\Filter\FilterFactory::class)->newSubjectFilter();
 		},
 
 	Aura\Web\Request::class

@@ -49,6 +49,10 @@ abstract class Registry
 	protected static function loadFile($configFile)
 	{
 		if (!file_exists($configFile)) {
+			$configFile = APPLICATION_PATH . '/' . $configFile;
+		}
+
+		if (!file_exists($configFile)) {
 			throw new \Exception('configuration file "' . $configFile . '" not found');
 		}
 

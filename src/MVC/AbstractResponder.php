@@ -67,8 +67,8 @@ abstract class AbstractResponder
 
 	protected function init()
 	{
-		if (!isset($this->payloadMethod['Payload\Error'])) {
-			$this->payloadMethod['Payload\Error'] = 'error';
+		if (!isset($this->payloadMethod['Error'])) {
+			$this->payloadMethod['Error'] = 'error';
 		}
 
 		$this->response->headers->set('X-Frame-Options', 'SAMEORIGIN');

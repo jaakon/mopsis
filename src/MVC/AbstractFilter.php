@@ -1,6 +1,6 @@
-<?php namespace Mopsis\ADR\Domain;
+<?php namespace Mopsis\MVC;
 
-use Aura\Filter\Filter;
+use Aura\Filter\SubjectFilter as Filter;
 use FileUpload\FileUpload;
 use FileUpload\FileUploadAggregator;
 use Mopsis\Core\FormBuilder;
@@ -14,13 +14,12 @@ abstract class AbstractFilter
 	protected $result;
 	protected $messages;
 
-	public function __construct(Filter $facade, Formbuilder $formbuilder, FileUploadAggregator $uploader)
+//	public function __construct(Filter $facade, Formbuilder $formbuilder, FileUploadAggregator $uploader)
+	public function __construct(Filter $facade, Formbuilder $formbuilder)
 	{
-		$this->facade = $facade;
+		$this->facade      = $facade;
 		$this->formbuilder = $formbuilder;
-		$this->uploader = $uploader;
-
-		$this->facade->strict();
+//		$this->uploader    = $uploader;
 	}
 
 	public function forInsert($formId, $data)
@@ -68,7 +67,7 @@ abstract class AbstractFilter
 			return true;
 		}
 
-		$this->messages = $this->facade->getMessages();
+		$this->messages = $this->facade->getFailures()->getMessages();
 
 		return false;
 	}
