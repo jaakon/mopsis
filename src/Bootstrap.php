@@ -38,7 +38,10 @@ class Bootstrap
 		$builder->addDefinitions(__DIR__ . '/config.php');
 		$builder->addDefinitions(APPLICATION_PATH . '/config/definitions.php');
 
-		Core\Registry::load('config/environment.php', 'config/credentials.php');
+		Core\Registry::load(
+			APPLICATION_PATH . '/config/environment.php',
+			APPLICATION_PATH . '/config/credentials.php'
+		);
 
 		App::initialize($builder->build());
 		App::make('Database');

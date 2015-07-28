@@ -1,4 +1,4 @@
-<?php namespace Mopsis\MVC;
+<?php namespace Mopsis\ADR;
 
 use Aura\Accept\Accept;
 use Aura\Web\Request;

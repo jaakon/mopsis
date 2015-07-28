@@ -35,29 +35,26 @@ class Router
 
 			$m['method'] = $requestMethod;
 
-			list($class, $method) = explode('::', 'App\\' . preg_replace_callback('/\{(.+?)\}/', function ($n) use ($m) {
-				return camelCase($m[$n[1]]);
-			}, $rule[3]));
+			$class = vsprintf(
+				'App\\%s\\Action\\%sAction',
+				explode('\\', preg_replace_callback('/\{(.+?)\}/', function ($n) use ($m) {
+					return camelCase($m[$n[1]]);
+				}, $rule[3]))
+			);
 
 			if (!class_exists($class)) {
-				$this->logger->debug($rule[3] . ' => class "' . $class . '" not found [' . $route . ']');
+				$this->logger->debug($rule[3] . ' => action "' . $class . '" not found [' . $route . ']');
 				continue;
 			}
 
 			$reflectionClass = new \ReflectionClass($class);
-
-			if (!$reflectionClass->hasMethod($method)) {
-				$this->logger->debug($rule[3] . ' => method "' . $class . '->' . $method . '" not found [' . $route . ']');
-				continue;
-			}
-
-			$funcArgs = $this->getFunctionArguments($reflectionClass->getMethod($method), $m);
+			$funcArgs        = $this->getFunctionArguments($reflectionClass->getMethod('__invoke'), $m);
 
 			if ($funcArgs === false) {
 				continue;
 			}
 
-			$this->logger->debug($route . ' ==> ' . $class . '->' . $method);
+			$this->logger->debug($route . ' ==> ' . $class);
 			return App::make($class)->__invoke($method, $funcArgs);
 		}
 

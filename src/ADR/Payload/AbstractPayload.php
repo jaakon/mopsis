@@ -1,8 +1,8 @@
-<?php namespace Mopsis\MVC\Payload;
+<?php namespace Mopsis\ADR\Payload;
 
 use Mopsis\Eloquent\Model;
 
-abstract class AbstractPayload implements \Mopsis\MVC\PayloadInterface
+abstract class AbstractPayload implements \Mopsis\ADR\PayloadInterface
 {
 	protected $payload = [];
 

@@ -1,4 +1,4 @@
-<?php namespace Mopsis\MVC;
+<?php namespace Mopsis\ADR;
 
 class PayloadFactory
 {
