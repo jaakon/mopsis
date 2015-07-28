@@ -1,4 +1,4 @@
-<?php namespace Mopsis\ADR;
+<?php namespace Mopsis\ADR\Domain;
 
 use Aura\Filter\SubjectFilter as Filter;
 use FileUpload\FileUpload;

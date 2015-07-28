@@ -4,6 +4,7 @@ use Aura\Accept\Accept;
 use Aura\Web\Request;
 use Aura\Web\Response;
 use Mopsis\Core\View;
+use Mopsis\ADR\Domain\Payload\PayloadInterface;
 
 abstract class AbstractResponder
 {
@@ -14,7 +15,7 @@ abstract class AbstractResponder
 	];
 	protected $payload;
 	protected $payloadData;
-	protected $payloadMethod = [];
+	protected $payloadMethods = [];
 	protected $request;
 	protected $response;
 	protected $template;
@@ -36,8 +37,7 @@ abstract class AbstractResponder
 			return $this->notFound();
 		}
 
-		$class  = str_replace(__NAMESPACE__ . '\\Payload\\', '', get_class($this->payload));
-		$method = $this->payloadMethod[$class] ?: 'notRecognized';
+		$method = $this->payloadMethods[$this->payload->getName()] ?: 'notRecognized';
 
 		$this->$method();
 
@@ -65,10 +65,15 @@ abstract class AbstractResponder
 		return new $class(array_merge($this->payloadData, $payload->get()));
 	}
 
+	protected function getViewPath()
+	{
+		return preg_replace('/^\w+\\\(\w+)\\\.+$/', '$1/views/', get_called_class());
+	}
+
 	protected function init()
 	{
-		if (!isset($this->payloadMethod['Error'])) {
-			$this->payloadMethod['Error'] = 'error';
+		if (!isset($this->payloadMethods['Error'])) {
+			$this->payloadMethods['Error'] = 'error';
 		}
 
 		$this->response->headers->set('X-Frame-Options', 'SAMEORIGIN');
@@ -107,11 +112,10 @@ abstract class AbstractResponder
 	protected function renderView($template = null)
 	{
 		$contentType = $this->response->content->getType();
-//		$path        = (new \ReflectionClass($this))->getNamespaceName() . '/views/';
 		$extension   = $contentType ? $this->available[$contentType] : '.twig';
 
 		$this->view
-			->setTemplate(($template ?: $this->template) . $extension)
+			->setTemplate($this->getViewPath() . ($template ?: $this->template) . $extension)
 			->assign($this->payload->get());
 
 		$this->response->content->set($this->view->__invoke());

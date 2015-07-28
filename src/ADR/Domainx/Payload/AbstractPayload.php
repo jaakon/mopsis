@@ -1,8 +1,8 @@
-<?php namespace Mopsis\ADR\Payload;
+<?php namespace Mopsis\ADR\Domain\Payload;
 
 use Mopsis\Eloquent\Model;
 
-abstract class AbstractPayload implements \Mopsis\ADR\PayloadInterface
+abstract class AbstractPayload implements PayloadInterface
 {
 	protected $payload = [];
 
@@ -33,5 +33,10 @@ abstract class AbstractPayload implements \Mopsis\ADR\PayloadInterface
 		}
 
 		return;
+	}
+
+	public function getName()
+	{
+		return implode('\\', array_slice(explode('\\', get_class($this)), -2));
 	}
 }
