@@ -97,7 +97,7 @@ return [
 				foreach (explode('&', file_get_contents('php://input')) as $entry) {
 					list($key,) = array_map('urldecode', explode('=', $entry));
 					$key = preg_replace('/\[(.*)\]$/', '', $key);
-					$_POST[$key] = $_REQUEST[str_replace(['.', ' '], '_', $key)];
+					$_POST[$key] = trim($_REQUEST[str_replace(['.', ' '], '_', $key)]);
 				}
 			}
 

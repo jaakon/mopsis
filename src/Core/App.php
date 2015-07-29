@@ -57,12 +57,7 @@ namespace {
 
 		public static function make($type, array $parameters = null)
 		{
-			switch ($type) {
-				case 'config':
-					return new \Libraries\Config();
-				default:
-					return \Mopsis\Core\App::make($type, $parameters);
-			}
+			return \Mopsis\Core\App::make($type, $parameters);
 		}
 
 		public static function set($name, $value)

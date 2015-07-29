@@ -396,46 +396,6 @@ function realurl($url, $scheme, $host, $path = '/')
 	return preg_match('/^(ht|f)tps?:\/\/|(mailto:|javascript:|#)/i', $url) > 0 ? $url : $scheme.'://'.$host.resolvePath($path.$url);
 }
 
-function send_http_request($method, $url, $data = [], $referer = null, $timeout = 10)
-{
-	$ch = curl_init();
-
-	if (strtolower($method) === 'get' && is_array($data) && count($data) > 0) {
-		$url .= (strpos($url, '?') === false ? '?' : '&').http_build_query($data);
-	}
-
-	$parts	= parse_url($url);
-	$url	= $parts['scheme'].'://'.$parts['host'].$parts['path'].'?'.$parts['query'];
-
-	curl_setopt_array($ch, [
-		CURLOPT_URL				=> $url,
-		CURLOPT_AUTOREFERER		=> true,
-		CURLOPT_RETURNTRANSFER	=> true,
-		CURLOPT_FOLLOWLOCATION	=> true,
-		CURLOPT_MAXREDIRS		=> 3,
-		CURLOPT_TIMEOUT			=> $timeout,
-		CURLOPT_REFERER			=> $referer,
-		CURLOPT_USERAGENT		=> 'Mozilla/5.0 (Windows NT 6.1; rv:2.0) Gecko/20110319 Firefox/4.0',
-//		CURLOPT_SSL_VERIFYPEER	=> false,
-//		CURLOPT_SSL_VERIFYHOST	=> 2,
-	]);
-
-	if (isset($parts['user']) & isset($parts['pass'])) {
-		curl_setopt($ch, CURLOPT_USERPWD, $parts['user'].':'.$parts['pass']);
-	}
-
-	if (strtolower($method) === 'post') {
-		curl_setopt($ch, CURLOPT_POST, true);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-	}
-
-	$content	= curl_exec($ch);
-	$header		= curl_getinfo($ch);
-	curl_close($ch);
-
-	return [$header, $content];
-}
-
 function strip_invalid_chars($string, $toLower = true, $charlist = null)
 {
 	setlocale(LC_CTYPE, 'de_DE.UTF8');
@@ -479,9 +439,4 @@ function vnsprintf($format, array $args)
 	return vsprintf($format, $args);
 }
 
-function wget($url, $data = [], $referer = null, $timeout = 10)
-{
-	$result = send_http_request('GET', $url, $data, $referer, $timeout);
-	return $result[0]['http_code'] === 200 ? $result[1] : false;
-}
 */

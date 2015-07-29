@@ -55,7 +55,7 @@ class Router
 			}
 
 			$this->logger->debug($route . ' ==> ' . $class);
-			return App::make($class)->__invoke($method, $funcArgs);
+			return App::make($class)->__invoke(...$funcArgs);
 		}
 
 		return false;

@@ -199,6 +199,11 @@ abstract class AbstractService
 		}
 	}
 
+	public function fetchBySlug($slug)
+	{
+		return $this->fetchByAttributes(['slug' => $slug]);
+	}
+
 	public function noop()
 	{
 		try {

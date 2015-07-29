@@ -43,12 +43,12 @@ abstract class AbstractGateway
 
 	public function create(Model $instance, $data)
 	{
-		return $instance->fill($this->getAcceptedData($instance, $data))->save() ? $instance : false;
+		return $instance->fill($this->getAcceptedData($instance, $this->getRestructuredData($data)))->save() ? $instance : false;
 	}
 
 	public function update(Model $instance, $data)
 	{
-		return $instance->update($this->getAcceptedData($instance, $data)) ? $instance : false;
+		return $instance->update($this->getAcceptedData($instance, $this->getRestructuredData($data))) ? $instance : false;
 	}
 
 	public function delete(Model $instance)
@@ -64,7 +64,7 @@ abstract class AbstractGateway
 		return $instance;
 	}
 
-	private function getAcceptedData(Model $instance, $data)
+	protected function getAcceptedData(Model $instance, $data)
 	{
 		foreach ($data as $key => $value) {
 			unset($data[$key]);
@@ -74,7 +74,30 @@ abstract class AbstractGateway
 		return array_intersect_key($data, array_flip($instance->getFillableAttributes()));
 	}
 
-	private function expandQuery($sql, array $bindings)
+	protected function getRestructuredData($data)
+	{
+		foreach ($data as $key => $value) {
+			if (!preg_match('/^(\w+)\.(\w+)$/', $key, $match)) {
+				continue;
+			}
+
+			unset($data[$key]);
+
+			if (isset($data[$match[1]]) && !is_array($data[$match[1]])) {
+				die('CARCRASH!!');
+			}
+
+			if (!is_array($data[$match[1]])) {
+				$data[$match[1]] = [];
+			}
+
+			$data[$match[1]][$match[2]] = $value;
+		}
+
+		return $data;
+	}
+
+	protected function expandQuery($sql, array $bindings)
 	{
 		if (!is_array($sql)) {
 			return [$sql, $bindings];
