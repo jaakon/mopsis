@@ -223,7 +223,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model
 	/** @Override */
 	public function newCollection(array $models = [])
 	{
-		if (class_exists($collection = get_called_class() . 'Collection')) {
+		if (class_exists($collection = str_replace('Model', 'Collection', get_called_class()))) {
 			return new $collection($models);
 		}
 

@@ -4,7 +4,7 @@ use Mopsis\Core\App;
 
 function __($key, array $replace = [])
 {
-	return App::make('i18n')->get($key, $replace);
+	return App::make('Translator')->get($key, $replace);
 }
 
 function app($type)
