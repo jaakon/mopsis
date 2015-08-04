@@ -25,4 +25,9 @@ class Cache
 
 		return $value;
 	}
+
+	public static function set($key, $value, $ttl = null)
+	{
+		\App::make('Cache')->getItem($key)->set($value, $ttl);
+	}
 }

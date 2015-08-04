@@ -63,43 +63,13 @@ class Bootstrap
 		}
 
 		if ($flushMode === 'all' || $flushMode === 'assets') {
-			Cache::clear('files/css/version');
-			Cache::clear('files/javascript/version');
-
-			$this->cacheAssets();
+			Cache::set('files/css/version', time());
+			Cache::set('files/javascript/version', time());
 		}
 
 		if ($flushMode === 'all' || $flushMode === 'views') {
 			App::make('Renderer')->clearCacheFiles();
 		}
-	}
-
-	protected function cacheAssets()
-	{
-		Cache::get('files/css/version', function () {
-			$assets = new AssetCollection([
-				new GlobAsset('public/css/*.css'),
-				new GlobAsset('public/css/*.less', [new \Assetic\Filter\LessphpFilter]),
-				new GlobAsset('public/css/*.scss', [new \Assetic\Filter\ScssphpFilter])
-			], [
-				new \Assetic\Filter\CssMinFilter
-			]);
-
-			file_put_contents('public/static/main.css', $assets->dump());
-
-			return time();
-		});
-
-		Cache::get('files/javascript/version', function () {
-			$assets = new AssetCollection([
-				new GlobAsset('public/js/plugins/*.js'),
-				new GlobAsset('public/js/scripts/*.js')
-			]);
-
-			file_put_contents('public/static/main.js', $assets->dump());
-
-			return time();
-		});
 	}
 
 	protected function doRouting()
@@ -118,12 +88,21 @@ class Bootstrap
 			return $response;
 		}
 
+		if ($response !== false) {
+			$content  = $response;
+			$response = App::make('Aura\Web\Response');
+			$response->status->setCode(203);
+			$response->content->set($content);
+
+			return $response;
+		}
+
 		App::make('Logger')
 		   ->error('file not found: ' . $_SERVER['REQUEST_METHOD'] . ' ' . $_SERVER['REQUEST_URI'] . ' [' . $_SERVER['HTTP_USER_AGENT'] . ']');
 
 		$response = App::make('Aura\Web\Response');
-		$response->status->setCode(400);
-		$response->content->set(file_get_contents(CORE_STATUS_400));
+		$response->status->setCode(404);
+		$response->content->set(file_get_contents(CORE_STATUS_404));
 
 		return $response;
 	}

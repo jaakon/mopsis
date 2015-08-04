@@ -15,7 +15,7 @@ class FieldFactory
 				return new Fields\Textarea($node);
 		}
 
-		throw new \Exception('unknown tag: "' . $node->tagName . '"');
+		return new Fields\GenericElement($node);
 	}
 
 	protected static function createInput($node)

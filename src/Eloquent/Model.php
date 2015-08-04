@@ -103,6 +103,15 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model
 		return;
 	}
 
+	/** @Override */
+	public function hasMany($related, $foreignKey = null, $localKey = null)
+	{
+		list($module, $domain) = explode('\\', $related);
+
+		return \Mopsis\Core\App::make('App\\' . $module . '\Domain\\' . $domain . 'Gateway')
+			 ->newRepository(parent::hasMany('App\\' . $module . '\Domain\\' . $domain . 'Model', $foreignKey, $localKey));
+	}
+
 	public function clearCachedAttributeRecursive($attribute)
 	{
 		$this->clearCachedAttribute($attribute);

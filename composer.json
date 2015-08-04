@@ -28,6 +28,7 @@
 		"illuminate/translation":      "~5.1",
 		"jaakon/fileupload":           "dev-master",
 		"kriswallsmith/assetic":       "~1.2",
+		"raulfraile/ladybug":          "~1.0",
 		"leafo/lessphp":               "~0.5",
 		"leafo/scssphp":               "~0.1",
 		"league/flysystem":            "~1.0",

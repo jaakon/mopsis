@@ -45,12 +45,7 @@ function camelCase($string)
 
 function debug(...$args)
 {
-	echo '<pre class="debug">';
-	foreach ($args as $i => $arg) {
-		echo $i > 0 ? '<hr>' : '';
-		print_r($arg);
-	}
-	echo '</pre>';
+	ladybug_dump($args);
 }
 
 function getClassName($class)
