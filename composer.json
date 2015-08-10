@@ -11,22 +11,22 @@
 		"asm89/twig-cache-extension": "~1.0",
 		"erusev/parsedown":           "~1.5",
 		"filp/whoops":                "~1.1",
-		"gordalina/cachetool":        "~1.9",
+		"gordalina/cachetool":        "~1.10",
 		"illuminate/database":        "~5.1",
 		"illuminate/events":          "~5.1",
 		"kriswallsmith/assetic":      "~1.2",
 		"leafo/lessphp":              "~0.5",
 		"leafo/scssphp":              "~0.1",
 		"league/flysystem":           "~1.0",
-		"mnapoli/php-di":             "~5.0",
-		"monolog/monolog":            "~1.10",
+		"php-di/php-di":              "~5.0",
+		"monolog/monolog":            "~1.16",
 		"natxet/CssMin":              "~3.0",
 		"niktux/addendum":            "~0.4",
 		"patchwork/utf8":             "~1.2",
 		"swiftmailer/swiftmailer":    "~5.4",
 		"tburry/pquery":              "~1.1",
-		"tedivm/stash":               "~0.12",
-		"twig/twig":                  "~1.18"
+		"tedivm/stash":               "~0.13",
+		"twig/twig":                  "~1.19"
 	},
 	"autoload": {
 		"files": [
