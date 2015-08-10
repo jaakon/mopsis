@@ -16,6 +16,8 @@ namespace Mopsis\Core
 		public static function make($type, array $parameters = null)
 		{
 			switch ($type) {
+				case 'config':
+					return new \Config();
 				case 'db':
 					return static::$_container->get('Database')->getConnection();
 				default:

@@ -9,7 +9,7 @@ class Collection extends \Illuminate\Database\Eloquent\Collection
 
 	public function sanitize(array $ids)
 	{
-		return array_intersect($ids, $this->lists('id'));
+		return array_intersect($ids, $this->lists('id')->toArray());
 	}
 
 	public function shrink(array $map)
