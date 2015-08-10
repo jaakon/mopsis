@@ -1,14 +1,14 @@
 {
-	"name": "jaakon/mopsis",
-	"type": "library",
-	"description": "The Mopsis Framework.",
-	"keywords": ["framework", "mopsis"],
-	"homepage": "http://github.com/jaakon/mopsis",
-	"license": "MIT",
+	"name":         "jaakon/mopsis",
+	"type":         "library",
+	"description":  "The Mopsis Framework.",
+	"keywords":     ["framework", "mopsis"],
+	"homepage":     "https://github.com/jaakon/mopsis",
+	"license":      "MIT",
 	"repositories": [
 		{
 			"type": "vcs",
-			"url": "https://github.com/jaakon/upit"
+			"url":  "https://github.com/jaakon/upit"
 		}
 	],
 	"require": {
