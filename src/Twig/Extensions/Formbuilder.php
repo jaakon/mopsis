@@ -1,6 +1,6 @@
 <?php namespace Mopsis\Twig\Extensions;
 
-class Formbuilder extends \Twig_Extension
+class FormBuilder extends \Twig_Extension
 {
 	protected $options = [];
 

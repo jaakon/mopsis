@@ -33,7 +33,7 @@
 		"php-di/php-di":               "~5.0",
 		"swiftmailer/swiftmailer":     "~5.4",
 		"tedivm/stash":                "~0.12",
-		"twig/twig":                   "~1.18"
+		"twig/twig":                   "~1.20"
 	},
 	"autoload": {
 		"files": [

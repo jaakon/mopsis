@@ -63,8 +63,8 @@ class Bootstrap
 		}
 
 		if ($flushMode === 'all' || $flushMode === 'assets') {
-			Cache::set('files/css/version', time());
-			Cache::set('files/javascript/version', time());
+			Cache::set('css.version', time());
+			Cache::set('javascript.version', time());
 		}
 
 		if ($flushMode === 'all' || $flushMode === 'views') {
@@ -81,28 +81,24 @@ class Bootstrap
 		}
 
 		if ($response === null) {
-			$response = App::make('Aura\Web\Response');
-			$response->status->setCode(502);
-			$response->content->set('Bad Gateway');
-
-			return $response;
+			return $this->buildResponse(502, 'Bad Gateway');
 		}
 
 		if ($response !== false) {
-			$content  = $response;
-			$response = App::make('Aura\Web\Response');
-			$response->status->setCode(203);
-			$response->content->set($content);
-
-			return $response;
+			return $this->buildResponse(203, $response);
 		}
 
 		App::make('Logger')
 		   ->error('file not found: ' . $_SERVER['REQUEST_METHOD'] . ' ' . $_SERVER['REQUEST_URI'] . ' [' . $_SERVER['HTTP_USER_AGENT'] . ']');
 
+		return $this->buildResponse(404, file_get_contents(CORE_STATUS_404));
+	}
+
+	private function buildResponse($code, $content)
+	{
 		$response = App::make('Aura\Web\Response');
-		$response->status->setCode(404);
-		$response->content->set(file_get_contents(CORE_STATUS_404));
+		$response->status->setCode($code);
+		$response->content->set($content);
 
 		return $response;
 	}

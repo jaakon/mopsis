@@ -32,7 +32,7 @@ return [
 		'strict_variables' => false
 	],
 	'twig.config'            => get('twig.dev.config'),
-	'twigloader.config'      => ['resources/views', 'application/views'],
+	'twigloader.config'      => ['app/views'],
 
 	Aptoma\Twig\Extension\MarkdownEngineInterface::class
 		=> object(\Mopsis\Twig\Extensions\Markdown\MarkdownEngine::class),
@@ -154,9 +154,6 @@ return [
 			return new \Mopsis\Core\View($c->get(\Twig_Environment::class), $extensions);
 		},
 
-	Mopsis\Validation\Request\BasicRequest::class
-		=> object(\Mopsis\Validation\Request\RawRequest::class),
-
 	Psr\Log\LoggerInterface::class
 		=> get('Logger'),
 
@@ -235,7 +232,7 @@ return [
 			return $whoops;
 		},
 
-	FileSystem::class
+	Filesystem::class
 		=> object(\League\Flysystem\Filesystem::class),
 
 	Flash::class
