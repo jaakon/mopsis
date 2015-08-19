@@ -4,8 +4,8 @@ class FormBuilder
 {
 	const NO_GROUPS = '@@no-groups@@';
 
-	protected $xml     = null;
-	protected $config  = null;
+	protected $xml;
+	protected $config;
 	protected $options = [];
 
 	public function __construct($configFile = null)

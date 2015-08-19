@@ -128,12 +128,6 @@ return [
 		->constructorParameter('format', get('monolog.lineformat'))
 		->constructorParameter('allowInlineLineBreaks', true),
 
-	Mopsis\Core\I18N::class
-		=> object()
-		->constructor('de', 'en')
-		->method('setFilePath', 'resources/lang/')
-		->method('init'),
-
 	Mopsis\Core\User::class
 		=> function () {
 			return Mopsis\Auth::user();
