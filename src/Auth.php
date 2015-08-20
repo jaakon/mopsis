@@ -1,6 +1,7 @@
 <?php namespace Mopsis;
 
 use Illuminate\Contracts\Validation\ValidationException;
+use Mopsis\Core\App;
 use Mopsis\Core\User;
 
 class Auth
@@ -15,7 +16,7 @@ class Auth
 	public static function user()
 	{
 		if (self::$user === null) {
-			$model      = \App::make('User');
+			$model      = App::make('User');
 			self::$user = $model::autoload();
 		}
 

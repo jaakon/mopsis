@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Mopsis\Contracts\Hierarchical;
+use Mopsis\Core\App;
 use Mopsis\Core\Cache;
 use Mopsis\Extensions\Stringifier;
 use Mopsis\Reflection\ReflectionClass;
@@ -111,7 +112,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model
 	{
 		list($module, $domain) = explode('\\', $related);
 
-		return \Mopsis\Core\App::make('App\\' . $module . '\Domain\\' . $domain . 'Gateway')
+		return App::make('App\\' . $module . '\Domain\\' . $domain . 'Gateway')
 			 ->newRepository(parent::hasMany('App\\' . $module . '\Domain\\' . $domain . 'Model', $foreignKey, $localKey));
 	}
 

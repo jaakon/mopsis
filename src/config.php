@@ -194,6 +194,13 @@ return [
 		->constructor(get('StashDriver'))
 		->method('setNamespace', md5($_SERVER['HTTP_HOST'])),
 
+	CacheTool::class
+		=> function () {
+			$adapter = new \CacheTool\Adapter\FastCGI('127.0.0.1:9000');
+
+			return \CacheTool\CacheTool::factory($adapter);
+		},
+
 	Database::class
 		=> function () {
 			$manager = new \Illuminate\Database\Capsule\Manager;

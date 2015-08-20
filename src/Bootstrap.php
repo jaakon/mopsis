@@ -2,6 +2,7 @@
 
 use Assetic\Asset\AssetCollection;
 use Assetic\Asset\GlobAsset;
+use Aura\Web\ResponseSender;
 use Mopsis\Core\App;
 use Mopsis\Core\Cache;
 
@@ -18,8 +19,8 @@ class Bootstrap
 
 		include 'app/initialize.php';
 
-		$response = $this->doRouting();
-		$sender = new \Aura\Web\ResponseSender($response);
+		$response = $this->executeRoute();
+		$sender   = new ResponseSender($response);
 
 		$sender->__invoke();
 	}
@@ -51,11 +52,8 @@ class Bootstrap
 	protected function updateCache($flushMode)
 	{
 		if ($flushMode === 'all' || $flushMode === 'app') {
-			$adapter = new \CacheTool\Adapter\FastCGI('127.0.0.1:9000');
-			$cache   = \CacheTool\CacheTool::factory($adapter);
-
-			$cache->apc_clear_cache('both');
-			$cache->opcache_reset();
+			App::make('CacheTool')->apc_clear_cache('both');
+			App::make('CacheTool')->opcache_reset();
 		}
 
 		if ($flushMode === 'all') {
@@ -72,7 +70,7 @@ class Bootstrap
 		}
 	}
 
-	protected function doRouting()
+	protected function executeRoute()
 	{
 		$response = App::make('Mopsis\Core\Router')->get();
 
@@ -97,6 +95,7 @@ class Bootstrap
 	private function buildResponse($code, $content)
 	{
 		$response = App::make('Aura\Web\Response');
+
 		$response->status->setCode($code);
 		$response->content->set($content);
 

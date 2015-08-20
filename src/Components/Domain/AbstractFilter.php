@@ -3,6 +3,7 @@
 use Aura\Filter\SubjectFilter as Filter;
 use FileUpload\FileUpload;
 use FileUpload\FileUploadAggregator;
+use Mopsis\Core\App;
 use Mopsis\FormBuilder\FormBuilder;
 use Mopsis\FormBuilder\UploadValidator;
 
@@ -108,7 +109,7 @@ abstract class AbstractFilter
 	protected function loadUploaderRules($formId, array $prefixes)
 	{
 		foreach ($this->formbuilder->getUploaderRules($formId) as $field => $rules) {
-			$uploadHandler = \App::make(UploadHandler::class);
+			$uploadHandler = App::make('UploadHandler');
 
 			if (isset($prefixes[$field]) || isset($prefixes['*'])) {
 				$uploadHandler->setPrefix($prefixes[$field] ?: $prefixes['*']);
