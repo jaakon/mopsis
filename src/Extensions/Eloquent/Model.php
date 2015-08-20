@@ -3,6 +3,7 @@
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Mopsis\Contracts\Hierarchical;
 use Mopsis\Core\Cache;
+use Mopsis\Extensions\Stringifier;
 use Mopsis\Reflection\ReflectionClass;
 
 abstract class Model extends \Illuminate\Database\Eloquent\Model
