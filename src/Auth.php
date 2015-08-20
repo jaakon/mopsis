@@ -15,7 +15,7 @@ class Auth
 	public static function user()
 	{
 		if (self::$user === null) {
-			$model = \Mopsis\Core\App::make('User');
+			$model      = \App::make('User');
 			self::$user = $model::autoload();
 		}
 

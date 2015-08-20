@@ -1,5 +1,7 @@
 <?php namespace Mopsis\Core;
 
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+
 abstract class User extends \Mopsis\Eloquent\Model
 {
 	protected $isAuthorized = false;
@@ -9,7 +11,7 @@ abstract class User extends \Mopsis\Eloquent\Model
 		if (isset($_SESSION['user'])) {
 			try {
 				return static::unpack($_SESSION['user']);
-			} catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+			} catch (ModelNotFoundException $e) {
 				unset($_SESSION['user']);
 			}
 		}
@@ -20,7 +22,7 @@ abstract class User extends \Mopsis\Eloquent\Model
 				$_SESSION['user'] = (string)$user->token;
 
 				return $user;
-			} catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+			} catch (ModelNotFoundException $e) {
 				setcookie('user', '', time() - 3600, '/');
 			}
 		}

@@ -1,15 +1,10 @@
-<?php
-namespace Mopsis\Twig\Extensions\Markdown;
+<?php namespace Mopsis\Twig\Extensions\Markdown;
 
 class Parsedown extends \Parsedown
 {
 	private static $instances   = [];
-	private        $_attributes = [];
-
-	public function __construct()
-	{
-		$this->BlockTypes['{'][] = 'Placeholder';
-	}
+	protected $attributes       = [];
+	protected $inlineMarkerList = '!"*_&[:<>`~\\{';
 
 	public static function instance($name = 'default')
 	{
@@ -24,58 +19,52 @@ class Parsedown extends \Parsedown
 		return $instance;
 	}
 
+	public function __construct()
+	{
+		$this->BlockTypes['{'][]  = 'Placeholder';
+		$this->InlineTypes['{'][] = 'Placeholder';
+	}
+
 	public function setAttributes($blockType, array $attributes)
 	{
-		$this->_attributes[$blockType] = $attributes;
+		$this->attributes[$blockType] = $attributes;
 	}
 
 	protected function blockPlaceholder($line)
 	{
 		if (preg_match('/^\{(.+?)\}:[ ]*(.+?)[ ]*$/', $line['text'], $matches)) {
 			$this->DefinitionData['Placeholder'][$matches[1]] = $matches[2];
-
 			return ['hidden' => true];
 		}
 	}
 
-	protected function unmarkedText($text)
+	protected function inlinePlaceholder($excerpt)
 	{
-		$text = parent::unmarkedText($text);
+		if (!isset($this->DefinitionData['Placeholder'])) {
+			return;
+		}
 
-		if (isset($this->DefinitionData['Placeholder'])) {
-			foreach ($this->DefinitionData['Placeholder'] as $key => $value) {
-				$pattern = '/\{' . preg_quote($key, '/') . '\}/i';
-				$text = preg_replace($pattern, $value, $text);
+		foreach ($this->DefinitionData['Placeholder'] as $key => $value) {
+			$pattern = '/\{'.preg_quote($key, '/').'\}/i';
+			if (preg_match($pattern, $excerpt['text'], $matches)) {
+				return [
+					'extent' => strlen($matches[0]),
+					'markup' => $value
+				];
 			}
 		}
-
-		return $text;
 	}
 
-	protected function identifyList($line, array $block = null)
+	protected function element(array $element)
 	{
-		return $this->_identifyBlock('List', $line, $block);
-	}
+		if (count($this->attributes[$element['name']])) {
+			if (!isset($element['attributes'])) {
+				$element['attributes'] = [];
+			}
 
-	protected function identifyQuote($line, array $block = null)
-	{
-		return $this->_identifyBlock('Quote', $line, $block);
-	}
-
-	protected function identifyTable($line, array $block = null)
-	{
-		return $this->_identifyBlock('Table', $line, $block);
-	}
-
-	private function _identifyBlock($blockType, $line, array $block = null)
-	{
-		$block = parent::{
-		'identify' . $blockType}($line, $block);
-
-		if (count($block) && count($this->_attributes[$blockType])) {
-			$block['element']['attributes'] = $this->_attributes[$blockType];
+			$element['attributes'] = array_merge($element['attributes'], $this->attributes[$element['name']]);
 		}
 
-		return $block;
+		return parent::element($element);
 	}
 }

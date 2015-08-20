@@ -18,7 +18,7 @@ class MarkdownEngine implements \Aptoma\Twig\Extension\MarkdownEngineInterface
 		$content = preg_replace('/([^\n])(```)/', "$1\n$2", $content);
 
 		// Setup ParseDown
-		Parsedown::instance('bootstrap')->setAttributes('Table', ['class' => 'table table-bordered table-condensed']);
+		Parsedown::instance('bootstrap')->setAttributes('table', ['class' => 'table table-bordered table-condensed']);
 
 		// Convert markdown to html
 		$content = Parsedown::instance('bootstrap')->text(trim($content));

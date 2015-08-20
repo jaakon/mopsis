@@ -1,13 +1,13 @@
 <?php namespace Mopsis\Core;
 
-abstract class PrivilegedUser extends \Mopsis\Core\User
+abstract class PrivilegedUser extends User
 {
 	public function roles()
 	{
 		return $this->hasMany('App\Roles\RoleModel')->orderBy('constraint_id');
 	}
 
-	public function may($actionOnObject, \Mopsis\Eloquent\Model $objectToAccess = null)
+	public function may($actionOnObject, $objectToAccess = false)
 	{
 		foreach ($this->roles as $role) {
 			if (!Security::isRoleAllowedTo($role->key, $actionOnObject)) {
@@ -18,7 +18,11 @@ abstract class PrivilegedUser extends \Mopsis\Core\User
 				return true;
 			}
 
-			if ($objectToAccess === null) { // empty() for Collections?
+			if ($objectToAccess === false) {
+				return true;
+			}
+
+			if (!($objectToAccess instanceof \Mopsis\Eloquent\Model)) {
 				throw new \Exception('cannot determine privileges without a target object');
 			}
 
