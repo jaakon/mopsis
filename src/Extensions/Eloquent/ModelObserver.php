@@ -1,5 +1,5 @@
 <?php
-namespace Mopsis\Mopsis\Eloquent;
+namespace Mopsis\Extensions\Eloquent;
 
 class ModelObserver
 {
@@ -12,35 +12,35 @@ class ModelObserver
 
 	public function creating($model)
 	{
-		if ($model instanceof \Mopsis\Extensions\iTraceable) {
+		if ($model instanceof \Mopsis\Contracts\Traceable) {
 			$model->setCreatingUser();
 		}
 	}
 
 	public function created($model)
 	{
-		if ($model instanceof \Mopsis\Extensions\iLoggable) {
+		if ($model instanceof \Mopsis\Contracts\Loggable) {
 			$model->logChanges(getClassName($model) . '.created');
 		}
 	}
 
 	public function updating($model)
 	{
-		if ($model instanceof \Mopsis\Extensions\iTraceable) {
+		if ($model instanceof \Mopsis\Contracts\Traceable) {
 			$model->setUpdatingUser();
 		}
 	}
 
 	public function updated($model)
 	{
-		if ($model instanceof \Mopsis\Extensions\iLoggable) {
+		if ($model instanceof \Mopsis\Contracts\Loggable) {
 			$model->logChanges(getClassName($model) . '.updated');
 		}
 	}
 
 	public function deleted($model)
 	{
-		if ($model instanceof \Mopsis\Extensions\iLoggable) {
+		if ($model instanceof \Mopsis\Contracts\Loggable) {
 			$model->logChanges(getClassName($model) . '.deleted');
 		}
 	}

@@ -1,4 +1,6 @@
-<?php namespace Mopsis\Mopsis\Eloquent;
+<?php namespace Mopsis\Extensions\Eloquent;
+
+use Mopsis\Core\PrivilegedUser;
 
 class Collection extends \Illuminate\Database\Eloquent\Collection
 {
@@ -14,7 +16,7 @@ class Collection extends \Illuminate\Database\Eloquent\Collection
 		return $this->hasGetMutator($key);
 	}
 
-	public function accessibleFor(\Mopsis\Core\PrivilegedUser $user, $privilege = null)
+	public function accessibleFor(PrivilegedUser $user, $privilege = null)
 	{
 		return $this->filter(function ($item) use ($user, $privilege) {
 			return $user->may($privilege ?: $this->privilege, $item);

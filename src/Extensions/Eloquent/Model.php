@@ -1,7 +1,8 @@
-<?php namespace Mopsis\Mopsis\Eloquent;
+<?php namespace Mopsis\Extensions\Eloquent;
 
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Mopsis\Contracts\Hierarchical;
 use Mopsis\Core\Cache;
-use Mopsis\Extensions\iHierarchical;
 use Mopsis\Reflection\ReflectionClass;
 
 abstract class Model extends \Illuminate\Database\Eloquent\Model
@@ -29,17 +30,18 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model
 	/**
 	 * @param string $token
 	 *
-	 * @return \Mopsis\Mopsis\Eloquent\Model
+	 * @return \Mopsis\Extensions\Eloquent\Model
 	 */
 	public static function unpack($token)
 	{
 		$instance = \Mopsis\Types\Token::extract($token);
+		$class    = get_called_class();
 
-		if (is_a($instance, get_called_class())) {
+		if ($instance instanceof $class) {
 			return $instance;
 		}
 
-		throw new \Illuminate\Database\Eloquent\ModelNotFoundException('Token "' . $token . '" is invalid or outdated.');
+		throw new ModelNotFoundException('Token "' . $token . '" is invalid or outdated.');
 	}
 
 	/** @Override */
@@ -116,7 +118,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model
 	{
 		$this->clearCachedAttribute($attribute);
 
-		if ($this instanceof iHierarchical) {
+		if ($this instanceof Hierarchical) {
 			$this->ancestor->clearCachedAttributeRecursive($attribute);
 		}
 

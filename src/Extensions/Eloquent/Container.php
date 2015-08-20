@@ -1,4 +1,6 @@
-<?php namespace Mopsis\Mopsis\Eloquent;
+<?php namespace Mopsis\Extensions\Eloquent;
+
+use Mopsis\Extensions\Stringifier;
 
 class Container
 {
