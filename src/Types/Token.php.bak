@@ -1,13 +1,19 @@
 <?php namespace Mopsis\Types;
 
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Mopsis\Extensions\Eloquent\Model;
+use Mopsis\Components\Domain\Model\Model;
 use Mopsis\Core\App;
 
 class Token
 {
 	protected $instance;
 	protected $session;
+
+	public function __construct(Model $instance, $session = null)
+	{
+		$this->instance = $instance;
+		$this->session  = $session;
+	}
 
 	public static function extract($string)
 	{
@@ -30,13 +36,6 @@ class Token
 		}
 
 		return $instance;
-	}
-
-	public function __construct(Model $instance, $session = null)
-	{
-		$this->instance = $instance;
-		$this->session  = $session;
-
 	}
 
 	public function __toString()

@@ -1,7 +1,7 @@
 <?php namespace Mopsis;
 
+use Illuminate\Contracts\Validation\ValidationException;
 use Mopsis\Core\User;
-use Mopsis\Exceptions\AccessException;
 
 class Auth
 {
@@ -33,7 +33,7 @@ class Auth
 				redirect($redirect);
 			}
 
-			throw new AccessException('user has no access');
+			throw new ValidationException('user has no access');
 		}
 
 		if (self::user()->may($permission, $model)) {
@@ -44,6 +44,6 @@ class Auth
 			redirect($redirect);
 		}
 
-		throw new AccessException('user has no "' . $permission . '" permission for model "' . $model . '"');
+		throw new ValidationException('user has no "' . $permission . '" permission for model "' . $model . '"');
 	}
 }

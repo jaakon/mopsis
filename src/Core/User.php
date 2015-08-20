@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
-abstract class User extends \Mopsis\Eloquent\Model
+abstract class User extends \Mopsis\Extensions\Eloquent\Model
 {
 	protected $isAuthorized = false;
 

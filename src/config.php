@@ -13,7 +13,9 @@ return [
 		'ttl'       => 3600,
 		'namespace' => md5($_SERVER['HTTP_HOST'])
 	],
-	'stash.redis.config'     => [],
+	'stash.redis.config' => [
+		'servers' => [['server' => '127.0.0.1', 'port' => '6379', 'ttl' => 10]]
+	],
 	'stash.sqlite.config'    => [
 		'path' => 'storage/cache/'
 	],
@@ -35,39 +37,39 @@ return [
 	'twigloader.config'      => ['app/views'],
 
 	Aptoma\Twig\Extension\MarkdownEngineInterface::class
-		=> object(\Mopsis\Twig\Extensions\Markdown\MarkdownEngine::class),
+		=> object(\Mopsis\Extensions\Twig\Markdown\MarkdownEngine::class),
 
 	Asm89\Twig\CacheExtension\CacheProviderInterface::class
-		=> object(\Mopsis\Twig\Extensions\Cache\CacheAdapter::class),
+		=> object(\Mopsis\Extensions\Twig\Cache\CacheAdapter::class),
 
 	Asm89\Twig\CacheExtension\CacheStrategyInterface::class
 		=> object(\Asm89\Twig\CacheExtension\CacheStrategy\GenerationalCacheStrategy::class),
 
 	Asm89\Twig\CacheExtension\CacheStrategy\KeyGeneratorInterface::class
-		=> object(\Mopsis\Twig\Extensions\Cache\KeyGenerator::class),
+		=> object(\Mopsis\Extensions\Twig\Cache\KeyGenerator::class),
 
 	Aura\Filter\FilterFactory::class
 		=> object()
 		->constructorParameter('validate_factories', [
 			'bic' => function () {
-				return app(\Mopsis\Filter\Rule\Validate\Bic::class);
+				return app(\Mopsis\Extensions\Aura\Filter\Rule\Validate\Bic::class);
 			},
 			'iban' => function () {
-				return app(\Mopsis\Filter\Rule\Validate\Iban::class);
+				return app(\Mopsis\Extensions\Aura\Filter\Rule\Validate\Iban::class);
 			},
 			'money' => function () {
-				return app(\Mopsis\Filter\Rule\Validate\Money::class);
+				return app(\Mopsis\Extensions\Aura\Filter\Rule\Validate\Money::class);
 			},
 			'optional' => function () {
-				return app(\Mopsis\Filter\Rule\Validate\Optional::class);
+				return app(\Mopsis\Extensions\Aura\Filter\Rule\Validate\Optional::class);
 			},
 			'zipcode' => function () {
-				return app(\Mopsis\Filter\Rule\Validate\ZipCode::class);
+				return app(\Mopsis\Extensions\Aura\Filter\Rule\Validate\ZipCode::class);
 			}
 		])
 		->constructorParameter('sanitize_factories', [
 			'float' => function () {
-				return app(\Mopsis\Filter\Rule\Sanitize\Float::class);
+				return app(\Mopsis\Extensions\Aura\Filter\Rule\Sanitize\Float::class);
 			}
 		]),
 
@@ -133,19 +135,19 @@ return [
 			return Mopsis\Auth::user();
 		},
 
-	Mopsis\Core\View::class
+	Mopsis\Components\View\View::class
 		=> function (ContainerInterface $c) {
 			$extensions = [
 				$c->get(\Asm89\Twig\CacheExtension\Extension::class),
-				$c->get(\Mopsis\Twig\Extensions\Formbuilder::class),
-				$c->get(\Mopsis\Twig\Extensions\Markdown::class)
+				$c->get(\Mopsis\Extensions\Twig\FormBuilder::class),
+				$c->get(\Mopsis\Extensions\Twig\Markdown::class)
 			];
 
 			if ($c->get('twig.config')['debug']) {
 				$extensions[] = $c->get(\Twig_Extension_Debug::class);
 			}
 
-			return new \Mopsis\Core\View($c->get(\Twig_Environment::class), $extensions);
+			return new \Mopsis\Components\View\View($c->get(\Twig_Environment::class), $extensions);
 		},
 
 	Psr\Log\LoggerInterface::class

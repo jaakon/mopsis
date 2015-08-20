@@ -1,13 +1,16 @@
 <?php namespace Mopsis\Core;
 
+use Aura\Web\Request;
+use Psr\Log\LoggerInterface as Logger;
+
 class Router
 {
 	protected $logger;
 	protected $request;
 
-	public function __construct(\Psr\Log\LoggerInterface $logger, \Aura\Web\Request $request)
+	public function __construct(Logger $logger, Request $request)
 	{
-		$this->logger = $logger;
+		$this->logger  = $logger;
 		$this->request = $request;
 	}
 
