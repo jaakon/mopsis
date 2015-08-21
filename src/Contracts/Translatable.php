@@ -5,7 +5,7 @@ interface Translatable
 	public function __($key, array $replace = []);
 }
 
-trait Translatable
+trait TranslatableTrait
 {
 	public function __($key, array $replace = [])
 	{

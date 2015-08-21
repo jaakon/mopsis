@@ -5,7 +5,7 @@ interface Hierarchical
 	public function getAncestorAttribute();
 }
 
-trait Hierarchical
+trait HierarchicalTrait
 {
 	public function getAncestorAttribute()
 	{

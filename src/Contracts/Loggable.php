@@ -5,7 +5,7 @@ interface Loggable
 	public function logChanges();
 }
 
-trait Loggable
+trait LoggableTrait
 {
 	public function logChanges($message = null)
 	{

@@ -36,6 +36,11 @@ function array_concat(array $array, ...$values)
 	return $array;
 }
 
+function array_wrap($data)
+{
+	return is_array($data) ? $data : [$data];
+}
+
 function camelCase($string)
 {
 	return ucfirst(preg_replace_callback('/-([a-z])/i', function ($match) {

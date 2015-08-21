@@ -5,7 +5,7 @@ interface Traceable
 	public function getEvents($depth = 0);
 }
 
-trait Traceable
+trait TraceableTrait
 {
 	public function getEvents($depth = 0)
 	{
