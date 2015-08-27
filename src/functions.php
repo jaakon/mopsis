@@ -36,6 +36,23 @@ function array_concat(array $array, ...$values)
 	return $array;
 }
 
+function array_diff_values(array $array1, array $array2)
+{
+	$diff = [];
+
+	foreach (array_unique(array_merge(array_keys($array1), array_keys($array2))) as $key) {
+		if (is_array($array1[$key]) && is_array($array2[$key])) {
+			$diff[$key] = array_diff_values($array1[$key], $array2[$key]);
+		} elseif (is_object($array1[$key]) && is_object($array2[$key])) {
+			$diff[$key] = array_diff_values(object2array($array1[$key]), object2array($array2[$key]));
+		} elseif ((string) $array1[$key] !== (string) $array2[$key]) {
+			$diff[$key] = [(string) $array1[$key], (string) $array2[$key]];
+		}
+	}
+
+	return array_filter($diff);
+}
+
 function array_wrap($data)
 {
 	return is_array($data) ? $data : [$data];
@@ -50,7 +67,9 @@ function camelCase($string)
 
 function debug(...$args)
 {
-	ladybug_dump($args);
+	if (!!$_GET['debug']) {
+		ladybug_dump($args);
+	}
 }
 
 function getClassName($class)
@@ -83,6 +102,34 @@ function object2array($object)
 	}
 
 	return get_object_vars($object);
+}
+
+function object_merge(stdClass $object1, stdClass ...$objects)
+{
+	$result = clone $object1;
+
+	foreach ($objects as $object) {
+		foreach (get_object_vars($object) as $key => $value) {
+			if (!isset($result->{$key}) || gettype($result->{$key}) !== gettype($value)) {
+				$result->{$key} = $value;
+				continue;
+			}
+
+			switch (gettype($value)) {
+				case 'array':
+					$result->{$key} = array_merge_recursive($result->{$key}, $value);
+					break;
+				case 'object':
+					$result->{$key} = object_merge($result->{$key}, $value);
+					break;
+				default:
+					$result->{$key} = $value;
+					break;
+			}
+		}
+	}
+
+	return $result;
 }
 
 function pluralize($count, $singular, $plural = null)
@@ -126,6 +173,12 @@ function resolvePath($path)
 	$path = preg_replace('/\/\w+\/\.\.\//', '/', $path);
 
 	return $path;
+}
+
+function strip_invalid_chars($string, $charlist = null)
+{
+	setlocale(LC_CTYPE, 'de_DE.UTF8');
+	return preg_replace('/[^\w'.preg_quote($charlist, '/').']+/', '-', iconv('utf-8', 'ascii//TRANSLIT', $string));
 }
 
 /*
@@ -339,38 +392,6 @@ function now()
 	return date('Y-m-d H:i:s');
 }
 
-function object_merge(stdClass $object1, stdClass $object2)
-{
-	$result = clone $object1;
-
-	foreach (array_slice(func_get_args(), 1) as $i => $object) {
-		if (!($object instanceof stdClass)) {
-			throw new Exception('Argument '.($i + 2).' passed to '.__FUNCTION__.'() must be an instance of stdClass');
-		}
-
-		foreach (get_object_vars($object) as $key => $value) {
-			if (!isset($result->{$key}) || gettype($result->{$key}) !== gettype($value)) {
-				$result->{$key} = $value;
-				continue;
-			}
-
-			switch (gettype($value)) {
-				case 'array':
-					$result->{$key} = array_merge_recursive($result->{$key}, $value);
-					break;
-				case 'object':
-					$result->{$key} = object_merge($result->{$key}, $value);
-					break;
-				default:
-					$result->{$key} = $value;
-					break;
-			}
-		}
-	}
-
-	return $result;
-}
-
 function param_decode($string)
 {
 	return base64_decode(str_replace('~', '/', $string));
@@ -394,13 +415,6 @@ function preg_grep_keys($pattern, $input, $flags = 0)
 function realurl($url, $scheme, $host, $path = '/')
 {
 	return preg_match('/^(ht|f)tps?:\/\/|(mailto:|javascript:|#)/i', $url) > 0 ? $url : $scheme.'://'.$host.resolvePath($path.$url);
-}
-
-function strip_invalid_chars($string, $toLower = true, $charlist = null)
-{
-	setlocale(LC_CTYPE, 'de_DE.UTF8');
-	$string = preg_replace('/[^\w'.preg_quote($charlist, '/').']+/', '-', iconv('utf-8', 'ascii//TRANSLIT', $string));
-	return $toLower ? strtolower($string) : $string;
 }
 
 function today()
