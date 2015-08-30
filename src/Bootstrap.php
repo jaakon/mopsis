@@ -52,7 +52,6 @@ class Bootstrap
 	protected function updateCache($flushMode)
 	{
 		if ($flushMode === 'all' || $flushMode === 'app') {
-			App::make('CacheTool')->apc_clear_cache('both');
 			App::make('CacheTool')->opcache_reset();
 		}
 

@@ -8,7 +8,7 @@ use function DI\object;
 return [
 	'flysystem.local.config' => 'storage/files',
 	'monolog.lineformat'     => "[%datetime%] %level_name%: %message% %context% %extra%\n",
-	'namespacedModels'       => '\\App\\%1$s\\Domain\\%1$sModel',
+	'namespacedModels'       => '\\App\\{{MODUL}}\\Domain\\{{DOMAIN}}Model',
 	'stash.apc.config'       => [
 		'ttl'       => 3600,
 		'namespace' => md5($_SERVER['HTTP_HOST'])
@@ -136,7 +136,7 @@ return [
 
 	Mopsis\Core\User::class
 		=> function () {
-			return Mopsis\Auth::user();
+			return Mopsis\Core\Auth::user();
 		},
 
 	Mopsis\Components\View\View::class
@@ -246,7 +246,7 @@ return [
 		=> object(League\Flysystem\Filesystem::class),
 
 	Flash::class
-		=> object(Mopsis\Core\Flash::class),
+		=> object(Mopsis\Extensions\Flash::class),
 
 	Logger::class
 		=> function (ContainerInterface $c) {

@@ -32,7 +32,7 @@ trait TraceableTrait
 
 	public function setCreatingUser()
 	{
-		$this->setCreatedBy(\Mopsis\Auth::user()->getKey());
+		$this->setCreatedBy(\Mopsis\Core\Auth::user()->getKey());
 	}
 
 	public function setUpdatedAt($value)
@@ -48,7 +48,7 @@ trait TraceableTrait
 
 	public function setUpdatingUser()
 	{
-		$this->setUpdatedBy(\Mopsis\Auth::user()->getKey());
+		$this->setUpdatedBy(\Mopsis\Core\Auth::user()->getKey());
 	}
 }
 

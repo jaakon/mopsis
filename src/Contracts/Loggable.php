@@ -18,7 +18,7 @@ trait LoggableTrait
 			'values'  => json_encode($this->getDiff())
 		]);
 
-		$event->user()->associate(\Mopsis\Auth::user());
+		$event->user()->associate(\Mopsis\Core\Auth::user());
 		$this->events()->save($event);
 
 		return $this;

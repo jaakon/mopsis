@@ -1,8 +1,6 @@
-<?php namespace Mopsis;
+<?php namespace Mopsis\Core;
 
 use Illuminate\Contracts\Validation\ValidationException;
-use Mopsis\Core\App;
-use Mopsis\Core\User;
 
 class Auth
 {

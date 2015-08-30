@@ -13,13 +13,17 @@ class Token
 	{
 		$string = (string)$string;
 
-		if (!preg_match('/^(\w+):(\d+):[a-f0-9]+$/i', $string, $m)) {
+		if (!preg_match('/^((\w+):(\d+)):[a-f0-9]+(?:~(\w+))?$/i', $string, $m)) {
 			return false;
 		}
 
 		try {
-			$namespaced = App::make('namespacedModels');
-			$class      = sprintf($namespaced, str_plural($m[1]), $m[1]);
+			$replacements = [
+				'{{MODULE}}'   => str_plural($m[1]),
+				'{{DOMAIN}}'   => $m[1]
+			];
+
+			$class      = str_replace(array_keys($replacements), array_values($replacements), App::make('namespacedModels'));
 			$instance   = $class::findOrFail($m[2]);
 		} catch (ModelNotFoundException $e) {
 			return false;
@@ -36,7 +40,6 @@ class Token
 	{
 		$this->instance = $instance;
 		$this->session  = $session;
-
 	}
 
 	public function __toString()
