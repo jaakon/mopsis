@@ -51,12 +51,12 @@ class Bootstrap
 
 	protected function updateCache($flushMode)
 	{
-		if ($flushMode === 'all' || $flushMode === 'app') {
-			App::make('CacheTool')->opcache_reset();
-		}
-
 		if ($flushMode === 'all') {
 			Cache::flush();
+		}
+
+		if ($flushMode === 'all' || $flushMode === 'app') {
+			App::make('CacheTool')->opcache_reset();
 		}
 
 		if ($flushMode === 'all' || $flushMode === 'assets') {
