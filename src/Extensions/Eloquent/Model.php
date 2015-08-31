@@ -7,7 +7,7 @@ use Mopsis\Core\Cache;
 use Mopsis\Extensions\Stringifier;
 use Mopsis\Reflection\ReflectionClass;
 
-abstract class Model extends \Illuminate\Database\Eloquent\Model
+abstract class Model extends \Illuminate\Database\Eloquent\Model implements \Mopsis\Contracts\Model
 {
 	const CREATED_BY = 'created_by';
 	const UPDATED_BY = 'updated_by';

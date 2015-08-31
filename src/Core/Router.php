@@ -31,37 +31,61 @@ class Router
 			}
 
 			$test = preg_replace('/\\\{(.+?)\\\}/', '(?<$1>[^\/]*)', preg_quote($rule['path'], '/'));
+
 			if (!preg_match('/^' . $test . '(?:\/(?<params>.*))?/', rtrim($route, '/'), $m)) {
 				$this->logger->debug($rule[3] . ' => path does not match [' . $route . ']');
 				continue;
 			}
 
 			$m['method'] = $requestMethod;
+			$result      = $this->getClassMethod();
 
-			$class = vsprintf(
-				'App\\%s\\Action\\%sAction',
-				explode('\\', preg_replace_callback('/\{(.+?)\}/', function ($n) use ($m) {
-					return camelCase($m[$n[1]]);
-				}, $rule[3]))
-			);
-
-			if (!class_exists($class)) {
-				$this->logger->debug($rule[3] . ' => action "' . $class . '" not found [' . $route . ']');
+			if ($result === false) {
 				continue;
 			}
 
-			$reflectionClass = new \ReflectionClass($class);
-			$funcArgs        = $this->getFunctionArguments($reflectionClass->getMethod('__invoke'), $m);
+			list($class, $method) = $result;
+			$reflectionClass      = new \ReflectionClass($class);
+			$funcArgs             = $this->getFunctionArguments($reflectionClass->getMethod($method), $m);
 
 			if ($funcArgs === false) {
 				continue;
 			}
 
-			$this->logger->debug($route . ' ==> ' . $class);
-			return App::make($class)->__invoke(...$funcArgs);
+			$this->logger->debug($route . ' ==> ' . $class . '->' . $method);
+			return App::make($class)->callMethod($method, $funcArgs);
 		}
 
 		return false;
+	}
+
+	protected function getClassMethod($m)
+	{
+		list($module, $action) = explode('.', preg_replace_callback('/\{(.+?)\}/', function ($placeholder) use ($m) {
+			return camelCase($m[$placeholder[1]]);
+		}, $rule[3]));
+
+		try {
+			$class  = App::create('Action', $module . '\\' . $module . '\\' . $action);
+			$method = '__invoke';
+		} catch (\DomainException $e) {
+			try {
+				$class  = App::create('Controller', $class);
+				$method = $action;
+			} catch (\DomainException $e) {
+				$this->logger->debug($rule[3].' => class "'.$class.'" not found ['.$route.']');
+
+				return false;
+			}
+
+			if (!method_exists($class, $method)) {
+				$this->logger->debug($rule[3].' => method "'.$method.'" not found ['.$route.']');
+
+				return false;
+			}
+		}
+
+		return [$class, $method];
 	}
 
 	protected function getFunctionArguments(\ReflectionMethod $method, $m)
