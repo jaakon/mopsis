@@ -18,9 +18,10 @@ class Token
 		}
 
 		try {
-			$namespaced = App::make('namespacedModels');
-			$class      = sprintf($namespaced, str_plural($m[1]), $m[1]);
-			$instance   = $class::findOrFail($m[2]);
+			$class    = App::create('Domain', str_plural($m[1]) . '\\' . str_plural($m[1]) . '\\Model');
+			$instance = $class::findOrFail($m[2]);
+		} catch (\DomainException $e) {
+			$instance = App::create('Model', str_plural($m[1]) . '\\' . str_plural($m[1]), $m[2]);
 		} catch (ModelNotFoundException $e) {
 			return false;
 		}
@@ -36,7 +37,6 @@ class Token
 	{
 		$this->instance = $instance;
 		$this->session  = $session;
-
 	}
 
 	public function __toString()

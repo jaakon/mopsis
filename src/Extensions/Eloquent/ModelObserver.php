@@ -20,7 +20,7 @@ class ModelObserver
 	public function created($model)
 	{
 		if ($model instanceof \Mopsis\Contracts\Loggable) {
-			$model->logChanges(getClassName($model) . '.created');
+			$model->logChanges(class_basename($model) . '.created');
 		}
 	}
 
@@ -34,14 +34,14 @@ class ModelObserver
 	public function updated($model)
 	{
 		if ($model instanceof \Mopsis\Contracts\Loggable) {
-			$model->logChanges(getClassName($model) . '.updated');
+			$model->logChanges(class_basename($model) . '.updated');
 		}
 	}
 
 	public function deleted($model)
 	{
 		if ($model instanceof \Mopsis\Contracts\Loggable) {
-			$model->logChanges(getClassName($model) . '.deleted');
+			$model->logChanges(class_basename($model) . '.deleted');
 		}
 	}
 }

@@ -6,9 +6,16 @@ use function DI\get;
 use function DI\object;
 
 return [
+	'classFormats' => [
+		'Action'     => '\\App\\{{MODULE}}\\Action\\{{DOMAIN}}{{SUBTYPE}}Action',
+		'Domain'     => '\\App\\{{MODULE}}\\Domain\\{{DOMAIN}}{{SUBTYPE}}',
+		'Responder'  => '\\App\\{{MODULE}}\\Responder\\{{DOMAIN}}{{SUBTYPE}}Responder',
+		'Controller' => '\\App\\Controllers\\{{MODULE}}',
+		'Model'      => '\\App\\Models\\{{DOMAIN}}',
+		'Collection' => '\\App\\Collections\\{{DOMAIN}}',
+	],
 	'flysystem.local.config' => 'storage/files',
 	'monolog.lineformat'     => "[%datetime%] %level_name%: %message% %context% %extra%\n",
-	'namespacedModels'       => '\\App\\%1$s\\Domain\\%1$sModel',
 	'stash.apc.config'       => [
 		'ttl'       => 3600,
 		'namespace' => md5($_SERVER['HTTP_HOST'])
@@ -136,7 +143,7 @@ return [
 
 	Mopsis\Core\User::class
 		=> function () {
-			return Mopsis\Auth::user();
+			return Mopsis\Core\Auth::user();
 		},
 
 	Mopsis\Components\View\View::class
@@ -246,7 +253,7 @@ return [
 		=> object(League\Flysystem\Filesystem::class),
 
 	Flash::class
-		=> object(Mopsis\Core\Flash::class),
+		=> object(Mopsis\Extensions\Flash::class),
 
 	Logger::class
 		=> function (ContainerInterface $c) {

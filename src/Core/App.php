@@ -13,20 +13,33 @@ namespace Mopsis\Core {
 			static::$container = $container;
 		}
 
-		public static function build($class)
+		public static function create($type, $entity, array $parameters = null)
 		{
-			if (!preg_match('/^(\w+)\\\(\w+)$/', $class, $m)) {
-				throw new \Exception('invalid parameter for build call: ' . $class);
+			$format = static::make('classFormats')[$type];
+
+			if ($format === null) {
+				throw new \UnexpectedValueException('invalid type "' . $type . '" for entity "' . $entity . '"');
 			}
 
-			return static::make(sprintf('\App\%1$s\%2$sController', $m[1], $m[2]));
-/*
-			if (!preg_match('/^(.+?)\\\(.+?)\\\(.+?)$/', $class, $m)) {
-				throw new \Exception('invalid parameter for build call: ' . $class);
+			list($module, $domain, $subtype) = explode('\\', $entity);
+
+			$replacements = array_filter([
+				'{{MODULE}}'  => $module,
+				'{{DOMAIN}}'  => $domain,
+				'{{SUBTYPE}}' => $subtype
+			]);
+
+			$class = str_replace(array_keys($replacements), array_values($replacements), $format);
+
+			if (preg_match('/\{\{(\w+)\}\}/', $class, $m)) {
+				throw new \InvalidArgumentException('value for placeholder "' . $m[1] . '" for type "' . $type . '" is missing');
 			}
 
-			return static::make(sprintf('\App\%1$s\%2$s\%1$s%3$s%4$s', $m[1], $m[2], $m[3], str_replace('Domain', '', $m[2])));
-*/
+			if (!class_exists($class)) {
+				throw new \DomainException('value for placeholder "' . $m[1] . '" for type "' . $type . '" is missing');
+			}
+
+			return static::make($class, $parameters);
 		}
 
 		public static function make($type, array $parameters = null)
@@ -50,9 +63,9 @@ namespace {
 
 	class App
 	{
-		public static function build($class)
+		public static function create($entity)
 		{
-			return \Mopsis\Core\App::build($class);
+			return \Mopsis\Core\App::build($entity);
 		}
 
 		public static function make($type, array $parameters = null)

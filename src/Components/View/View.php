@@ -67,7 +67,7 @@ class View
 
 	public function assign($data)
 	{
-		$this->data = array_merge($this->data, object2array($data));
+		$this->data = array_merge($this->data, object_to_array($data));
 
 		return $this;
 	}

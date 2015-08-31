@@ -3,6 +3,10 @@
 interface Traceable
 {
 	public function getEvents($depth = 0);
+	public function setCreatedBy($value);
+	public function setCreatingUser();
+	public function setUpdatedBy($value);
+	public function setUpdatingUser();
 }
 
 trait TraceableTrait
@@ -14,11 +18,8 @@ trait TraceableTrait
 
 		return $this->events;
 	}
-}
 
-/*
-trait TraceableTrait
-{
+	/** @Override */
 	public function setCreatedAt($value)
 	{
 		parent::setCreatedAt($value);
@@ -32,9 +33,10 @@ trait TraceableTrait
 
 	public function setCreatingUser()
 	{
-		$this->setCreatedBy(\Mopsis\Auth::user()->getKey());
+		$this->setCreatedBy(\Mopsis\Core\Auth::user()->getKey());
 	}
 
+	/** @Override */
 	public function setUpdatedAt($value)
 	{
 		parent::setUpdatedAt($value);
@@ -48,18 +50,6 @@ trait TraceableTrait
 
 	public function setUpdatingUser()
 	{
-		$this->setUpdatedBy(\Mopsis\Auth::user()->getKey());
+		$this->setUpdatedBy(\Mopsis\Core\Auth::user()->getKey());
 	}
 }
-
-interface TraceableInterface
-{
-	public function setCreatingUser();
-
-	public function setUpdatingUser();
-
-	public function setCreatedBy($value);
-
-	public function setUpdatedBy($value);
-}
-*/

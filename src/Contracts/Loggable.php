@@ -13,12 +13,12 @@ trait LoggableTrait
 			return $this;
 		}
 
-		$event = new \Models\Event([
+		$event = new \App\Models\Event([
 			'message' => $message ?: $this->traceAction(),
 			'values'  => json_encode($this->getDiff())
 		]);
 
-		$event->user()->associate(\Mopsis\Auth::user());
+		$event->user()->associate(\Mopsis\Core\Auth::user());
 		$this->events()->save($event);
 
 		return $this;

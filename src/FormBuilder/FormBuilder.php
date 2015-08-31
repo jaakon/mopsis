@@ -352,7 +352,23 @@ class FormBuilder
 		foreach ($dom->find('input,select,textarea') as $node) {
 			$field = FieldFactory::create($node);
 			$key   = preg_match('/(.+)\[(.*)\]$/', $field->attr('name'), $m) ? $m[1] : $field->attr('name');
-			$value = preg_match('/(.+?)\.(.+)/', $key, $n) && isset($values[$n[1]]) ? $values[$n[1]][$n[2]] : $values[$key];
+			$value = $values[$key];
+
+			if (preg_match('/(.+?)\.(.+)/', $key, $n) && isset($values[$n[1]])) {
+				switch (gettype($values[$n[1]])) {
+					case 'array':
+						$value = $values[$n[1]][$n[2]];
+						break;
+					case 'object':
+						$value = $values[$n[1]]->$n[2];
+						break;
+					case 'null':
+						$value = null;
+						break;
+					default:
+						$value = $values[$n[1]];
+				}
+			}
 
 			if (!empty($m[2])) {
 				$value = $value[$m[2]];
@@ -365,11 +381,7 @@ class FormBuilder
 			if ($field instanceof Fields\Select) {
 				$field->updateSize();
 			}
-/*
-			if ($value === null) {
-				continue;
-			}
-*/
+
 			$field->val($value);
 		}
 
