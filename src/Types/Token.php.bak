@@ -1,7 +1,7 @@
 <?php namespace Mopsis\Types;
 
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Mopsis\Contracts\Model;
+use Mopsis\Extensions\Eloquent\Model;
 use Mopsis\Core\App;
 
 class Token

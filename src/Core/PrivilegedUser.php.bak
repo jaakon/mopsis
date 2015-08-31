@@ -1,8 +1,6 @@
 <?php namespace Mopsis\Core;
 
-use Mopsis\Contracts\Hierarchical;
-use Mopsis\Contracts\Model;
-
+use Mopsis\Extensions\Eloquent\Model;
 abstract class PrivilegedUser extends User
 {
 	public function roles()
@@ -32,7 +30,7 @@ abstract class PrivilegedUser extends User
 			$object = $objectToAccess;
 
 			while ((string)$role->constraint !== (string)$object // get_class() vs. identical classes in hierarchy
-				&& $object instanceof Hierarchical
+				&& $object instanceof \Mopsis\Contracts\Hierarchical
 			) {
 				$object = $object->ancestor;
 			}
