@@ -3,6 +3,7 @@
 use Mopsis\Core\App;
 use Mopsis\Support\ArrayHelpers;
 use Mopsis\Support\ClassHelpers;
+use Mopsis\Support\MiscHelpers;
 use Mopsis\Support\ObjectHelpers;
 use Mopsis\Support\PathHelpers;
 use Mopsis\Support\StringHelpers;
@@ -44,9 +45,7 @@ function camelCase($string)
 
 function debug(...$args)
 {
-	if (!!$_GET['debug']) {
-		ladybug_dump($args);
-	}
+	return MiscHelpers::debug(...$args);
 }
 
 function getClosestMatch($input, $words)
@@ -76,22 +75,10 @@ function pluralize($count, $singular, $plural = null)
 
 function redirect($url = null, $responseCode = 302)
 {
-	if (preg_match('/^(ht|f)tps?:\/\//', $url) === 0) {
-		$url = ($_SERVER['REQUEST_SCHEME'] ?: 'http') . '://' . $_SERVER['HTTP_HOST'] . resolvePath(preg_replace('/\/+$/', '', $_SERVER['REQUEST_URI']) . '/' . $url);
-	}
-
-	if (!headers_sent($file, $line)) {
-		http_response_code($responseCode);
-		header('Location: ' . $url);
-		exit;
-	}
-
-	echo 'ERROR: Headers already sent in ' . $file . ' on line ' . $line . "!<br/>\n";
-	echo 'Cannot redirect, please click <a href="' . $url . '">[this link]</a> instead.';
-	exit;
+	return MiscHelpers::redirect($url, $responseCode);
 }
 
-function resolvePath($path)
+function resolve_path($path)
 {
 	return PathHelpers::resolve($path);
 }
