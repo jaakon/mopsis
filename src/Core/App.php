@@ -13,7 +13,7 @@ namespace Mopsis\Core {
 			static::$container = $container;
 		}
 
-		public static function create($type, $entity, array $parameters = null)
+		public static function build($type, $entity)
 		{
 			$format = static::make('classFormats')[$type];
 
@@ -35,26 +35,31 @@ namespace Mopsis\Core {
 				throw new \InvalidArgumentException('value for placeholder "' . $m[1] . '" for type "' . $type . '" is missing');
 			}
 
-			if (!class_exists($class)) {
+			if (!static::has($class)) {
 				throw new \DomainException('class "' . $class . '" for type "' . $type . '" not found');
 			}
 
-			return static::make($class, $parameters);
+			return $class;
 		}
 
-		public static function make($type, array $parameters = null)
+		public static function create($type, $entity, array $parameters = null)
 		{
-			switch ($type) {
+			return static::make(static::build($type, $entity), $parameters);
+		}
+
+		public static function make($entity, array $parameters = null)
+		{
+			switch ($entity) {
 				case 'db':
 					return static::$container->get(Database::class)->getConnection();
 				default:
-					return is_array($parameters) ? static::$container->make($type, $parameters) : static::$container->get($type);
+					return is_array($parameters) ? static::$container->make($entity, $parameters) : static::$container->get($entity);
 			}
 		}
 
-		public static function set($name, $value)
+		public static function set($entity, $value)
 		{
-			static::$container->set($name, $value);
+			static::$container->set($entity, $value);
 		}
 	}
 }
@@ -63,19 +68,9 @@ namespace {
 
 	class App
 	{
-		public static function create($entity)
+		public static function __callStatic($method, $args)
 		{
-			return \Mopsis\Core\App::build($entity);
-		}
-
-		public static function make($type, array $parameters = null)
-		{
-			return \Mopsis\Core\App::make($type, $parameters);
-		}
-
-		public static function set($name, $value)
-		{
-			\Mopsis\Core\App::set($name, $value);
+			return \Mopsis\Core\App::$method(...$args);
 		}
 	}
 }

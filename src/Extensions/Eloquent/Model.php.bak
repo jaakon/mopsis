@@ -6,7 +6,6 @@ use Mopsis\Core\App;
 use Mopsis\Core\Cache;
 use Mopsis\Extensions\Stringifier;
 use Mopsis\Reflection\ReflectionClass;
-use Mopsis\Types\Token;
 
 abstract class Model extends \Illuminate\Database\Eloquent\Model implements \Mopsis\Contracts\Model
 {
@@ -37,7 +36,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements \Mop
 	 */
 	public static function unpack($token)
 	{
-		$instance = Token::extract($token);
+		$instance = \Mopsis\Types\Token::extract($token);
 		$class    = get_called_class();
 
 		if ($instance instanceof $class) {
@@ -85,7 +84,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements \Mop
 
 	public function __toString()
 	{
-		return class_basename($this).':'.($this->id ?: 0);
+		return substr((new \ReflectionClass($this))->getShortName(), 0, -5) . ':' . ($this->id ?: 0);
 	}
 
 	public function clearCachedAttribute($attribute)
@@ -93,6 +92,28 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements \Mop
 		Cache::clear([$this, $attribute]);
 
 		return $this;
+	}
+
+	public function getUriRecursive()
+	{
+		if ($this->exists() && isset($this->uri)) {
+			return $this->uri;
+		}
+
+		if ($this instanceof iHierarchical) {
+			return $this->ancestor->getUriRecursive();
+		}
+
+		return;
+	}
+
+	/** @Override */
+	public function hasMany($related, $foreignKey = null, $localKey = null)
+	{
+		list($module, $domain) = explode('\\', $related);
+
+		return App::make('App\\' . $module . '\Domain\\' . $domain . 'Gateway')
+			 ->newRepository(parent::hasMany('App\\' . $module . '\Domain\\' . $domain . 'Model', $foreignKey, $localKey));
 	}
 
 	public function clearCachedAttributeRecursive($attribute)
@@ -199,37 +220,17 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements \Mop
 
 	public function getHashAttribute()
 	{
-		return new Token($this);
+		return new \Mopsis\Types\Token($this);
 	}
 
 	public function getTokenAttribute()
 	{
-		return new Token($this, session_id());
+		return new \Mopsis\Types\Token($this, session_id());
 	}
 
 	public function getTokenStringAttribute()
 	{
 		return (string)$this->token;
-	}
-
-	public function getUriRecursive()
-	{
-		if ($this->exists && isset($this->uri)) {
-			return $this->uri;
-		}
-
-		if ($this instanceof Hierarchical) {
-			return $this->ancestor->getUriRecursive();
-		}
-
-		return;
-	}
-
-	/** @Override */
-	public function hasMany($related, $foreignKey = null, $localKey = null)
-	{
-		return App::create('Domain', $related . '\\Gateway')
-			->newRepository(parent::hasMany(App::build('Domain', $related . '\\Model'), $foreignKey, $localKey));
 	}
 
 	/** @Override */

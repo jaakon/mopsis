@@ -53,8 +53,9 @@ class Router
 				continue;
 			}
 
-			$this->logger->debug($this->route . ' ==> ' . get_class($class) . '->' . $method);
-			return $class->callMethod($method, $funcArgs);
+			$this->logger->debug($this->route . ' ==> ' . $class . '->' . $method);
+
+			return App::make($class)->$method(...$funcArgs);
 		}
 
 		return false;
@@ -67,11 +68,11 @@ class Router
 		}, $path));
 
 		try {
-			$class  = App::create('Action', $module . '\\' . $module . '\\' . $action);
+			$class  = App::build('Action', $module . '\\' . $module . '\\' . $action);
 			$method = '__invoke';
 		} catch (\DomainException $e) {
 			try {
-				$class  = App::create('Controller', $module);
+				$class  = App::build('Controller', $module);
 				$method = $action;
 			} catch (\DomainException $e) {
 				$this->logger->debug($path . ' => class "' . $class . '" not found [' . $this->route . ']');
