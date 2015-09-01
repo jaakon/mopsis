@@ -7,7 +7,7 @@ abstract class PrivilegedUser extends User
 {
 	public function roles()
 	{
-		return $this->hasMany('App\Roles\RoleModel')->orderBy('constraint_id');
+		throw new \Exception('$user->roles is not defined!');
 	}
 
 	public function may($actionOnObject, $objectToAccess = null)
