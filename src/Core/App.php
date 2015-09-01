@@ -36,7 +36,7 @@ namespace Mopsis\Core {
 			}
 
 			if (!class_exists($class)) {
-				throw new \DomainException('value for placeholder "' . $m[1] . '" for type "' . $type . '" is missing');
+				throw new \DomainException('class "' . $class . '" for type "' . $type . '" not found');
 			}
 
 			return static::make($class, $parameters);

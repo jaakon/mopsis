@@ -1,8 +1,10 @@
 <?php namespace Mopsis\Support;
 
+use Mopsis\Core\App;
+
 class StringHelpers
 {
-	public function camelCase($string)
+	public static function camelCase($string)
 	{
 		return ucfirst(preg_replace_callback('/-([a-z])/i', function ($match) {
 			return strtoupper($match[1]);
@@ -68,7 +70,13 @@ class StringHelpers
 	public static function pluralize($count, $singular, $plural = null)
 	{
 		if ($plural === null) {
-			$plural = str_plural($singular);
+			switch (App::make('translator.locale')) {
+				case 'de':
+					$plural = $singular . 'e';
+					break;
+				default:
+					$plural = str_plural($singular);
+			}
 		}
 
 		return sprintf('%s %s', str_replace('.', ',', $count), abs($count) == 1 ? $singular : $plural);
