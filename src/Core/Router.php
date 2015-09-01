@@ -73,7 +73,7 @@ class Router
 		} catch (\DomainException $e) {
 			try {
 				$class  = App::build('Controller', $module);
-				$method = $action;
+				$method = lcfirst($action);
 			} catch (\DomainException $e) {
 				$this->logger->debug($path . ' => class "' . $class . '" not found [' . $this->route . ']');
 

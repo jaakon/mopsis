@@ -35,7 +35,7 @@ namespace Mopsis\Core {
 				throw new \InvalidArgumentException('value for placeholder "' . $m[1] . '" for type "' . $type . '" is missing');
 			}
 
-			if (!static::has($class)) {
+			if (!static::$container->has($class)) {
 				throw new \DomainException('class "' . $class . '" for type "' . $type . '" not found');
 			}
 
