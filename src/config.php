@@ -158,7 +158,11 @@ return [
 				$extensions[] = $c->get(Twig_Extension_Debug::class);
 			}
 
-			return new Mopsis\Components\View\View($c->get(Twig_Environment::class), $extensions);
+			return new Mopsis\Components\View\View(
+				$c->get(Twig_Environment::class),
+				$c->get(Aura\Web\Request::class),
+				$extensions
+			);
 		},
 
 	Psr\Log\LoggerInterface::class

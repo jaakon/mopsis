@@ -1,10 +1,14 @@
 <?php namespace Mopsis\Components\View;
 
+use Aura\Web\Request;
+use Mopsis\Components\Domain\AbstractFilter as Filter;
+use Mopsis\Core\App;
 use Twig_Environment as Renderer;
 
 class View
 {
 	protected $renderer;
+	protected $request;
 
 	private $template;
 	private $data       = [];
@@ -13,9 +17,10 @@ class View
 	private $functions  = [];
 	private $filters    = [];
 
-	public function __construct(Renderer $renderer, array $extensions = [])
+	public function __construct(Renderer $renderer, Request $request, array $extensions = [])
 	{
 		$this->renderer   = $renderer;
+		$this->request    = $request;
 		$this->extensions = $extensions;
 	}
 
@@ -79,18 +84,14 @@ class View
 		return $this;
 	}
 
-	public function prefillForm($formId, \Mopsis\Validation\ValidationFacade $facade)
+	public function prefillForm($formId, Filter $filter)
 	{
-		$this->initializeForm($formId);
-
-		if ($facade->isValid()) {
-			return $this;
-		}
+		$messages = $filter->getMessages();
 
 		$this
-			->setFormValues($formId, $facade->getRawRequest()->toArray())
-			->setFormErrors($formId, $facade->getInvalidFields())
-			->assign(['errors' => $facade->getErrors()]);
+			->setFormValues($formId, $this->request->post->get())
+			->setFormErrors($formId, array_keys($messages))
+			->assign(['errors' => array_flatten($messages)]);
 
 		return $this;
 	}
@@ -122,6 +123,10 @@ class View
 	public function setTemplate($template)
 	{
 		$this->template = preg_replace('/^App\\\/', '', $template);
+
+		if (!pathinfo($this->template, PATHINFO_EXTENSION)) {
+			$this->template .= '.twig';
+		}
 
 		return $this;
 	}
