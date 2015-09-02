@@ -2,9 +2,9 @@
 
 use Assetic\Asset\AssetCollection;
 use Assetic\Asset\GlobAsset;
-use Aura\Web\ResponseSender;
 use Mopsis\Core\App;
 use Mopsis\Core\Cache;
+use Mopsis\Extensions\Aura\Web\ResponseSender;
 
 class Bootstrap
 {
@@ -20,9 +20,7 @@ class Bootstrap
 		include 'app/initialize.php';
 
 		$response = $this->executeRoute();
-		$sender   = new ResponseSender($response);
-
-		$sender->__invoke();
+		(new ResponseSender($response))->__invoke();
 	}
 
 	public function initialize()
