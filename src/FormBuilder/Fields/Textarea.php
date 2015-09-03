@@ -19,4 +19,11 @@ class Textarea extends AbstractField
 
 		$this->text($value);
 	}
+
+	public function updateSize()
+	{
+		if ($this->attr('rows') === 'auto') {
+			$this->attr('rows', count(explode(PHP_EOL, $this->getValue())) + 1);
+		}
+	}
 }

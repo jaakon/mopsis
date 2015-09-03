@@ -110,11 +110,15 @@ abstract class AbstractCrudController extends AbstractController
 			$this->view->assign(['token' => $instance->token]);
 		}
 
-		if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+		if (!$this->request->method->isPost()) {
 			return 202;
 		}
 
-		if ($this->filter->isValid($formId)) {
+		if ($instance->exists && $this->filter->forUpdate($formId, $this->request->post->get())) {
+			return 200;
+		}
+
+		if (!$instance->exists && $this->filter->forInsert($formId, $this->request->post->get())) {
 			return 200;
 		}
 

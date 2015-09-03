@@ -1,4 +1,4 @@
-<?php namespace Mopsis\Extensions\Aura\Filter\Rule\Validate;
+<?php namespace Mopsis\Extensions\Aura\Filter\Rule\Validate\Finance;
 
 use IBAN\Validation\IBANValidator as Validator;
 

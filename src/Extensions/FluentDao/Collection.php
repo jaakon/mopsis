@@ -1,6 +1,6 @@
 <?php namespace Mopsis\Extensions\FluentDao;
 
-use Mopsis\Core\User;
+use Mopsis\Contracts\User;
 
 class Collection extends \Illuminate\Support\Collection
 {

@@ -49,7 +49,7 @@ class FormBuilder
 			foreach ($item->xpath('rule[@type="sanitize"]') as $rule) {
 				$rules[] = [
 					'spec'  => (string)$rule->attributes()->spec,
-					'args'  => (string)$rule->attributes()->args,
+					'args'  => explode('|', (string)$rule->attributes()->args),
 					'blank' => isset($rule->attributes()->blankValue) ? (string)$rule->attributes()->blankValue : null
 				];
 			}
@@ -73,8 +73,8 @@ class FormBuilder
 			foreach ($item->xpath('rule[@type="upload"]') as $rule) {
 				$rules[] = [
 					'spec'    => (string)$rule->attributes()->spec,
-					'args'    => (string)$rule->attributes()->args,
-					'message' => (string)$rule
+					'args'    => explode('|', (string)$rule->attributes()->args),
+					'message' => (string)$rule->attributes()->suppressMessage === 'true' ? false : (string)$rule,
 				];
 			}
 
@@ -95,8 +95,8 @@ class FormBuilder
 			foreach ($item->xpath('rule[@type="validate"]') as $rule) {
 				$rules[] = [
 					'spec'    => (string)$rule->attributes()->spec,
-					'args'    => (string)$rule->attributes()->args,
-					'message' => (string)$rule,
+					'args'    => explode('|', (string)$rule->attributes()->args),
+					'message' => (string)$rule->attributes()->suppressMessage === 'true' ? false : (string)$rule,
 					'mode'    => (string)$rule->attributes()->failureMode ?: 'hard'
 				];
 			}
@@ -378,11 +378,11 @@ class FormBuilder
 				$field->addClass($this->config->errorClass ?: 'validation-error');
 			}
 
-			if ($field instanceof Fields\Select) {
+			$field->val($value);
+
+			if ($field instanceof Fields\Select || $field instanceof Fields\Textarea) {
 				$field->updateSize();
 			}
-
-			$field->val($value);
 		}
 
 		return $dom;

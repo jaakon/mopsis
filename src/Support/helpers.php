@@ -38,11 +38,6 @@ function array_wrap($data)
 	return ArrayHelpers::wrap($data);
 }
 
-function camelCase($string)
-{
-	return StringHelpers::camelCase($string);
-}
-
 function debug(...$args)
 {
 	return MiscHelpers::debug(...$args);

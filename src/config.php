@@ -58,14 +58,32 @@ return [
 	Aura\Filter\FilterFactory::class
 		=> object()
 		->constructorParameter('validate_factories', [
+			'after' => function () {
+				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\DateTime\After::class);
+			},
+			'before' => function () {
+				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\DateTime\Before::class);
+			},
+			'concurrent' => function () {
+				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\DateTime\Concurrent::class);
+			},
+			'notAfter' => function () {
+				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\DateTime\NotAfter::class);
+			},
+			'notBefore' => function () {
+				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\DateTime\NotBefore::class);
+			},
 			'bic' => function () {
-				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\Bic::class);
+				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\Finance\Bic::class);
 			},
 			'iban' => function () {
-				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\Iban::class);
+				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\Finance\Iban::class);
 			},
 			'money' => function () {
-				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\Money::class);
+				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\Finance\Money::class);
+			},
+			'conditional' => function () {
+				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\Conditional::class);
 			},
 			'optional' => function () {
 				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\Optional::class);
@@ -141,7 +159,7 @@ return [
 		->constructorParameter('format', get('monolog.lineformat'))
 		->constructorParameter('allowInlineLineBreaks', true),
 
-	Mopsis\Core\User::class
+	Mopsis\Contracts\User::class
 		=> function () {
 			return Mopsis\Core\Auth::user();
 		},

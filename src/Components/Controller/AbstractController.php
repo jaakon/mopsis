@@ -1,5 +1,6 @@
 <?php namespace Mopsis\Components\Controller;
 
+use Aura\Web\Request;
 use Aura\Web\Response;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Mopsis\Components\Controller\Filter;
@@ -11,8 +12,18 @@ use Mopsis\FormBuilder\FormBuilder;
 
 abstract class AbstractController
 {
-	protected $view;
+	protected $request;
 	protected $filter;
+	protected $view;
+
+	public function __construct(Request $request, Filter $filter, View $view)
+	{
+		$this->request = $request;
+		$this->filter  = $filter;
+		$this->view    = $view;
+
+		$this->checkAccess();
+	}
 
 	public function __call($method, $funcArgs)
 	{
@@ -50,14 +61,6 @@ abstract class AbstractController
 		return $response;
 	}
 
-	public function __construct(View $view, Filter $filter)
-	{
-		$this->view   = $view;
-		$this->filter = $filter;
-
-		$this->checkAccess();
-	}
-
 	protected function checkAccess()
 	{
 		if (defined('static::ACCESS') && static::ACCESS === 'PUBLIC') {
@@ -79,13 +82,8 @@ abstract class AbstractController
 		redirect(CORE_LOGIN_PAGE.(strpos(CORE_LOGIN_PAGE, '?') !== false ? '&' : '?').'redirect='.urlencode($_SERVER['REQUEST_URI']));
 	}
 
-	protected function getRoute($page)
-	{
-		return resolve_path(class_basename($this). '/' . $page);
-	}
-
 	protected function setTemplate($page)
 	{
-		$this->view->setTemplate($this->getRoute($page));
+		$this->view->setTemplate(class_basename($this). '/' . $page);
 	}
 }

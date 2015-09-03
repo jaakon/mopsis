@@ -1,9 +1,12 @@
-<?php namespace Mopsis\Core;
+<?php namespace Mopsis\Contracts;
 
-use Mopsis\Contracts\Hierarchical;
-use Mopsis\Contracts\Model;
+interface PrivilegedUser
+{
+	public function roles();
+	public function may($actionOnObject, $objectToAccess = null);
+}
 
-abstract class PrivilegedUser extends User
+trait PrivilegedUserTrait
 {
 	public function roles()
 	{
@@ -13,7 +16,7 @@ abstract class PrivilegedUser extends User
 	public function may($actionOnObject, $objectToAccess = null)
 	{
 		foreach ($this->roles as $role) {
-			if (!Security::isRoleAllowedTo($role->key, $actionOnObject)) {
+			if (!\Mopsis\Core\Security::isRoleAllowedTo($role->key, $actionOnObject)) {
 				continue;
 			}
 
@@ -25,14 +28,14 @@ abstract class PrivilegedUser extends User
 				return true;
 			}
 
-			if (!($objectToAccess instanceof Model)) {
+			if (!($objectToAccess instanceof \Mopsis\Contracts\Model)) {
 				throw new \Exception('cannot determine privileges without a target object');
 			}
 
 			$object = $objectToAccess;
 
 			while ((string)$role->constraint !== (string)$object // get_class() vs. identical classes in hierarchy
-				&& $object instanceof Hierarchical
+				&& $object instanceof \Mopsis\Contracts\Hierarchical
 			) {
 				$object = $object->ancestor;
 			}

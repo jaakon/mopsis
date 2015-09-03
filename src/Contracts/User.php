@@ -1,17 +1,21 @@
-<?php namespace Mopsis\Core;
+<?php namespace Mopsis\Contracts;
 
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-
-abstract class User extends \Mopsis\Extensions\Eloquent\Model
+interface User
 {
-	protected $isAuthorized = false;
+	public static function autoLoad();
+	public static function authenticate($query, $values, $password, $permanent = false, $checkPassword = false);
+	public static function login(User $user, $permanent);
+	public static function logout();
+}
 
+trait UserTrait
+{
 	public static function autoLoad()
 	{
 		if (isset($_SESSION['user'])) {
 			try {
 				return static::unpack($_SESSION['user']);
-			} catch (ModelNotFoundException $e) {
+			} catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
 				unset($_SESSION['user']);
 			}
 		}
@@ -22,7 +26,7 @@ abstract class User extends \Mopsis\Extensions\Eloquent\Model
 				$_SESSION['user'] = (string)$user->token;
 
 				return $user;
-			} catch (ModelNotFoundException $e) {
+			} catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
 				setcookie('user', '', time() - 3600, '/');
 			}
 		}
@@ -70,15 +74,5 @@ abstract class User extends \Mopsis\Extensions\Eloquent\Model
 		setcookie('user', null, time() - 3600, '/', $_SERVER['HTTP_HOST'], false, true);
 		unset($_SESSION);
 		session_destroy();
-	}
-
-	public function authorize($bool)
-	{
-		$this->isAuthorized = $this->exists && $bool;
-	}
-
-	public function isAuthorized()
-	{
-		return $this->exists && $this->isAuthorized;
 	}
 }

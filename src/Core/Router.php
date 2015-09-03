@@ -64,8 +64,10 @@ class Router
 	protected function getClassMethod($path, $m)
 	{
 		list($module, $action) = explode('.', preg_replace_callback('/\{(.+?)\}/', function ($placeholder) use ($m) {
-			return camelCase($m[$placeholder[1]]);
+			return camel_case($m[$placeholder[1]]);
 		}, $path));
+
+		$module = ucfirst($module);
 
 		try {
 			$class  = App::build('Action', $module . '\\' . $module . '\\' . $action);
@@ -73,7 +75,7 @@ class Router
 		} catch (\DomainException $e) {
 			try {
 				$class  = App::build('Controller', $module);
-				$method = lcfirst($action);
+				$method = $action;
 			} catch (\DomainException $e) {
 				$this->logger->debug($path . ' => class "' . $class . '" not found [' . $this->route . ']');
 

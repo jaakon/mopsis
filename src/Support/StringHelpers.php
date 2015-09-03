@@ -4,13 +4,6 @@ use Mopsis\Core\App;
 
 class StringHelpers
 {
-	public static function camelCase($string)
-	{
-		return ucfirst(preg_replace_callback('/-([a-z])/i', function ($match) {
-			return strtoupper($match[1]);
-		}, strtolower($string)));
-	}
-
 	public static function getClosestMatch($input, $words)
 	{
 		$shortest	= PHP_INT_MAX;
