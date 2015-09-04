@@ -8,6 +8,7 @@ class MiscHelpers
 
 		$ladybug->setTheme('modern');
 		$ladybug->setOption('expanded', false);
+		$ladybug->setOption('helpers', ['debug']);
 
 		echo $ladybug->dump(...$args);
 	}

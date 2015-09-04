@@ -63,21 +63,32 @@ class Router
 
 	protected function getClassMethod($path, $m)
 	{
-		list($module, $action) = explode('.', preg_replace_callback('/\{(.+?)\}/', function ($placeholder) use ($m) {
-			return camel_case($m[$placeholder[1]]);
-		}, $path));
+		$path = preg_replace_callback('/\{(.+?)\}/', function ($placeholder) use ($m) {
+			return ucfirst(camel_case($m[$placeholder[1]]));
+		}, $path);
 
-		$module = ucfirst($module);
+		if (preg_match('/^\w+\\\\\w+\\\\\w+$/', $path)) {
+			try {
+				$class  = App::build('Action', $path);
+				$method = '__invoke';
+			} catch (\DomainException $e) {
+				$this->logger->debug($path . ' => ' . $e->getMessage() . ' [' . $this->route . ']');
 
-		try {
-			$class  = App::build('Action', $module . '\\' . $module . '\\' . $action);
-			$method = '__invoke';
-		} catch (\DomainException $e) {
+				return false;
+			}
+
+			return [$class, $method];
+		}
+
+		if (preg_match('/^(\w+)\.(\w+)$/', $path, $parts)) {
+			$module = ucfirst($parts[1]);
+			$action = $parts[2];
+
 			try {
 				$class  = App::build('Controller', $module);
 				$method = $action;
 			} catch (\DomainException $e) {
-				$this->logger->debug($path . ' => class "' . $class . '" not found [' . $this->route . ']');
+				$this->logger->debug($path . ' => ' . $e->getMessage() . ' [' . $this->route . ']');
 
 				return false;
 			}
@@ -87,9 +98,13 @@ class Router
 
 				return false;
 			}
+
+			return [$class, $method];
 		}
 
-		return [$class, $method];
+		$this->logger->error($path . ' => INVALID PATH! [' . $this->route . ']');
+
+		return false;
 	}
 
 	protected function getFunctionArguments(\ReflectionMethod $method, $m)
