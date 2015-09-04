@@ -10,6 +10,11 @@ class Float
 			return false;
 		}
 
+		// duration: hh:mm:ss
+		if (preg_match('/^(\d+):(\d{2})(?::(\d{2}))?$/', $value, $m)) {
+			$value = $m[1] + $m[2] / 60 + $m[3] / 3600;
+		}
+
 		if (ctype_digit($value)) {
 			$subject->$field = (float)$value;
 

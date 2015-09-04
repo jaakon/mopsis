@@ -34,6 +34,7 @@ abstract class AbstractFilter
 	public function addRule($field, array $rule, $isRequired = true)
 	{
 		$filter = $this->facade->validate($field);
+		$rule   = array_merge(['args' => [], 'mode' => 'hard'], $rule);
 
 		if ($rule['spec'] === 'required') {
 			$filter->isNot('blank');
@@ -47,7 +48,7 @@ abstract class AbstractFilter
 			$rule['message'] = static::EMPTY_MESSAGE;
 		}
 
-		switch (strtolower($rule['mode']) ?: 'hard') {
+		switch (strtolower($rule['mode'])) {
 			case 'soft':
 				$filter->asSoftRule($rule['message']);
 				break;

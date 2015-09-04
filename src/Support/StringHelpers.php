@@ -4,6 +4,11 @@ use Mopsis\Core\App;
 
 class StringHelpers
 {
+	public static function duration($hours)
+	{
+		return floor($hours) . ':' . sprintf('%02s', ($hours * 60) % 60);
+	}
+
 	public static function getClosestMatch($input, $words)
 	{
 		$shortest	= PHP_INT_MAX;

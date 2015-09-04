@@ -67,6 +67,9 @@ return [
 			'concurrent' => function () {
 				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\DateTime\Concurrent::class);
 			},
+			'duration' => function () {
+				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\DateTime\Duration::class);
+			},
 			'notAfter' => function () {
 				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\DateTime\NotAfter::class);
 			},

@@ -43,6 +43,11 @@ function debug(...$args)
 	return MiscHelpers::debug(...$args);
 }
 
+function duration($hours)
+{
+	return StringHelpers::duration($hours);
+}
+
 function getClosestMatch($input, $words)
 {
 	return StringHelpers::getClosestMatch($input, $words);
