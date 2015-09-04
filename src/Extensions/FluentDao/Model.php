@@ -2,7 +2,8 @@
 
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Mopsis\Core\Cache;
-use Mopsis\Types\TypeFactory;
+use Mopsis\Extensions\FluentDao\TypeFactory;
+use Mopsis\Security\Token;
 
 abstract class Model implements \Mopsis\Contracts\Model
 {
@@ -71,7 +72,7 @@ abstract class Model implements \Mopsis\Contracts\Model
 
 	public static function unpack($token)
 	{
-		$instance = \Mopsis\Types\Token::extract($token);
+		$instance = Token::extract($token);
 
 		if (is_a($instance, get_called_class())) {
 			return $instance;
@@ -407,12 +408,12 @@ abstract class Model implements \Mopsis\Contracts\Model
 
 	public function getHashAttribute()
 	{
-		return new \Mopsis\Types\Token($this);
+		return new Token($this);
 	}
 
 	public function getTokenAttribute()
 	{
-		return new \Mopsis\Types\Token($this, session_id());
+		return new Token($this, session_id());
 	}
 
 	protected function _set($key, $value)

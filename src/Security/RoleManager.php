@@ -1,6 +1,9 @@
-<?php namespace Mopsis\Core;
+<?php namespace Mopsis\Security;
 
-class Security
+use Mopsis\Core\Cache;
+use Mopsis\Core\Registry;
+
+class RoleManager
 {
 	protected static $roles;
 

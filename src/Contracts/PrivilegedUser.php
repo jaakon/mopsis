@@ -16,7 +16,7 @@ trait PrivilegedUserTrait
 	public function may($actionOnObject, $objectToAccess = null)
 	{
 		foreach ($this->roles as $role) {
-			if (!\Mopsis\Core\Security::isRoleAllowedTo($role->key, $actionOnObject)) {
+			if (!\Mopsis\Security\RoleManager::isRoleAllowedTo($role->key, $actionOnObject)) {
 				continue;
 			}
 
@@ -29,7 +29,8 @@ trait PrivilegedUserTrait
 			}
 
 			if (!($objectToAccess instanceof \Mopsis\Contracts\Model)) {
-				throw new \Exception('cannot determine privileges without a target object');
+				return false;
+//				throw new \Exception('cannot determine privileges without a target object');
 			}
 
 			$object = $objectToAccess;

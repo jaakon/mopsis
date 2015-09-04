@@ -1,4 +1,4 @@
-<?php namespace Mopsis\Types;
+<?php namespace Mopsis\Security;
 
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Mopsis\Contracts\Model;

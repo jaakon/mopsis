@@ -1,7 +1,7 @@
 <?php namespace Mopsis\Extensions\FluentDao;
 
 use Mopsis\Core\Cache;
-use Mopsis\Types\TypeFactory;
+use Mopsis\Extensions\FluentDao\TypeFactory;
 
 abstract class ModelFactory
 {

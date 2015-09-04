@@ -1,5 +1,7 @@
 <?php namespace Mopsis\FormBuilder;
 
+use Mopsis\Security\Csrf;
+
 class FormBuilder
 {
 	const NO_GROUPS = '@@no-groups@@';
@@ -109,7 +111,7 @@ class FormBuilder
 
 	protected function addCsrfToken()
 	{
-		$token = Security::generateToken();
+		$token = Csrf::generateToken();
 
 		return '<input type="hidden" name="' . $token->key . '" value="' . $token->value . '">';
 	}

@@ -1,6 +1,7 @@
 <?php namespace Mopsis\Components\Domain;
 
 use \Exception;
+use \Mopsis\Security\Token;
 
 abstract class AbstractService
 {
@@ -53,7 +54,7 @@ abstract class AbstractService
 	public function createChild($ancestorToken, $formId, array $data = null)
 	{
 		try {
-			$ancestor = \Mopsis\Types\Token::extract($ancestorToken);
+			$ancestor = Token::extract($ancestorToken);
 
 			if (!$ancestor) {
 				return $this->payload->notFound([

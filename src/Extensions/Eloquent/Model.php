@@ -6,7 +6,7 @@ use Mopsis\Core\App;
 use Mopsis\Core\Cache;
 use Mopsis\Extensions\Stringifier;
 use Mopsis\Reflection\ReflectionClass;
-use Mopsis\Types\Token;
+use Mopsis\Security\Token;
 
 abstract class Model extends \Illuminate\Database\Eloquent\Model implements \Mopsis\Contracts\Model
 {

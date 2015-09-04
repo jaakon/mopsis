@@ -1,6 +1,6 @@
-<?php namespace Mopsis\FormBuilder;
+<?php namespace Mopsis\Security;
 
-class Security
+class Csrf
 {
 	public static function generateToken()
 	{
