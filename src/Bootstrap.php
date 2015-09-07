@@ -17,7 +17,7 @@ class Bootstrap
 		$this->initialize();
 		$this->updateCache($flushMode);
 
-		include 'app/initialize.php';
+		include APPLICATION_PATH . '/app/initialize.php';
 
 		$response = $this->executeRoute();
 		(new ResponseSender($response))->__invoke();
@@ -34,17 +34,19 @@ class Bootstrap
 		}
 
 		$builder = new \DI\ContainerBuilder;
-		$builder->addDefinitions(__DIR__ . '/config.php');
+		$builder->addDefinitions(__DIR__ . '/definitions.php');
 		$builder->addDefinitions(APPLICATION_PATH . '/config/definitions.php');
 
-		Core\Registry::load(
-			APPLICATION_PATH . '/config/environment.php',
+		App::initialize($builder->build());
+
+		App::get('config')->load(
+			APPLICATION_PATH . '/config/config.php',
 			APPLICATION_PATH . '/config/credentials.php'
 		);
 
-		App::initialize($builder->build());
-		App::make('Database');
-		App::make('ErrorHandler');
+		App::set('cookie.key', md5(App::get('config')->get('app.key')));
+		App::get('Database');
+		App::get('ErrorHandler');
 	}
 
 	protected function updateCache($flushMode)
@@ -54,7 +56,7 @@ class Bootstrap
 		}
 
 		if ($flushMode === 'all' || $flushMode === 'app') {
-			App::make('CacheTool')->opcache_reset();
+			App::get('CacheTool')->opcache_reset();
 		}
 
 		if ($flushMode === 'all' || $flushMode === 'assets') {
@@ -63,35 +65,35 @@ class Bootstrap
 		}
 
 		if ($flushMode === 'all' || $flushMode === 'views') {
-			App::make('Renderer')->clearCacheFiles();
+			App::get('Renderer')->clearCacheFiles();
 		}
 	}
 
 	protected function executeRoute()
 	{
-		$response = App::make('Mopsis\Core\Router')->get();
+		$response = App::get('Mopsis\Core\Router')->get();
 
 		if ($response instanceof \Aura\Web\Response) {
 			return $response;
 		}
 
 		if ($response === null) {
-			return $this->buildResponse(502, 'Bad Gateway');
+			return $this->buildResponse(502, static_page(502));
 		}
 
 		if ($response !== false) {
 			return $this->buildResponse(203, $response);
 		}
 
-		App::make('Logger')
+		App::get('Logger')
 		   ->error('file not found: ' . $_SERVER['REQUEST_METHOD'] . ' ' . $_SERVER['REQUEST_URI'] . ' [' . $_SERVER['HTTP_USER_AGENT'] . ']');
 
-		return $this->buildResponse(404, file_get_contents(CORE_STATUS_404));
+		return $this->buildResponse(404, static_page(404));
 	}
 
 	private function buildResponse($code, $content)
 	{
-		$response = App::make('Aura\Web\Response');
+		$response = App::get('Aura\Web\Response');
 
 		$response->status->setCode($code);
 		$response->content->set($content);

@@ -2,7 +2,6 @@
 
 use Mopsis\Contracts\Model;
 use Mopsis\Core\Auth;
-use Mopsis\Core\Registry;
 
 abstract class AbstractCrudController extends AbstractController
 {
@@ -60,10 +59,6 @@ abstract class AbstractCrudController extends AbstractController
 
 	protected function _delete(Model $instance)
 	{
-		if (!$instance) {
-			throw new \Exception('invalid or missing object');
-		}
-
 		if (!$instance->hasProperty('deleted')) {
 			$instance->delete();
 			return $this->getResponseObject(204, $instance);
@@ -80,10 +75,6 @@ abstract class AbstractCrudController extends AbstractController
 
 	protected function _set(Model $instance, $key, $value)
 	{
-		if (!$instance) {
-			throw new \Exception('invalid or missing object');
-		}
-
 		$instance->{$key} = $value;
 
 		if (class_exists('\App\Models\Event')) {
@@ -100,11 +91,9 @@ abstract class AbstractCrudController extends AbstractController
 
 	protected function handleFormAction($formId, Model $instance)
 	{
-		if (!$instance) {
-			throw new \Exception('invalid or missing object');
-		}
-
-		$this->view->setFormValues($formId, $instance->toArray(true));
+		$this->view
+			->setFormValues($formId, $instance->toArray(true))
+			->assign(['formId' => $formId]);
 
 		if ($instance->exists) {
 			$this->view->assign(['token' => $instance->token]);

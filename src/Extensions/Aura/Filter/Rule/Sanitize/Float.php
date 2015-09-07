@@ -11,8 +11,12 @@ class Float
 		}
 
 		// duration: hh:mm:ss
-		if (preg_match('/^(\d+):(\d{2})(?::(\d{2}))?$/', $value, $m)) {
-			$value = $m[1] + $m[2] / 60 + $m[3] / 3600;
+		if (preg_match('/^(-?\d+):(\d{2})(?::(\d{2}))?$/', $value, $m)) {
+			$value = abs($m[1]) + $m[2] / 60 + $m[3] / 3600;
+
+			if ($m[1][0] === '-') {
+				$value *= -1;
+			}
 		}
 
 		if (ctype_digit($value)) {

@@ -10,11 +10,11 @@ class FormBuilder
 	protected $config;
 	protected $options = [];
 
-	public function __construct($configFile = null)
+	public function __construct($forms)
 	{
 		libxml_use_internal_errors(true);
 
-		if (!($this->xml = simplexml_load_file($configFile ?: CORE_FORMS, 'SimpleXMLElement', LIBXML_NOCDATA))) {
+		if (!($this->xml = simplexml_load_file($forms, 'SimpleXMLElement', LIBXML_NOCDATA))) {
 			foreach (libxml_get_errors() as $error) {
 				echo '<pre class="debug">';
 				print_r($error);

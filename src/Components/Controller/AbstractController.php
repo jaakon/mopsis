@@ -7,7 +7,6 @@ use Mopsis\Components\Controller\Filter;
 use Mopsis\Components\View\View;
 use Mopsis\Core\App;
 use Mopsis\Core\Auth;
-use Mopsis\Core\Registry;
 use Mopsis\FormBuilder\FormBuilder;
 
 abstract class AbstractController
@@ -43,7 +42,7 @@ abstract class AbstractController
 			return $result;
 		}
 
-		$response = App::make('Aura\Web\Response');
+		$response = App::get('Aura\Web\Response');
 
 		switch (gettype($result)) {
 			case 'integer':
@@ -67,7 +66,7 @@ abstract class AbstractController
 			return true;
 		}
 
-		if (Auth::user()->exists) {
+		if (Auth::check()) {
 			return true;
 		}
 

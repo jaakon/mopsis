@@ -32,7 +32,7 @@ abstract class AbstractWebResponder extends AbstractResponder
 	protected function notFound()
 	{
 		$this->response->status->setCode(404);
-		$this->response->content->set(file_get_contents(CORE_STATUS_404));
+		$this->response->content->set(static_page(404));
 	}
 
 	protected function notValid()
@@ -43,29 +43,29 @@ abstract class AbstractWebResponder extends AbstractResponder
 	protected function notCreated()
 	{
 		$this->response->status->setCode(503);
-		$this->response->content->set(file_get_contents(CORE_STATUS_503));
+		$this->response->content->set(static_page(503));
 	}
 
 	protected function notUpdated()
 	{
 		$this->response->status->setCode(503);
-		$this->response->content->set(file_get_contents(CORE_STATUS_503));
+		$this->response->content->set(static_page(503));
 	}
 
 	protected function notDeleted()
 	{
 		$this->response->status->setCode(503);
-		$this->response->content->set(file_get_contents(CORE_STATUS_503));
+		$this->response->content->set(static_page(503));
 	}
 
 	protected function error()
 	{
 		$exception = $this->payload->get('exception');
 
-		App::make('ErrorHandler')->handleException($exception);
+		App::get('ErrorHandler')->handleException($exception);
 
 		$this->response->status->setCode(500);
 		$this->response->content->set($exception->getMessage());
-//		$this->response->content->set(file_get_contents(CORE_STATUS_500));
+//		$this->response->content->set(static_page(500));
 	}
 }

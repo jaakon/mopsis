@@ -68,7 +68,7 @@ class StringHelpers
 	public static function pluralize($count, $singular, $plural = null)
 	{
 		if ($plural === null) {
-			switch (App::make('translator.locale')) {
+			switch (App::get('translator.locale')) {
 				case 'de':
 					$plural = $singular . 'e';
 					break;

@@ -46,6 +46,6 @@ class Token
 
 	public function generate()
 	{
-		return $this->instance . ':' . sha1(get_class($this->instance) . $this->instance->id . CORE_SALT . $this->session);
+		return $this->instance . ':' . sha1(get_class($this->instance) . $this->instance->id . config('app.key') . $this->session);
 	}
 }

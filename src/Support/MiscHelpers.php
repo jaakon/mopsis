@@ -1,5 +1,7 @@
 <?php namespace Mopsis\Support;
 
+use Mopsis\Core\App;
+
 class MiscHelpers
 {
 	public static function debug(...$args)
@@ -11,6 +13,23 @@ class MiscHelpers
 		$ladybug->setOption('helpers', ['debug']);
 
 		echo $ladybug->dump(...$args);
+	}
+
+	public static function getStaticPage($code)
+	{
+		$pages = App::get('static-pages');
+
+		if (isset($pages[$code])) {
+			return file_get_contents($pages[$code]);
+		}
+
+		$baseCode = floor($code / 100) * 100;
+
+		if (isset($pages[$baseCode])) {
+			return file_get_contents($pages[$baseCode]);
+		}
+
+		throw new \Exception('static-page ' . $code);
 	}
 
 	public static function redirect($url, $responseCode = 302)

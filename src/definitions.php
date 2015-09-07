@@ -2,10 +2,20 @@
 
 use Interop\Container\ContainerInterface as ContainerInterface;
 
+use function DI\dot;
 use function DI\get;
 use function DI\object;
 
 return [
+	'app' => [
+		'forms'           => APPLICATION_PATH . '/config/forms.xml',
+		'error_log'       => APPLICATION_PATH . '/storage/logs/error.log',
+		'application_log' => APPLICATION_PATH . '/storage/logs/application.log'
+	],
+
+	'config'
+		=> object(Mopsis\Core\Config::class),
+
 	'classFormats' => [
 		'Action'     => '\\App\\{{MODULE}}\\Action\\{{DOMAIN}}{{SUBTYPE}}Action',
 		'Domain'     => '\\App\\{{MODULE}}\\Domain\\{{DOMAIN}}{{SUBTYPE}}',
@@ -14,34 +24,71 @@ return [
 		'Model'      => '\\App\\Models\\{{DOMAIN}}',
 		'Collection' => '\\App\\Collections\\{{DOMAIN}}',
 	],
+
+	'static-pages' => [
+		400 => __DIR__ . '/Resources/static-pages/bad-request-error',
+		404 => __DIR__ . '/Resources/static-pages/not-found-error',
+		500 => __DIR__ . '/Resources/static-pages/internal-server-error',
+		502 => __DIR__ . '/Resources/static-pages/bad-gateway',
+		503 => __DIR__ . '/Resources/static-pages/service-unavailable-error'
+	],
+
 	'flysystem.local.config' => 'storage/files',
+
 	'monolog.lineformat'     => "[%datetime%] %level_name%: %message% %context% %extra%\n",
-	'stash.apc.config'       => [
-		'ttl'       => 3600,
-		'namespace' => md5($_SERVER['HTTP_HOST'])
+
+	'stash' => [
+		'apc' => [
+			'ttl'       => 3600,
+			'namespace' => md5($_SERVER['HTTP_HOST'])
+		],
+		'redis' => [
+			'servers' => [['server' => '127.0.0.1', 'port' => '6379', 'ttl' => 10]]
+		],
+		'sqlite' => [
+			'path' => 'storage/cache/'
+		]
 	],
-	'stash.redis.config' => [
-		'servers' => [['server' => '127.0.0.1', 'port' => '6379', 'ttl' => 10]]
+
+	'translator' => [
+		'locale' => 'de',
+		'path'   => 'resources/lang/',
 	],
-	'stash.sqlite.config'    => [
-		'path' => 'storage/cache/'
+
+	'twig' => [
+		'config' => [
+			'development'        => [
+				'debug'            => true,
+				'cache'            => false,
+				'auto_reload'      => true,
+				'strict_variables' => true
+			],
+			'production'       => [
+				'debug'            => false,
+				'cache'            => 'storage/cache/',
+				'auto_reload'      => false,
+				'strict_variables' => false
+			],
+		],
 	],
-	'translator.locale'      => 'de',
-	'translator.path'        => 'resources/lang/',
-	'twig.dev.config'        => [
-		'debug'            => true,
-		'cache'            => false,
-		'auto_reload'      => true,
-		'strict_variables' => true
-	],
-	'twig.live.config'       => [
-		'debug'            => false,
-		'cache'            => 'storage/cache/',
-		'auto_reload'      => false,
-		'strict_variables' => false
-	],
-	'twig.config'            => get('twig.dev.config'),
-	'twigloader.config'      => ['app/views'],
+
+	'twig.config' => dot('twig.config.development'),
+	'twig.extensions'
+		=> function (ContainerInterface $c) {
+			$extensions = [
+				$c->get(Asm89\Twig\CacheExtension\Extension::class),
+				$c->get(Mopsis\Extensions\Twig\FormBuilder::class),
+				$c->get(Mopsis\Extensions\Twig\Markdown::class)
+			];
+
+			if ($c->get('twig.config')['debug']) {
+				$extensions[] = $c->get(Twig_Extension_Debug::class);
+			}
+
+			return $extensions;
+		},
+
+	'twigloader.config' => ['app/views'],
 
 	Aptoma\Twig\Extension\MarkdownEngineInterface::class
 		=> object(Mopsis\Extensions\Twig\Markdown\MarkdownEngine::class),
@@ -145,9 +192,19 @@ return [
 			]);
 		},
 
+	CodeZero\Encrypter\DefaultEncrypter::class
+		=> object()
+		->constructorParameter('key', null)
+		->constructorParameter('encrypter', get(Illuminate\Encryption\Encrypter::class)),
+
+	Illuminate\Encryption\Encrypter::class
+		=>object()
+		->constructorParameter('key', get('cookie.key'))
+		->constructorParameter('cipher', 'AES-256-CBC'),
+
 	Illuminate\Translation\LoaderInterface::class
 		=> object(Illuminate\Translation\FileLoader::class)
-		->constructorParameter('path', get('translator.path')),
+		->constructorParameter('path', dot('translator.path')),
 
 	League\Flysystem\AdapterInterface::class
 		=> object(League\Flysystem\Adapter\Local::class)
@@ -168,23 +225,12 @@ return [
 		},
 
 	Mopsis\Components\View\View::class
-		=> function (ContainerInterface $c) {
-			$extensions = [
-				$c->get(Asm89\Twig\CacheExtension\Extension::class),
-				$c->get(Mopsis\Extensions\Twig\FormBuilder::class),
-				$c->get(Mopsis\Extensions\Twig\Markdown::class)
-			];
+		=> object()
+		->constructorParameter('extensions', get('twig.extensions')),
 
-			if ($c->get('twig.config')['debug']) {
-				$extensions[] = $c->get(Twig_Extension_Debug::class);
-			}
-
-			return new Mopsis\Components\View\View(
-				$c->get(Twig_Environment::class),
-				$c->get(Aura\Web\Request::class),
-				$extensions
-			);
-		},
+	Mopsis\FormBuilder\FormBuilder::class
+		=> object()
+		->constructorParameter('forms', dot('app.forms')),
 
 	Psr\Log\LoggerInterface::class
 		=> get('Logger'),
@@ -194,15 +240,15 @@ return [
 
 	Stash\Driver\Apc::class
 		=> object()
-		->method('setOptions', get('stash.apc.config')),
+		->method('setOptions', dot('stash.apc')),
 
 	Stash\Driver\Redis::class
 		=> object()
-		->method('setOptions', get('stash.redis.config')),
+		->method('setOptions', dot('stash.redis')),
 
 	Stash\Driver\Sqlite::class
 		=> object()
-		->method('setOptions', get('stash.sqlite.config')),
+		->method('setOptions', dot('stash.sqlite')),
 
 	Twig_LoaderInterface::class
 		=> object(Twig_Loader_Filesystem::class)
@@ -237,19 +283,17 @@ return [
 			return CacheTool\CacheTool::factory($adapter);
 		},
 
+	Cookie::class
+		=> object(CodeZero\Cookie\VanillaCookie::class)
+		->constructorParameter('encrypter', get(CodeZero\Encrypter\DefaultEncrypter::class)),
+
 	Database::class
 		=> function () {
 			$manager = new Illuminate\Database\Capsule\Manager;
-			$manager->addConnection([
-				'driver'    => SQL_DRIVER,
-				'host'      => SQL_HOST,
-				'database'  => SQL_DATABASE,
-				'username'  => SQL_USERNAME,
-				'password'  => SQL_PASSWORD,
-				'charset'   => 'utf8',
-				'collation' => 'utf8_general_ci',
-				'prefix'    => ''
-			]);
+
+			foreach (config('connections') as $name => $config) {
+				$manager->addConnection($config, $name);
+			}
 
 			$manager->setEventDispatcher(new Illuminate\Events\Dispatcher);
 			$manager->bootEloquent();
@@ -280,19 +324,23 @@ return [
 	Flash::class
 		=> object(Mopsis\Extensions\Flash::class),
 
+	MonologErrorHandler::class
+		=> object(Monolog\Handler\StreamHandler::class)
+		->constructor(dot('app.error_log'), Monolog\Logger::ERROR, false)
+		->method('setFormatter', get(Monolog\Formatter\LineFormatter::class)),
+
+	MonologNoticeHandler::class
+		=> object(Monolog\Handler\StreamHandler::class)
+		->constructor(dot('app.application_log'), Monolog\Logger::NOTICE, false)
+		->method('setFormatter', get(Monolog\Formatter\LineFormatter::class)),
+
 	Logger::class
 		=> function (ContainerInterface $c) {
-			$errorHandler = new Monolog\Handler\StreamHandler(CORE_ERROR_LOG, Monolog\Logger::ERROR, false);
-			$errorHandler->setFormatter($c->get(Monolog\Formatter\LineFormatter::class));
-
-			$noticeHandler = new Monolog\Handler\StreamHandler(CORE_APPLICATION_LOG, Monolog\Logger::NOTICE, false);
-			$noticeHandler->setFormatter($c->get(Monolog\Formatter\LineFormatter::class));
-
 			$logger = new Monolog\Logger('default');
 
 			$logger->pushHandler(new Monolog\Handler\ChromePHPHandler(Monolog\Logger::DEBUG));
-			$logger->pushHandler($noticeHandler);
-			$logger->pushHandler($errorHandler);
+			$logger->pushHandler($c->get(MonologNoticeHandler::class));
+			$logger->pushHandler($c->get(MonologErrorHandler::class));
 			$logger->pushHandler(new Monolog\Handler\PushoverHandler('aw6zvva5hvy67Y1gvnagx7y3GZzEDA', 'uF1VyiRtDd1XXnEKA41imF2P88gxJ4', PROJECT_TITLE, Monolog\Logger::ERROR, false));
 
 			return $logger;
@@ -306,5 +354,5 @@ return [
 
 	Translator::class
 		=> object(Illuminate\Translation\Translator::class)
-		->constructorParameter('locale', get('translator.locale'))
+		->constructorParameter('locale', dot('translator.locale'))
 ];

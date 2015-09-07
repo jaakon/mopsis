@@ -1,69 +1,62 @@
-<?php
+<?php namespace Mopsis\Core;
 
-namespace Mopsis\Core {
+use Interop\Container\ContainerInterface as ContainerInterface;
 
-	use Interop\Container\ContainerInterface as ContainerInterface;
+class App
+{
+	protected static $container;
 
-	class App
+	public static function initialize(ContainerInterface $container)
 	{
-		private static $container;
+		static::$container = $container;
+	}
 
-		public static function initialize(ContainerInterface $container)
-		{
-			static::$container = $container;
+	public static function build($type, $name)
+	{
+		$format = static::$container->get('classFormats')[$type];
+
+		if ($format === null) {
+			throw new \UnexpectedValueException('invalid type "' . $type . '" for entity "' . $name . '"');
 		}
 
-		public static function build($type, $entity)
-		{
-			$format = static::make('classFormats')[$type];
+		list($module, $domain, $subtype) = explode('\\', $name);
 
-			if ($format === null) {
-				throw new \UnexpectedValueException('invalid type "' . $type . '" for entity "' . $entity . '"');
-			}
+		$replacements = array_filter([
+			'{{MODULE}}'  => $module,
+			'{{DOMAIN}}'  => $domain,
+			'{{SUBTYPE}}' => $subtype
+		]);
 
-			list($module, $domain, $subtype) = explode('\\', $entity);
+		$class = str_replace(array_keys($replacements), array_values($replacements), $format);
 
-			$replacements = array_filter([
-				'{{MODULE}}'  => $module,
-				'{{DOMAIN}}'  => $domain,
-				'{{SUBTYPE}}' => $subtype
-			]);
-
-			$class = str_replace(array_keys($replacements), array_values($replacements), $format);
-
-			if (preg_match('/\{\{(\w+)\}\}/', $class, $m)) {
-				throw new \InvalidArgumentException('value for placeholder "' . $m[1] . '" for type "' . $type . '" is missing');
-			}
-
-			if (!static::$container->has($class)) {
-				throw new \DomainException('class "' . $class . '" for type "' . $type . '" not found');
-			}
-
-			return $class;
+		if (preg_match('/\{\{(\w+)\}\}/', $class, $m)) {
+			throw new \InvalidArgumentException('value for placeholder "' . $m[1] . '" for type "' . $type . '" is missing');
 		}
 
-		public static function create($type, $entity, array $parameters = null)
-		{
-			return static::make(static::build($type, $entity), $parameters);
+		if (!static::$container->has($class)) {
+			throw new \DomainException('class "' . $class . '" for type "' . $type . '" not found');
 		}
 
-		public static function make($entity, array $parameters = null)
-		{
-			switch ($entity) {
-				case 'db':
-					return static::$container->get(Database::class)->getConnection();
-				default:
-					return is_array($parameters) ? static::$container->make($entity, $parameters) : static::$container->get($entity);
-			}
-		}
+		return $class;
+	}
 
-		public static function set($entity, $value)
-		{
-			static::$container->set($entity, $value);
-		}
+	public static function create($type, $name, array $parameters = null)
+	{
+		return static::$container->make(static::build($type, $name), $parameters);
+	}
+
+	public static function getInstance()
+	{
+		return static::$container;
+	}
+
+	public static function __callStatic($method, $args)
+	{
+		return static::$container->$method(...$args);
 	}
 }
 
+/*
 namespace {
 
 	class App
@@ -74,3 +67,4 @@ namespace {
 		}
 	}
 }
+*/

@@ -55,7 +55,7 @@ class Router
 
 			$this->logger->debug($this->route . ' ==> ' . $class . '->' . $method);
 
-			return App::make($class)->$method(...$funcArgs);
+			return App::get($class)->$method(...$funcArgs);
 		}
 
 		return false;
@@ -64,7 +64,7 @@ class Router
 	protected function getClassMethod($path, $m)
 	{
 		$path = preg_replace_callback('/\{(.+?)\}/', function ($placeholder) use ($m) {
-			return ucfirst(camel_case($m[$placeholder[1]]));
+			return studly_case($m[$placeholder[1]]);
 		}, $path);
 
 		if (preg_match('/^\w+\\\\\w+\\\\\w+$/', $path)) {

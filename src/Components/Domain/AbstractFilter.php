@@ -174,7 +174,7 @@ abstract class AbstractFilter
 		$this->uploaderRulesLoaded = true;
 
 		foreach ($this->formbuilder->getUploaderRules($formId) as $field => $rules) {
-			$uploadHandler = App::make('UploadHandler');
+			$uploadHandler = App::get('UploadHandler');
 
 			if (isset($prefixes[$field]) || isset($prefixes['*'])) {
 				$uploadHandler->setPrefix($prefixes[$field] ?: $prefixes['*']);

@@ -1,7 +1,6 @@
 <?php namespace Mopsis\Security;
 
 use Mopsis\Core\Cache;
-use Mopsis\Core\Registry;
 
 class RoleManager
 {
@@ -21,13 +20,13 @@ class RoleManager
 	protected static function loadRoles()
 	{
 		static::$roles = Cache::get('user_roles', function () {
-			if (!Registry::has('roles')) {
+			$roles = config('roles');
+
+			if (!count($roles)) {
 				throw new \Exception('configuration for roles is missing');
 			}
 
-			$roles = [];
-
-			foreach (Registry::get('roles') as $role => $privileges) {
+			foreach ($roles as $role => $privileges) {
 				$roles[$role] = [];
 
 				foreach ($privileges as $actions => $objects) {

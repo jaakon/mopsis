@@ -14,6 +14,6 @@ class Duration
 			$value .= ':00';
 		}
 
-		return (bool)preg_match('/^\d+:\d{2}(:\d{2})?$/', $value);
+		return (bool)preg_match('/^-?\d+:\d{2}(:\d{2})?$/', $value);
 	}
 }
