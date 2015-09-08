@@ -44,7 +44,6 @@ class Bootstrap
 			APPLICATION_PATH . '/config/credentials.php'
 		);
 
-		App::set('cookie.key', md5(App::get('config')->get('app.key')));
 		App::get('Database');
 		App::get('ErrorHandler');
 	}
@@ -60,13 +59,21 @@ class Bootstrap
 		}
 
 		if ($flushMode === 'all' || $flushMode === 'assets') {
-			Cache::set('css.version', time());
-			Cache::set('javascript.version', time());
+			Cache::clear('css.version');
+			Cache::clear('javascript.version');
 		}
 
 		if ($flushMode === 'all' || $flushMode === 'views') {
 			App::get('Renderer')->clearCacheFiles();
 		}
+
+		Cache::get('css.version', function() {
+			return filemtime(APPLICATION_PATH . '/public/css') ?: time();
+		});
+
+		Cache::get('javascript.version', function() {
+			return filemtime(APPLICATION_PATH . '/public/js') ?: time();
+		});
 	}
 
 	protected function executeRoute()
