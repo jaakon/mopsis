@@ -2,6 +2,8 @@
 
 use Assetic\Asset\AssetCollection;
 use Assetic\Asset\GlobAsset;
+use Aura\Web\Response;
+use DI\ContainerBuilder;
 use Mopsis\Core\App;
 use Mopsis\Core\Cache;
 use Mopsis\Extensions\Aura\Web\ResponseSender;
@@ -33,16 +35,13 @@ class Bootstrap
 			define('APPLICATION_PATH', realpath($_SERVER['DOCUMENT_ROOT'] . '/..'));
 		}
 
-		$builder = new \DI\ContainerBuilder;
+		$builder = new ContainerBuilder;
 		$builder->addDefinitions(__DIR__ . '/definitions.php');
 		$builder->addDefinitions(APPLICATION_PATH . '/config/definitions.php');
 
 		App::initialize($builder->build());
 
-		App::get('config')->load(
-			APPLICATION_PATH . '/config/config.php',
-			APPLICATION_PATH . '/config/credentials.php'
-		);
+		App::get('config')->load(APPLICATION_PATH . '/config/config.php', APPLICATION_PATH . '/config/credentials.php');
 
 		App::get('Database');
 		App::get('ErrorHandler');
@@ -67,11 +66,11 @@ class Bootstrap
 			App::get('Renderer')->clearCacheFiles();
 		}
 
-		Cache::get('css.version', function() {
+		Cache::get('css.version', function () {
 			return filemtime(APPLICATION_PATH . '/public/css') ?: time();
 		});
 
-		Cache::get('javascript.version', function() {
+		Cache::get('javascript.version', function () {
 			return filemtime(APPLICATION_PATH . '/public/js') ?: time();
 		});
 	}
@@ -80,7 +79,7 @@ class Bootstrap
 	{
 		$response = App::get('Mopsis\Core\Router')->get();
 
-		if ($response instanceof \Aura\Web\Response) {
+		if ($response instanceof Response) {
 			return $response;
 		}
 
@@ -92,8 +91,7 @@ class Bootstrap
 			return $this->buildResponse(203, $response);
 		}
 
-		App::get('Logger')
-		   ->error('file not found: ' . $_SERVER['REQUEST_METHOD'] . ' ' . $_SERVER['REQUEST_URI'] . ' [' . $_SERVER['HTTP_USER_AGENT'] . ']');
+		App::get('Logger')->error('file not found: ' . $_SERVER['REQUEST_METHOD'] . ' ' . $_SERVER['REQUEST_URI'] . ' [' . $_SERVER['HTTP_USER_AGENT'] . ']');
 
 		return $this->buildResponse(404, static_page(404));
 	}

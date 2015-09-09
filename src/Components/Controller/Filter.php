@@ -1,8 +1,8 @@
 <?php namespace Mopsis\Components\Controller;
 
-use \Mopsis\Core\App;
+use Mopsis\Components\Domain\AbstractFilter;
 
-class Filter extends \Mopsis\Components\Domain\AbstractFilter
+class Filter extends AbstractFilter
 {
 	public function getResult($key = null)
 	{

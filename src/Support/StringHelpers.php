@@ -11,8 +11,8 @@ class StringHelpers
 
 	public static function getClosestMatch($input, $words)
 	{
-		$shortest	= PHP_INT_MAX;
-		$closest	= null;
+		$shortest = PHP_INT_MAX;
+		$closest  = null;
 
 		foreach ($words as $word) {
 			$distance = levenshtein($input, $word);
@@ -30,6 +30,24 @@ class StringHelpers
 		return $closest;
 	}
 
+	public static function justify($string, $length, $char = ' ')
+	{
+		$strlen = mb_strlen($string, 'UTF-8');
+
+		if ($strlen > abs($length)) {
+			return mb_substr($string, 0, abs($length), 'UTF-8');
+		}
+
+		$padding = str_repeat($char, abs($length) - $strlen);
+
+		return $length > 0 ? $padding . $string : $string . $padding;
+	}
+
+	public static function utf8Encode($string)
+	{
+		return static::isUtf8($string) ? $string : utf8_encode($string);
+	}
+
 	public static function isUtf8($string)
 	{
 		return preg_match('%(?:
@@ -41,23 +59,6 @@ class StringHelpers
 			|[\xF1-\xF3][\x80-\xBF]{3}			# planes 4-15
 			|\xF4[\x80-\x8F][\x80-\xBF]{2}		# plane 16
 		)+%xs', $string);
-	}
-
-	public static function justify($string, $length, $char = ' ')
-	{
-		$strlen = mb_strlen($string, 'UTF-8');
-
-		if ($strlen > abs($length)) {
-			return mb_substr($string, 0, abs($length), 'UTF-8');
-		}
-
-		$padding = str_repeat($char, abs($length) - $strlen);
-		return $length > 0 ? $padding.$string : $string.$padding;
-	}
-
-	public static function utf8Encode($string)
-	{
-		return static::isUtf8($string) ? $string : utf8_encode($string);
 	}
 
 	public static function utf8Decode($string)
@@ -83,7 +84,8 @@ class StringHelpers
 	public static function stripInvalidChars($string, $charlist = null)
 	{
 		setlocale(LC_CTYPE, 'de_DE.UTF8');
-		return preg_replace('/[^\w'.preg_quote($charlist, '/').']+/', '-', iconv('utf-8', 'ascii//TRANSLIT', $string));
+
+		return preg_replace('/[^\w' . preg_quote($charlist, '/') . ']+/', '-', iconv('utf-8', 'ascii//TRANSLIT', $string));
 	}
 
 	public static function vnsprintf($format, array $args)

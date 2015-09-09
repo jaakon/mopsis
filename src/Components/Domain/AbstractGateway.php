@@ -21,11 +21,6 @@ abstract class AbstractGateway
 		return $this->model->unpack($token);
 	}
 
-	public function find($sql, array $bindings)
-	{
-		return $this->model->whereRaw($sql, $bindings);
-	}
-
 	public function newEntity(array $attributes = [])
 	{
 		return $this->model->newInstance($attributes);
@@ -36,6 +31,26 @@ abstract class AbstractGateway
 		return $this->find(...$this->expandQuery($sql, $bindings))->first();
 	}
 
+	public function find($sql, array $bindings)
+	{
+		return $this->model->whereRaw($sql, $bindings);
+	}
+
+	protected function expandQuery($sql, array $bindings)
+	{
+		if (!is_array($sql)) {
+			return [
+				$sql,
+				$bindings
+			];
+		}
+
+		return [
+			'`' . implode('`=? AND `', array_keys($sql)) . '`=?',
+			array_values($sql)
+		];
+	}
+
 	public function findMany($sql, array $bindings = [])
 	{
 		return $this->find(...$this->expandQuery($sql, $bindings))->get();
@@ -44,24 +59,6 @@ abstract class AbstractGateway
 	public function create(Model $instance, $data)
 	{
 		return $instance->fill($this->getAcceptedData($instance, $this->getRestructuredData($data)))->save() ? $instance : false;
-	}
-
-	public function update(Model $instance, $data)
-	{
-		return $instance->update($this->getAcceptedData($instance, $this->getRestructuredData($data))) ? $instance : false;
-	}
-
-	public function delete(Model $instance)
-	{
-		return true; //$instance->delete();
-	}
-
-	public function set(Model $instance, $key, $value)
-	{
-		$instance->setAttribute($key, $value);
-		$instance->save();
-
-		return $instance;
 	}
 
 	protected function getAcceptedData(Model $instance, $data)
@@ -97,12 +94,21 @@ abstract class AbstractGateway
 		return $data;
 	}
 
-	protected function expandQuery($sql, array $bindings)
+	public function update(Model $instance, $data)
 	{
-		if (!is_array($sql)) {
-			return [$sql, $bindings];
-		}
+		return $instance->update($this->getAcceptedData($instance, $this->getRestructuredData($data))) ? $instance : false;
+	}
 
-		return ['`'.implode('`=? AND `', array_keys($sql)).'`=?', array_values($sql)];
+	public function delete(Model $instance)
+	{
+		return $instance->delete();
+	}
+
+	public function set(Model $instance, $key, $value)
+	{
+		$instance->setAttribute($key, $value);
+		$instance->save();
+
+		return $instance;
 	}
 }

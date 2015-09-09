@@ -3,7 +3,6 @@
 use Aura\Web\Request;
 use Aura\Web\Response;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Mopsis\Components\Controller\Filter;
 use Mopsis\Components\View\View;
 use Mopsis\Core\App;
 use Mopsis\Core\Auth;
@@ -89,6 +88,6 @@ abstract class AbstractController
 
 	protected function setTemplate($page)
 	{
-		$this->view->setTemplate(class_basename($this). '/' . $page);
+		$this->view->setTemplate(class_basename($this) . '/' . $page);
 	}
 }

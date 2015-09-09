@@ -46,8 +46,8 @@ class Router
 			}
 
 			list($class, $method) = $result;
-			$reflectionClass      = new \ReflectionClass($class);
-			$funcArgs             = $this->getFunctionArguments($reflectionClass->getMethod($method), $m);
+			$reflectionClass = new \ReflectionClass($class);
+			$funcArgs        = $this->getFunctionArguments($reflectionClass->getMethod($method), $m);
 
 			if ($funcArgs === false) {
 				continue;
@@ -77,7 +77,10 @@ class Router
 				return false;
 			}
 
-			return [$class, $method];
+			return [
+				$class,
+				$method
+			];
 		}
 
 		if (preg_match('/^(\w+)\.(\w+)$/', $path, $parts)) {
@@ -94,12 +97,15 @@ class Router
 			}
 
 			if (!method_exists($class, $method)) {
-				$this->logger->debug($path . ' => method " ' .$method . '" not found [' . $this->route . ']');
+				$this->logger->debug($path . ' => method " ' . $method . '" not found [' . $this->route . ']');
 
 				return false;
 			}
 
-			return [$class, $method];
+			return [
+				$class,
+				$method
+			];
 		}
 
 		$this->logger->error($path . ' => INVALID PATH! [' . $this->route . ']');

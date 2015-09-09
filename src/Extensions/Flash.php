@@ -3,7 +3,12 @@
 class Flash
 {
 	private $key    = 'flash_messages';
-	private $levels = ['info', 'success', 'error', 'warning'];
+	private $levels = [
+		'info',
+		'success',
+		'error',
+		'warning'
+	];
 
 	public function __construct()
 	{
@@ -17,14 +22,6 @@ class Flash
 		$this->message($name, ...$arguments);
 
 		return $this;
-	}
-
-	public function flush()
-	{
-		$messages = $_SESSION[$this->key];
-		$_SESSION[$this->key] = [];
-
-		return $messages;
 	}
 
 	public function message($level, $message, $url = null)
@@ -49,5 +46,13 @@ class Flash
 			'text'  => $text,
 			'url'   => $url
 		];
+	}
+
+	public function flush()
+	{
+		$messages             = $_SESSION[$this->key];
+		$_SESSION[$this->key] = [];
+
+		return $messages;
 	}
 }

@@ -1,18 +1,17 @@
 <?php namespace Mopsis\Extensions\Twig;
 
-class Markdown extends \Aptoma\Twig\Extension\MarkdownExtension
+use Aptoma\Twig\Extension\MarkdownExtension;
+use Twig_Filter_Method;
+
+class Markdown extends MarkdownExtension
 {
 	public function getFilters()
 	{
 		return [
-			'markdown' => new \Twig_Filter_Method(
-				$this,
-				'parseMarkdown',
-				[
-					'pre_escape' => 'html',
-					'is_safe'    => ['html']
-				]
-			)
+			'markdown' => new Twig_Filter_Method($this, 'parseMarkdown', [
+				'pre_escape' => 'html',
+				'is_safe'    => ['html']
+			])
 		];
 	}
 }

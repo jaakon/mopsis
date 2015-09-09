@@ -11,6 +11,16 @@ class Collection extends \Illuminate\Database\Eloquent\Collection
 		return $this->hasGetMutator($key) ? $this->mutateAttribute($key) : null;
 	}
 
+	protected function hasGetMutator($key)
+	{
+		return method_exists($this, 'get' . studly_case($key) . 'Attribute');
+	}
+
+	protected function mutateAttribute($key)
+	{
+		return $this->{'get' . studly_case($key) . 'Attribute'}();
+	}
+
 	public function __isset($key)
 	{
 		return $this->hasGetMutator($key);
@@ -56,18 +66,7 @@ class Collection extends \Illuminate\Database\Eloquent\Collection
 	public function whereNot($key, $value, $strict = true)
 	{
 		return $this->filter(function ($item) use ($key, $value, $strict) {
-			return $strict ? data_get($item, $key) !== $value
-				: data_get($item, $key) != $value;
+			return $strict ? data_get($item, $key) !== $value : data_get($item, $key) != $value;
 		});
-	}
-
-	protected function hasGetMutator($key)
-	{
-		return method_exists($this, 'get' . studly_case($key) . 'Attribute');
-	}
-
-	protected function mutateAttribute($key)
-	{
-		return $this->{'get' . studly_case($key) . 'Attribute'}();
 	}
 }

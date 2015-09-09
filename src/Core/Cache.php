@@ -1,7 +1,5 @@
 <?php namespace Mopsis\Core;
 
-use Mopsis\Core\App;
-
 class Cache
 {
 	public static function clear($key)

@@ -1,10 +1,13 @@
 <?php namespace Mopsis\Extensions\Twig\Cache;
 
-class CacheAdapter implements \Asm89\Twig\CacheExtension\CacheProviderInterface
+use Asm89\Twig\CacheExtension\CacheProviderInterface;
+use Stash\Interfaces\PoolInterface;
+
+class CacheAdapter implements CacheProviderInterface
 {
 	private $cache;
 
-	public function __construct(\Stash\Interfaces\PoolInterface $cache)
+	public function __construct(PoolInterface $cache)
 	{
 		$this->cache = $cache;
 	}

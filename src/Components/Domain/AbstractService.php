@@ -1,7 +1,7 @@
 <?php namespace Mopsis\Components\Domain;
 
-use \Exception;
-use \Mopsis\Security\Token;
+use Exception;
+use Mopsis\Security\Token;
 
 abstract class AbstractService
 {
@@ -66,7 +66,7 @@ abstract class AbstractService
 			$relations = $instance->findRelations($ancestor);
 
 			if (count($relations) !== 1) {
-				throw new Exception('expected 1 relation, found '.count($relations));
+				throw new Exception('expected 1 relation, found ' . count($relations));
 			}
 
 			if ($data === null) {
@@ -180,6 +180,11 @@ abstract class AbstractService
 		}
 	}
 
+	public function fetchBySlug($slug)
+	{
+		return $this->fetchByAttributes(['slug' => $slug]);
+	}
+
 	public function fetchByAttributes($attributes)
 	{
 		try {
@@ -198,11 +203,6 @@ abstract class AbstractService
 				'attributes' => $attributes
 			]);
 		}
-	}
-
-	public function fetchBySlug($slug)
-	{
-		return $this->fetchByAttributes(['slug' => $slug]);
 	}
 
 	public function noop()

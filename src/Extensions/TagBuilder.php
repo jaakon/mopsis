@@ -34,14 +34,6 @@ class TagBuilder
 		return $this;
 	}
 
-	public function mergeAttribute($key, $value, $replaceExisting = true)
-	{
-		if ($replaceExisting || !$this->attributes->contains($key)) {
-			$this->attributes->set($key, $value);
-		}
-		return $this;
-	}
-
 	public function mergeAttributes($attributes, $replaceExisting = true)
 	{
 		if ($attributes !== null) {
@@ -49,6 +41,16 @@ class TagBuilder
 				$this->mergeAttribute($key, $value, $replaceExisting);
 			}
 		}
+
+		return $this;
+	}
+
+	public function mergeAttribute($key, $value, $replaceExisting = true)
+	{
+		if ($replaceExisting || !$this->attributes->contains($key)) {
+			$this->attributes->set($key, $value);
+		}
+
 		return $this;
 	}
 
@@ -69,6 +71,11 @@ class TagBuilder
 			default:
 				return sprintf(self::ELEMENT_FORMAT_NORMAL, $this->tagName, $this->getAttributesAsString(), $this->innerHtml, $this->tagName);
 		}
+	}
+
+	private function getAttributesAsString()
+	{
+		return implode($this->getAttributesAsArray($this->attributes));
 	}
 
 	private function getAttributesAsArray($rawAttributes, $prefix = null)
@@ -93,10 +100,5 @@ class TagBuilder
 		}
 
 		return $attributes;
-	}
-
-	private function getAttributesAsString($prefix = null)
-	{
-		return implode($this->getAttributesAsArray($this->attributes));
 	}
 }

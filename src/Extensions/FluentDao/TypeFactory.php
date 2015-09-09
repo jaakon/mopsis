@@ -4,11 +4,6 @@ use Mopsis\Contracts\Model;
 
 class TypeFactory
 {
-	public static function create($type, $value)
-	{
-		return $value instanceof $type ? $value : new $type($value);
-	}
-
 	public static function cast($value, $type)
 	{
 		if ($value === null && $type !== 'json') {
@@ -42,11 +37,16 @@ class TypeFactory
 					try {
 						return ModelFactory::load($m[1], $m[2]);
 					} catch (\LengthException $e) {
-						throw new \Exception('reference "'.$value.'" is invalid');
+						throw new \Exception('reference "' . $value . '" is invalid');
 					}
 				}
 		}
 
 		return $value;
+	}
+
+	public static function create($type, $value)
+	{
+		return $value instanceof $type ? $value : new $type($value);
 	}
 }

@@ -1,5 +1,6 @@
 <?php namespace Mopsis\Components\Controller;
 
+use App\Models\Event;
 use Mopsis\Contracts\Model;
 use Mopsis\Core\Auth;
 
@@ -14,7 +15,7 @@ abstract class AbstractCrudController extends AbstractController
 		$this->view->assign(['ancestorToken' => $ancestor->token]);
 
 		$route  = $this->findRoute();
-		$status = $this->handleFormAction($formId, $instance, $route);
+		$status = $this->handleFormAction($formId, $instance);
 
 		if ($status !== 200) {
 			return $this->getResponseObject($status, $instance);
@@ -27,7 +28,7 @@ abstract class AbstractCrudController extends AbstractController
 		$instance->import($this->filter->getResult())->save();
 
 		if (class_exists('\App\Models\Event')) {
-			\App\Models\Event::add($instance, Auth::user(), $route);
+			Event::add($instance, Auth::user(), $route);
 		}
 
 		return $this->getResponseObject(201, $instance);
@@ -36,7 +37,7 @@ abstract class AbstractCrudController extends AbstractController
 	protected function _update($formId, Model $instance)
 	{
 		$route  = $this->findRoute();
-		$status = $this->handleFormAction($formId, $instance, $route);
+		$status = $this->handleFormAction($formId, $instance);
 
 		if ($status !== 200) {
 			return $this->getResponseObject($status, $instance);
@@ -51,7 +52,7 @@ abstract class AbstractCrudController extends AbstractController
 		}
 
 		if (class_exists('\App\Models\Event')) {
-			\App\Models\Event::add($instance, Auth::user(), $route, array_diff_values($oldData, $newData));
+			Event::add($instance, Auth::user(), $route, array_diff_values($oldData, $newData));
 		}
 
 		return $this->getResponseObject(205, $instance);
@@ -61,13 +62,14 @@ abstract class AbstractCrudController extends AbstractController
 	{
 		if (!$instance->hasProperty('deleted')) {
 			$instance->delete();
+
 			return $this->getResponseObject(204, $instance);
 		}
 
 		$instance->deleted = true;
 
 		if (class_exists('\App\Models\Event')) {
-			\App\Models\Event::add($instance, Auth::user(), $this->findRoute());
+			Event::add($instance, Auth::user(), $this->findRoute());
 		}
 
 		return $this->getResponseObject(204, $instance);
@@ -78,7 +80,7 @@ abstract class AbstractCrudController extends AbstractController
 		$instance->{$key} = $value;
 
 		if (class_exists('\App\Models\Event')) {
-			\App\Models\Event::add($instance, Auth::user(), $this->findRoute(), [$key => $value]);
+			Event::add($instance, Auth::user(), $this->findRoute(), [$key => $value]);
 		}
 
 		return $this->getResponseObject(205, $instance);
@@ -91,9 +93,7 @@ abstract class AbstractCrudController extends AbstractController
 
 	protected function handleFormAction($formId, Model $instance)
 	{
-		$this->view
-			->setFormValues($formId, $instance->toArray(true))
-			->assign(['formId' => $formId]);
+		$this->view->setFormValues($formId, $instance->toArray(true))->assign(['formId' => $formId]);
 
 		if ($instance->exists) {
 			$this->view->assign(['token' => $instance->token]);

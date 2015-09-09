@@ -8,8 +8,8 @@ class Collection extends \Illuminate\Support\Collection
 
 	public static function load(array $ids)
 	{
-		$collection	= new static;
-		$class		= str_replace('Collections\\', 'Models\\', get_called_class());
+		$collection = new static;
+		$class      = str_replace('Collections\\', 'Models\\', get_called_class());
 
 		foreach ($ids as $id) {
 			try {
@@ -23,8 +23,8 @@ class Collection extends \Illuminate\Support\Collection
 
 	public static function loadRawData(array $data)
 	{
-		$collection	= new static;
-		$class		= str_replace('Collections\\', 'Models\\', get_called_class());
+		$collection = new static;
+		$class      = str_replace('Collections\\', 'Models\\', get_called_class());
 
 		foreach ($data as $entry) {
 			ModelFactory::put($collection[] = (new $class)->inject($entry));
@@ -40,13 +40,23 @@ class Collection extends \Illuminate\Support\Collection
 				$item->$method(...$args);
 			}
 		} catch (\Exception $e) {
-			throw new \Exception('unknown method "'.$method.'"');
+			throw new \Exception('unknown method "' . $method . '"');
 		}
 	}
 
 	public function __get($key)
 	{
 		return $this->hasGetMutator($key) ? $this->mutateAttribute($key) : null;
+	}
+
+	protected function hasGetMutator($key)
+	{
+		return method_exists($this, 'get' . studly_case($key) . 'Attribute');
+	}
+
+	protected function mutateAttribute($key)
+	{
+		return $this->{'get' . studly_case($key) . 'Attribute'}();
 	}
 
 	public function __isset($key)
@@ -66,6 +76,18 @@ class Collection extends \Illuminate\Support\Collection
 		return $this->count();
 	}
 
+	public function set($key, $value)
+	{
+		foreach ($this->items as $item) {
+			$item->{$key} = $value;
+		}
+	}
+
+	public function sortBySql($orderBy)
+	{
+		return count($this->items) > 1 ? $this->filterBySql('1=1', [], $orderBy) : $this;
+	}
+
 	public function filterBySql($query, $values = [], $orderBy = null)
 	{
 		if (!count($this->items)) {
@@ -81,32 +103,10 @@ class Collection extends \Illuminate\Support\Collection
 			$dataById[$item->id] = $item;
 		}
 
-		foreach ($this->first()->getCol('id', '(id IN ('.implode(',', array_keys($dataById)).')) AND ('.$query.')', $values, $orderBy) as $id) {
+		foreach ($this->first()->getCol('id', '(id IN (' . implode(',', array_keys($dataById)) . ')) AND (' . $query . ')', $values, $orderBy) as $id) {
 			$data[] = $dataById[$id];
 		}
 
 		return $data;
-	}
-
-	public function set($key, $value)
-	{
-		foreach ($this->items as $item) {
-			$item->{$key} = $value;
-		}
-	}
-
-	public function sortBySql($orderBy)
-	{
-		return count($this->items) > 1 ? $this->filterBySql('1=1', [], $orderBy) : $this;
-	}
-
-	protected function hasGetMutator($key)
-	{
-		return method_exists($this, 'get' . studly_case($key) . 'Attribute');
-	}
-
-	protected function mutateAttribute($key)
-	{
-		return $this->{'get' . studly_case($key) . 'Attribute'}();
 	}
 }

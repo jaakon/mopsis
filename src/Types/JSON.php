@@ -14,7 +14,7 @@ class JSON
 				$this->_data = method_exists($data, 'toArray') ? $data->toArray() : get_object_vars($data);
 				break;
 			case 'string':
-				$this->_data = json_decode($data, true)?: [];
+				$this->_data = json_decode($data, true) ?: [];
 				break;
 			default:
 				$this->_data = [];

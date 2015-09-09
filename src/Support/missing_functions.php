@@ -9,7 +9,7 @@ class MissingFunctions
 		}
 
 		foreach ($array as $key => $value) {
-			$result .= $key.$glue.$value.$delimiter;
+			$result .= $key . $glue . $value . $delimiter;
 		}
 
 		return rtrim($result, $delimiter);
@@ -50,12 +50,13 @@ class MissingFunctions
 	{
 		$keys = array_keys($array);
 		shuffle($keys);
+
 		return array_merge(array_flip($keys), $array);
 	}
 
 	public static function convertArrayToObject($input)
 	{
-		return is_array($input) ? (object) array_map(__FUNCTION__, $input) : $input;
+		return is_array($input) ? (object)array_map(__FUNCTION__, $input) : $input;
 	}
 
 	public static function convertObjectToArray($input)
@@ -80,13 +81,14 @@ class MissingFunctions
 		}
 
 		return array_map(function ($file) use ($directory) {
-			return $directory.'/'.$file;
+			return $directory . '/' . $file;
 		}, $files);
 	}
 
 	public static function getNamespace($class)
 	{
 		$temp = array_filter(explode('\\', is_object($class) ? get_class($class) : $class));
+
 		return reset($temp);
 	}
 
@@ -100,9 +102,9 @@ class MissingFunctions
 
 		foreach (get_object_vars($object) as $key => $value) {
 			if (is_object($value)) {
-				$data = array_merge($data, implode_objects($value, $prefix.$glue.$key, $glue));
+				$data = array_merge($data, implode_objects($value, $prefix . $glue . $key, $glue));
 			} else {
-				$data[$prefix.$glue.$key] = $value;
+				$data[$prefix . $glue . $key] = $value;
 			}
 		}
 
@@ -111,15 +113,21 @@ class MissingFunctions
 
 	public static function is_assoc(array $array)
 	{
-		for (reset($array); is_int(key($array)); next($array));
+		for (reset($array); is_int(key($array)); next($array)) {
+			;
+		}
+
 		return !is_null(key($array));
 	}
 
 	public static function json_fix_and_decode($json, $assoc = false)
 	{
 		$json = str_replace('\'', '"', $json);
-		$json = str_replace(["\n", "\r"], '', $json);
-		$json = preg_replace('/([{,]+)(\s*)([^"]+?)\s*:/', '$1"$3":', '{'.$json.'}');
+		$json = str_replace([
+			"\n",
+			"\r"
+		], '', $json);
+		$json = preg_replace('/([{,]+)(\s*)([^"]+?)\s*:/', '$1"$3":', '{' . $json . '}');
 
 		return json_decode($json, $assoc);
 	}
@@ -136,7 +144,7 @@ class MissingFunctions
 
 	public static function realurl($url, $scheme, $host, $path = '/')
 	{
-		return preg_match('/^(ht|f)tps?:\/\/|(mailto:|javascript:|#)/i', $url) > 0 ? $url : $scheme.'://'.$host.resolve_path($path.$url);
+		return preg_match('/^(ht|f)tps?:\/\/|(mailto:|javascript:|#)/i', $url) > 0 ? $url : $scheme . '://' . $host . resolve_path($path . $url);
 	}
 
 	public static function redirect($url = null, $responseCode = 302)
@@ -159,6 +167,7 @@ class MissingFunctions
 	public static function wget($url, $data = [], $referer = null, $timeout = 10)
 	{
 		$result = send_http_request('GET', $url, $data, $referer, $timeout);
+
 		return $result[0]['http_code'] === 200 ? $result[1] : false;
 	}
 }

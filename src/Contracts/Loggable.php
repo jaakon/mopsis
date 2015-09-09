@@ -2,5 +2,5 @@
 
 interface Loggable
 {
-	public function logChanges();
+	public function logChanges($event);
 }

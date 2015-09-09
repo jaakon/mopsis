@@ -19,7 +19,10 @@ class FormBuilder extends \Twig_Extension
 	public function getFunctions()
 	{
 		return [
-			new \Twig_SimpleFunction('FormBuilder', [$this, 'getFormBuilder'], ['is_safe' => ['html']])
+			new \Twig_SimpleFunction('FormBuilder', [
+				$this,
+				'getFormBuilder'
+			], ['is_safe' => ['html']])
 		];
 	}
 

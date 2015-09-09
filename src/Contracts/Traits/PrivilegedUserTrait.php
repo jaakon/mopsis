@@ -1,5 +1,9 @@
 <?php namespace Mopsis\Contracts\Traits;
 
+use Mopsis\Contracts\Hierarchical;
+use Mopsis\Contracts\Model;
+use Mopsis\Security\RoleManager;
+
 trait PrivilegedUserTrait
 {
 	public function roles()
@@ -10,7 +14,7 @@ trait PrivilegedUserTrait
 	public function may($actionOnObject, $objectToAccess = null)
 	{
 		foreach ($this->roles as $role) {
-			if (!\Mopsis\Security\RoleManager::isRoleAllowedTo($role->key, $actionOnObject)) {
+			if (!RoleManager::isRoleAllowedTo($role->key, $actionOnObject)) {
 				continue;
 			}
 
@@ -22,7 +26,7 @@ trait PrivilegedUserTrait
 				return true;
 			}
 
-			if (!($objectToAccess instanceof \Mopsis\Contracts\Model)) {
+			if (!($objectToAccess instanceof Model)) {
 				return false;
 //				throw new \Exception('cannot determine privileges without a target object');
 			}
@@ -30,8 +34,7 @@ trait PrivilegedUserTrait
 			$object = $objectToAccess;
 
 			while ((string)$role->constraint !== (string)$object // get_class() vs. identical classes in hierarchy
-				&& $object instanceof \Mopsis\Contracts\Hierarchical
-			) {
+				&& $object instanceof Hierarchical) {
 				$object = $object->ancestor;
 			}
 

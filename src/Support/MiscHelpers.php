@@ -1,12 +1,13 @@
 <?php namespace Mopsis\Support;
 
+use Ladybug\Dumper;
 use Mopsis\Core\App;
 
 class MiscHelpers
 {
 	public static function debug(...$args)
 	{
-		$ladybug = new \Ladybug\Dumper();
+		$ladybug = new Dumper();
 
 		$ladybug->setTheme('modern');
 		$ladybug->setOption('expanded', false);

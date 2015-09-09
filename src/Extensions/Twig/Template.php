@@ -5,7 +5,7 @@ use Mopsis\Extensions\Eloquent\Model;
 
 abstract class Template extends \Twig_Template
 {
-	protected function getAttribute($object, $item, array $arguments = array(), $type = self::ANY_CALL, $isDefinedTest = false, $ignoreStrictCheck = false)
+	protected function getAttribute($object, $item, array $arguments = [], $type = self::ANY_CALL, $isDefinedTest = false, $ignoreStrictCheck = false)
 	{
 		if ($type !== self::METHOD_CALL && $object instanceof Model) {
 			if ($isDefinedTest) {

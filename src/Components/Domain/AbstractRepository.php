@@ -1,7 +1,7 @@
 <?php namespace Mopsis\Components\Domain;
 
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 
 abstract class AbstractRepository
 {
@@ -9,9 +9,16 @@ abstract class AbstractRepository
 	protected $query;
 	protected $relation;
 
+	public function __construct(Relation $relation)
+	{
+		$this->relation  = $relation;
+		$this->baseQuery = clone $relation->getQuery();
+		$this->query     = clone $this->baseQuery;
+	}
+
 	public function __call($method, $parameters)
 	{
-		if (method_exists($this, $scope = 'scope'.ucfirst($method))) {
+		if (method_exists($this, $scope = 'scope' . ucfirst($method))) {
 			return $this->callScope($scope, $parameters);
 		}
 
@@ -22,20 +29,8 @@ abstract class AbstractRepository
 		}
 
 		$this->newQuery();
+
 		return $result;
-	}
-
-	public function __clone()
-	{
-		$this->baseQuery = clone $this->baseQuery;
-		$this->query     = clone $this->baseQuery;
-	}
-
-	public function __construct(Relation $relation)
-	{
-		$this->relation  = $relation;
-		$this->baseQuery = clone $relation->getQuery();
-		$this->query     = clone $this->baseQuery;
 	}
 
 	protected function callScope($scope, $parameters)
@@ -50,6 +45,13 @@ abstract class AbstractRepository
 	protected function newQuery()
 	{
 		$this->query = clone $this->baseQuery;
+
 		return $this;
+	}
+
+	public function __clone()
+	{
+		$this->baseQuery = clone $this->baseQuery;
+		$this->query     = clone $this->baseQuery;
 	}
 }

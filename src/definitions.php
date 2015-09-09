@@ -1,7 +1,6 @@
 <?php
 
 use Interop\Container\ContainerInterface as ContainerInterface;
-
 use function DI\dot;
 use function DI\get;
 use function DI\object;

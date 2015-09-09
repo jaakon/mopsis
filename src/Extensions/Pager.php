@@ -64,6 +64,11 @@ class Pager
 		$this->result['data']      = array_slice($data, ($this->result['pos'] - 1) * $pageSize, $pageSize);
 	}
 
+	protected function getHtml($option, $pos)
+	{
+		return str_replace(['{PAGE}'], [$pos], $this->args[$option]);
+	}
+
 	public function __get($key)
 	{
 		if (!isset($this->result[$key])) {
@@ -71,10 +76,5 @@ class Pager
 		}
 
 		return $this->result[$key];
-	}
-
-	protected function getHtml($option, $pos)
-	{
-		return str_replace(['{PAGE}'], [$pos], $this->args[$option]);
 	}
 }

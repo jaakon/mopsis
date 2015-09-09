@@ -2,10 +2,8 @@
 
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Mopsis\Contracts\Hierarchical;
-use Mopsis\Core\App;
 use Mopsis\Core\Cache;
 use Mopsis\Extensions\Stringifier;
-use Mopsis\Reflection\ReflectionClass;
 use Mopsis\Security\Token;
 
 abstract class Model extends \Illuminate\Database\Eloquent\Model implements \Mopsis\Contracts\Model
@@ -89,7 +87,10 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements \Mop
 
 	public function clearCachedAttribute($attribute)
 	{
-		Cache::clear([$this, $attribute]);
+		Cache::clear([
+			$this,
+			$attribute
+		]);
 
 		return $this;
 	}
@@ -105,28 +106,28 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements \Mop
 		return $this;
 	}
 
-/*
-	public function findRelations(Model $model)
-	{
-		$class = new ReflectionClass($this);
-		$className = $class->getName();
-		$modelName = get_class($model);
+	/*
+		public function findRelations(Model $model)
+		{
+			$class = new ReflectionClass($this);
+			$className = $class->getName();
+			$modelName = get_class($model);
 
-		return array_map(
-			function ($method) {
-				return $method->name;
-			},
-			array_filter(
-				$class->getMethods(\ReflectionMethod::IS_PUBLIC),
-				function ($method) use ($className, $modelName) {
-					return $method->class === $className
-					&& !preg_match('/^[gs]et\w+Attribute$/', $method->name)
-					&& strpos($method->getBody(), $modelName) !== false;
-				}
-			)
-		);
-	}
-*/
+			return array_map(
+				function ($method) {
+					return $method->name;
+				},
+				array_filter(
+					$class->getMethods(\ReflectionMethod::IS_PUBLIC),
+					function ($method) use ($className, $modelName) {
+						return $method->class === $className
+						&& !preg_match('/^[gs]et\w+Attribute$/', $method->name)
+						&& strpos($method->getBody(), $modelName) !== false;
+					}
+				)
+			);
+		}
+	*/
 	/** @Override */
 	public function getAttribute($key)
 	{
@@ -142,7 +143,10 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements \Mop
 
 	public function getDataTypes()
 	{
-		return Cache::get([get_called_class(), '@dataTypes'], function () {
+		return Cache::get([
+			get_called_class(),
+			'@dataTypes'
+		], function () {
 			$columns = [];
 
 			foreach ($this->getConnection()->select('SHOW COLUMNS FROM ' . $this->getTable()) as $column) {
@@ -177,7 +181,11 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements \Mop
 	/** @Override */
 	public function getDates()
 	{
-		$defaults = [static::CREATED_AT, static::UPDATED_AT, static::DELETED_AT];
+		$defaults = [
+			static::CREATED_AT,
+			static::UPDATED_AT,
+			static::DELETED_AT
+		];
 
 		return array_merge($this->dates, $defaults);
 	}
@@ -214,31 +222,30 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements \Mop
 
 	public function hasAttribute($key)
 	{
-		return array_key_exists($key, $this->attributes)
-			|| array_key_exists($key, $this->relations)
-			|| $this->hasGetMutator($key);
+		return array_key_exists($key, $this->attributes) || array_key_exists($key, $this->relations) || $this->hasGetMutator($key);
 	}
-/*
-	public function getUriRecursive()
-	{
-		if ($this->exists && isset($this->uri)) {
-			return $this->uri;
+	/*
+		public function getUriRecursive()
+		{
+			if ($this->exists && isset($this->uri)) {
+				return $this->uri;
+			}
+
+			if ($this instanceof Hierarchical) {
+				return $this->ancestor->getUriRecursive();
+			}
+
+			return;
 		}
-
-		if ($this instanceof Hierarchical) {
-			return $this->ancestor->getUriRecursive();
-		}
-
-		return;
-	}
-
+	*/
 	/** @Override */
-	public function hasMany($related, $foreignKey = null, $localKey = null)
-	{
-		return App::create('Domain', $related . '\\Gateway')
-			->newRepository(parent::hasMany(App::build('Domain', $related . '\\Model'), $foreignKey, $localKey));
-	}
-*/
+	/*
+		public function hasMany($related, $foreignKey = null, $localKey = null)
+		{
+			return App::create('Domain', $related . '\\Gateway')
+				->newRepository(parent::hasMany(App::build('Domain', $related . '\\Model'), $foreignKey, $localKey));
+		}
+	*/
 	/** @Override */
 	public function newCollection(array $models = [])
 	{
@@ -287,6 +294,9 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements \Mop
 
 	protected function getCachedAttribute($attribute, callable $callback, $ttl = null)
 	{
-		return Cache::get([$this, $attribute], $callback, $ttl);
+		return Cache::get([
+			$this,
+			$attribute
+		], $callback, $ttl);
 	}
 }

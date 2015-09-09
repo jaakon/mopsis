@@ -24,8 +24,9 @@ abstract class Container
 			return true;
 		}
 
-		if (method_exists($this, 'get'.ucfirst($key).'Attribute')) {
-			$value = $this->{'get'.ucfirst($key).'Attribute'}();
+		if (method_exists($this, 'get' . ucfirst($key) . 'Attribute')) {
+			$value = $this->{'get' . ucfirst($key) . 'Attribute'}();
+
 			return isset($value);
 		}
 
@@ -34,9 +35,9 @@ abstract class Container
 
 	public function __get($key)
 	{
-		if (method_exists($this, 'get'.ucfirst($key).'Attribute')) {
+		if (method_exists($this, 'get' . ucfirst($key) . 'Attribute')) {
 			if ($this->cache[$key] === null) {
-				$this->cache[$key] = $this->{'get'.ucfirst($key).'Attribute'}();
+				$this->cache[$key] = $this->{'get' . ucfirst($key) . 'Attribute'}();
 			}
 
 			return $this->cache[$key];
@@ -49,20 +50,12 @@ abstract class Container
 	{
 		unset($this->cache[$key]);
 
-		if (method_exists($this, 'set'.ucfirst($key).'Attribute')) {
-			return $this->{'set'.ucfirst($key).'Attribute'}($value);
+		if (method_exists($this, 'set' . ucfirst($key) . 'Attribute')) {
+			return $this->{'set' . ucfirst($key) . 'Attribute'}($value);
 		}
 
 		$this->_set($key, $value);
 	}
-
-	public function set($key, $value)
-	{
-		$this->{$key} = $value;
-		return $this;
-	}
-
-//=== PROTECTED METHODS ========================================================
 
 	protected function _get($key)
 	{
@@ -72,16 +65,26 @@ abstract class Container
 			return $this->data[$key];
 		}
 
-		throw new \Exception('property ['.$key.'] is undefined');
+		throw new \Exception('property [' . $key . '] is undefined');
 	}
+
+//=== PROTECTED METHODS ========================================================
 
 	protected function _set($key, $value)
 	{
 		if (array_key_exists($key, $this->data)) {
 			$this->data[$key] = $value;
+
 			return true;
 		}
 
-		throw new \Exception('property ['.$key.'] is undefined');
+		throw new \Exception('property [' . $key . '] is undefined');
+	}
+
+	public function set($key, $value)
+	{
+		$this->{$key} = $value;
+
+		return $this;
 	}
 }

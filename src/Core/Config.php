@@ -1,8 +1,8 @@
 <?php namespace Mopsis\Core;
 
-use Mopsis\Core\App;
+use Illuminate\Config\Repository;
 
-class Config extends \Illuminate\Config\Repository
+class Config extends Repository
 {
 	/** @Override */
 	public function get($key, $default = null)
@@ -12,9 +12,11 @@ class Config extends \Illuminate\Config\Repository
 				return include APPLICATION_PATH . '/vendor/cviebrock/eloquent-sluggable/config/sluggable.php';
 			case 'taggable.delimiters':
 				$config = include APPLICATION_PATH . '/vendor/cviebrock/eloquent-taggable/config/taggable.php';
+
 				return $config['delimiters'];
 			case 'taggable.normalizer':
 				$config = include APPLICATION_PATH . '/vendor/cviebrock/eloquent-taggable/config/taggable.php';
+
 				return $config['normalizer'];
 		}
 

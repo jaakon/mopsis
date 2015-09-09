@@ -2,7 +2,6 @@
 
 use Aura\Web\Request;
 use Mopsis\Components\Domain\AbstractFilter as Filter;
-use Mopsis\Core\App;
 use Twig_Environment as Renderer;
 
 class View
@@ -88,10 +87,7 @@ class View
 	{
 		$messages = $filter->getMessages();
 
-		$this
-			->setFormValues($formId, $this->request->post->get())
-			->setFormErrors($formId, array_keys($messages))
-			->assign(['errors' => array_flatten($messages)]);
+		$this->setFormValues($formId, $this->request->post->get())->setFormErrors($formId, array_keys($messages))->assign(['errors' => array_flatten($messages)]);
 
 		return $this;
 	}
@@ -138,7 +134,11 @@ class View
 		}
 
 		if (!isset($this->forms[$formId])) {
-			$this->forms[$formId] = ['values' => [], 'options' => [], 'errors' => []];
+			$this->forms[$formId] = [
+				'values'  => [],
+				'options' => [],
+				'errors'  => []
+			];
 		}
 	}
 }

@@ -9,7 +9,7 @@ use Mopsis\Components\View\View;
 abstract class AbstractResponder
 {
 	protected $accept;
-	protected $available     = [
+	protected $available      = [
 		'text/html'        => '.twig',
 		'application/json' => '.json'
 	];
@@ -86,7 +86,7 @@ abstract class AbstractResponder
 		}
 
 		$available = array_keys($this->available);
-		$media = $this->accept->negotiateMedia($available);
+		$media     = $this->accept->negotiateMedia($available);
 
 		if (!$media) {
 			$this->response->status->set(406);
@@ -114,9 +114,7 @@ abstract class AbstractResponder
 		$contentType = $this->response->content->getType();
 		$extension   = $contentType ? $this->available[$contentType] : '.twig';
 
-		$this->view
-			->setTemplate($this->getViewPath() . ($template ?: $this->template) . $extension)
-			->assign($this->payload->get());
+		$this->view->setTemplate($this->getViewPath() . ($template ?: $this->template) . $extension)->assign($this->payload->get());
 
 		$this->response->content->set($this->view->__invoke());
 	}

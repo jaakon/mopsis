@@ -1,8 +1,8 @@
 <?php namespace Mopsis\Core;
 
 use Illuminate\Contracts\Validation\ValidationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Mopsis\Contracts\User;
-use Mopsis\Core\App;
 
 class Auth
 {
@@ -96,7 +96,7 @@ class Auth
 		if (isset($_SESSION['user'])) {
 			try {
 				return $userClass::unpack($_SESSION['user']);
-			} catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+			} catch (ModelNotFoundException $e) {
 				unset($_SESSION['user']);
 			}
 		}
@@ -107,7 +107,7 @@ class Auth
 				$_SESSION['user'] = (string)$user->token;
 
 				return $user;
-			} catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+			} catch (ModelNotFoundException $e) {
 				App::get('Cookie')->delete('user');
 			}
 		}

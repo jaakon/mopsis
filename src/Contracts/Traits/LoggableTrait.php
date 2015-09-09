@@ -1,5 +1,8 @@
 <?php namespace Mopsis\Contracts\Traits;
 
+use App\Models\Event;
+use Mopsis\Core\Auth;
+
 trait LoggableTrait
 {
 	public function logChanges($message = null)
@@ -8,15 +11,24 @@ trait LoggableTrait
 			return $this;
 		}
 
-		$event = new \App\Models\Event([
+		$event = new Event([
 			'message' => $message ?: $this->traceAction(),
 			'values'  => json_encode($this->getDiff())
 		]);
 
-		$event->user()->associate(\Mopsis\Core\Auth::user());
+		$event->user()->associate(Auth::user());
 		$this->events()->save($event);
 
 		return $this;
+	}
+
+	protected function traceAction()
+	{
+		foreach (debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS) as $frame) {
+			if (preg_match('/^Controllers\\\\(\w+)/', $frame['class'], $m)) {
+				return $m[1] . '.' . $frame['function'];
+			}
+		}
 	}
 
 	protected function getDiff()
@@ -36,14 +48,5 @@ trait LoggableTrait
 			static::UPDATED_AT,
 			static::DELETED_AT
 		], null));
-	}
-
-	protected function traceAction()
-	{
-		foreach (debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS) as $frame) {
-			if (preg_match('/^Controllers\\\\(\w+)/', $frame['class'], $m)) {
-				return $m[1] . '.' . $frame['function'];
-			}
-		}
 	}
 }

@@ -1,14 +1,13 @@
 <?php
 
 use Mopsis\Core\App;
+use Mopsis\Extensions\DI\Definition\Helper\DotNotationDefinitionHelper;
 use Mopsis\Support\ArrayHelpers;
-use Mopsis\Support\ClassHelpers;
 use Mopsis\Support\LaravelHelpers;
 use Mopsis\Support\MiscHelpers;
 use Mopsis\Support\ObjectHelpers;
 use Mopsis\Support\PathHelpers;
 use Mopsis\Support\StringHelpers;
-use Mopsis\Extensions\DI\Definition\Helper\DotNotationDefinitionHelper;
 
 function __($key, array $replace = [])
 {

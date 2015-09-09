@@ -11,6 +11,11 @@ class App
 		static::$container = $container;
 	}
 
+	public static function create($type, $name, array $parameters = null)
+	{
+		return static::$container->make(static::build($type, $name), $parameters);
+	}
+
 	public static function build($type, $name)
 	{
 		$format = static::$container->get('classFormats')[$type];
@@ -38,11 +43,6 @@ class App
 		}
 
 		return $class;
-	}
-
-	public static function create($type, $name, array $parameters = null)
-	{
-		return static::$container->make(static::build($type, $name), $parameters);
 	}
 
 	public static function getInstance()
