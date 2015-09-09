@@ -38,9 +38,8 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements \Mop
 	public static function unpack($token)
 	{
 		$instance = Token::extract($token);
-		$class    = get_called_class();
 
-		if ($instance instanceof $class) {
+		if (is_a($instance, get_called_class())) {
 			return $instance;
 		}
 
@@ -85,7 +84,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements \Mop
 
 	public function __toString()
 	{
-		return class_basename($this).':'.($this->id ?: 0);
+		return class_basename($this) . ':' . ($this->id ?: 0);
 	}
 
 	public function clearCachedAttribute($attribute)
@@ -106,6 +105,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements \Mop
 		return $this;
 	}
 
+/*
 	public function findRelations(Model $model)
 	{
 		$class = new ReflectionClass($this);
@@ -126,7 +126,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements \Mop
 			)
 		);
 	}
-
+*/
 	/** @Override */
 	public function getAttribute($key)
 	{
@@ -212,6 +212,13 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements \Mop
 		return (string)$this->token;
 	}
 
+	public function hasAttribute($key)
+	{
+		return array_key_exists($key, $this->attributes)
+			|| array_key_exists($key, $this->relations)
+			|| $this->hasGetMutator($key);
+	}
+/*
 	public function getUriRecursive()
 	{
 		if ($this->exists && isset($this->uri)) {
@@ -231,11 +238,11 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements \Mop
 		return App::create('Domain', $related . '\\Gateway')
 			->newRepository(parent::hasMany(App::build('Domain', $related . '\\Model'), $foreignKey, $localKey));
 	}
-
+*/
 	/** @Override */
 	public function newCollection(array $models = [])
 	{
-		if (class_exists($collection = str_replace('Model', 'Collection', get_called_class()))) {
+		if (class_exists($collection = get_called_class() . 'Collection')) {
 			return new $collection($models);
 		}
 

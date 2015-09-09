@@ -7,7 +7,6 @@ use Mopsis\Components\Controller\Filter;
 use Mopsis\Components\View\View;
 use Mopsis\Core\App;
 use Mopsis\Core\Auth;
-use Mopsis\FormBuilder\FormBuilder;
 
 abstract class AbstractController
 {
@@ -15,13 +14,15 @@ abstract class AbstractController
 	protected $filter;
 	protected $view;
 
+	protected $loginMandatory;
+
 	public function __construct(Request $request, Filter $filter, View $view)
 	{
 		$this->request = $request;
 		$this->filter  = $filter;
 		$this->view    = $view;
 
-		$this->checkAccess();
+		$this->init();
 	}
 
 	public function __call($method, $funcArgs)
@@ -60,25 +61,30 @@ abstract class AbstractController
 		return $response;
 	}
 
+	public function init()
+	{
+		$this->checkAccess();
+	}
+
 	protected function checkAccess()
 	{
-		if (defined('static::ACCESS') && static::ACCESS === 'PUBLIC') {
+		$loginMandatory = is_bool($this->loginMandatory) ? $this->loginMandatory : config('app.login.mandatory');
+
+		if (!$loginMandatory || Auth::check()) {
 			return true;
 		}
 
-		if (Auth::check()) {
+		$loginPage = config('app.login.page');
+
+		if ($loginPage === $this->request->url->get(PHP_URL_PATH)) {
 			return true;
 		}
 
-		if (!CORE_LOGIN_MANDATORY || !CORE_LOGIN_PAGE || CORE_LOGIN_PAGE === $_SERVER['SCRIPT_URL']) {
-			return true;
+		if (!$this->request->method->isGet()) {
+			redirect($loginPage);
 		}
 
-		if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-			redirect(CORE_LOGIN_PAGE);
-		}
-
-		redirect(CORE_LOGIN_PAGE.(strpos(CORE_LOGIN_PAGE, '?') !== false ? '&' : '?').'redirect='.urlencode($_SERVER['REQUEST_URI']));
+		redirect($loginPage . '?redirect=' . urlencode($this->request->url->get(PHP_URL_PATH)));
 	}
 
 	protected function setTemplate($page)

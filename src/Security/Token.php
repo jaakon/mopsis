@@ -18,10 +18,13 @@ class Token
 		}
 
 		try {
-			$class    = App::create('Domain', str_plural($m[1]) . '\\' . $m[1] . '\\Model');
-			$instance = $class::findOrFail($m[2]);
+			$class = App::build('Domain', str_plural($m[1]) . '\\' . $m[1] . '\\Model');
 		} catch (\DomainException $e) {
-			$instance = App::create('Model', str_plural($m[1]) . '\\' . $m[1], ['id' => $m[2]]);
+			$class = App::build('Model', '\\' . $m[1]);
+		}
+
+		try {
+			$instance = $class::findOrFail($m[2]);
 		} catch (ModelNotFoundException $e) {
 			return false;
 		}

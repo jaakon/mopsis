@@ -38,6 +38,6 @@ class Config extends \Illuminate\Config\Repository
 			throw new \Exception('configuration file "' . $configFile . '" not found');
 		}
 
-		$this->set(include $configFile);
+		$this->set(array_dot(include $configFile));
 	}
 }

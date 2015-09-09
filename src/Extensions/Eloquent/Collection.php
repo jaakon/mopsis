@@ -1,6 +1,6 @@
 <?php namespace Mopsis\Extensions\Eloquent;
 
-use Mopsis\Core\PrivilegedUser;
+use Mopsis\Contracts\PrivilegedUser;
 
 class Collection extends \Illuminate\Database\Eloquent\Collection
 {

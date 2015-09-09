@@ -58,16 +58,18 @@ return [
 	'twig' => [
 		'config' => [
 			'development'        => [
-				'debug'            => true,
-				'cache'            => false,
-				'auto_reload'      => true,
-				'strict_variables' => true
+				'base_template_class' => 'Mopsis\Extensions\Twig\Template',
+				'debug'               => true,
+				'cache'               => false,
+				'auto_reload'         => true,
+				'strict_variables'    => true
 			],
 			'production'       => [
-				'debug'            => false,
-				'cache'            => 'storage/cache/',
-				'auto_reload'      => false,
-				'strict_variables' => false
+				'base_template_class' => 'Mopsis\Extensions\Twig\Template',
+				'debug'               => false,
+				'cache'               => 'storage/cache/',
+				'auto_reload'         => false,
+				'strict_variables'    => false
 			],
 		],
 	],
@@ -192,16 +194,6 @@ return [
 			]);
 		},
 
-	CodeZero\Encrypter\DefaultEncrypter::class
-		=> object()
-		->constructorParameter('key', null)
-		->constructorParameter('encrypter', get(Illuminate\Encryption\Encrypter::class)),
-
-	Illuminate\Encryption\Encrypter::class
-		=>object()
-		->constructorParameter('key', get('cookie.key'))
-		->constructorParameter('cipher', 'AES-256-CBC'),
-
 	Illuminate\Translation\LoaderInterface::class
 		=> object(Illuminate\Translation\FileLoader::class)
 		->constructorParameter('path', dot('translator.path')),
@@ -284,8 +276,7 @@ return [
 		},
 
 	Cookie::class
-		=> object(CodeZero\Cookie\VanillaCookie::class)
-		->constructorParameter('encrypter', get(CodeZero\Encrypter\DefaultEncrypter::class)),
+		=> object(CodeZero\Cookie\VanillaCookie::class),
 
 	Database::class
 		=> function () {
@@ -324,16 +315,6 @@ return [
 	Flash::class
 		=> object(Mopsis\Extensions\Flash::class),
 
-	MonologErrorHandler::class
-		=> object(Monolog\Handler\StreamHandler::class)
-		->constructor(dot('app.error_log'), Monolog\Logger::ERROR, false)
-		->method('setFormatter', get(Monolog\Formatter\LineFormatter::class)),
-
-	MonologNoticeHandler::class
-		=> object(Monolog\Handler\StreamHandler::class)
-		->constructor(dot('app.application_log'), Monolog\Logger::NOTICE, false)
-		->method('setFormatter', get(Monolog\Formatter\LineFormatter::class)),
-
 	Logger::class
 		=> function (ContainerInterface $c) {
 			$logger = new Monolog\Logger('default');
@@ -345,6 +326,16 @@ return [
 
 			return $logger;
 		},
+
+	MonologErrorHandler::class
+		=> object(Monolog\Handler\StreamHandler::class)
+		->constructor(dot('app.error_log'), Monolog\Logger::ERROR, false)
+		->method('setFormatter', get(Monolog\Formatter\LineFormatter::class)),
+
+	MonologNoticeHandler::class
+		=> object(Monolog\Handler\StreamHandler::class)
+		->constructor(dot('app.application_log'), Monolog\Logger::NOTICE, false)
+		->method('setFormatter', get(Monolog\Formatter\LineFormatter::class)),
 
 	Renderer::class
 		=> object(Twig_Environment::class),

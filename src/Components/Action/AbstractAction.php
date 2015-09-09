@@ -17,19 +17,22 @@ abstract class AbstractAction
 
 	public function checkAccess()
 	{
-		if (
-			!CORE_LOGIN_MANDATORY ||
-			!CORE_LOGIN_PAGE ||
-			$this->access === self::ACCESS_PUBLIC ||
-			CORE_LOGIN_PAGE === $_SERVER['ROUTE'] ||
-			\Mopsis\Auth::user()->exists
-		) {
+		$loginMandatory = is_bool($this->loginMandatory) ? $this->loginMandatory : config('app.login.mandatory');
+
+		if (!$loginMandatory || Auth::check()) {
 			return true;
 		}
-		if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-			redirect(CORE_LOGIN_PAGE);
+
+		$loginPage = config('app.login.page');
+
+		if ($loginPage === $this->request->url->get(PHP_URL_PATH)) {
+			return true;
 		}
 
-		redirect(CORE_LOGIN_PAGE.'?redirect='.urlencode($_SERVER['REQUEST_URI']));
+		if (!$this->request->method->isGet()) {
+			redirect($loginPage);
+		}
+
+		redirect($loginPage . '&redirect=' . urlencode($this->request->url->get(PHP_URL_PATH)));
 	}
 }

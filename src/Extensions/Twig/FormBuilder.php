@@ -25,7 +25,7 @@ class FormBuilder extends \Twig_Extension
 
 	public function getFormBuilder($id, $uri)
 	{
-		return (new \Mopsis\FormBuilder\FormBuilder())->getForm($id, $uri, $this->options['forms'][$id]);
+		return app('Mopsis\FormBuilder\FormBuilder')->getForm($id, $uri, $this->options['forms'][$id]);
 	}
 
 	public function setOptions(array $options)

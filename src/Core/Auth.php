@@ -2,6 +2,7 @@
 
 use Illuminate\Contracts\Validation\ValidationException;
 use Mopsis\Contracts\User;
+use Mopsis\Core\App;
 
 class Auth
 {
@@ -34,7 +35,7 @@ class Auth
 
 	public static function check()
 	{
-		return static::user()->exist;
+		return static::user()->exists;
 	}
 
 	public static function checkAccess($permission, $model = null, $redirect = null)
@@ -68,13 +69,13 @@ class Auth
 		$_SESSION['user'] = (string)$user->token;
 
 		if ($remember) {
-			app('Cookie')->forever('user', $user->hash);
+			App::get('Cookie')->forever('user', $user->hash);
 		}
 	}
 
 	public static function logout()
 	{
-		app('Cookie')->delete('user');
+		App::get('Cookie')->delete('user');
 		$_SESSION = [];
 		session_destroy();
 	}
@@ -102,12 +103,12 @@ class Auth
 
 		if (isset($_COOKIE['user'])) {
 			try {
-				$user = $userClass::unpack($_COOKIE['user']);
+				$user             = $userClass::unpack($_COOKIE['user']);
 				$_SESSION['user'] = (string)$user->token;
 
 				return $user;
 			} catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-				app('Cookie')->delete('user');
+				App::get('Cookie')->delete('user');
 			}
 		}
 
