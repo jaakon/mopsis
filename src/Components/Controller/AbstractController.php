@@ -88,6 +88,8 @@ abstract class AbstractController
 
 	protected function setTemplate($page)
 	{
-		$this->view->setTemplate(class_basename($this) . '/' . $page);
+		$class = App::identify($this);
+
+		$this->view->setTemplate($class[0] . '/views/' . $page);
 	}
 }

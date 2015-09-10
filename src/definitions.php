@@ -16,12 +16,12 @@ return [
 		=> object(Mopsis\Core\Config::class),
 
 	'classFormats' => [
-		'Action'     => '\\App\\{{MODULE}}\\Action\\{{DOMAIN}}{{SUBTYPE}}Action',
-		'Domain'     => '\\App\\{{MODULE}}\\Domain\\{{DOMAIN}}{{SUBTYPE}}',
-		'Responder'  => '\\App\\{{MODULE}}\\Responder\\{{DOMAIN}}{{SUBTYPE}}Responder',
-		'Controller' => '\\App\\Controllers\\{{MODULE}}',
-		'Model'      => '\\App\\Models\\{{DOMAIN}}',
-		'Collection' => '\\App\\Collections\\{{DOMAIN}}',
+		'Action'     => 'App\\{{MODULE}}\\Action\\{{DOMAIN}}{{SUBTYPE}}Action',
+		'Domain'     => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}{{SUBTYPE}}',
+		'Responder'  => 'App\\{{MODULE}}\\Responder\\{{DOMAIN}}{{SUBTYPE}}Responder',
+		'Controller' => 'App\\{{MODULE}}\\{{DOMAIN}}Controller',
+		'Model'      => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}Model',
+		'Collection' => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}Collection'
 	],
 
 	'static-pages' => [
@@ -89,7 +89,7 @@ return [
 			return $extensions;
 		},
 
-	'twigloader.config' => ['app/views'],
+	'twigloader.config' => ['app', 'app/views'],
 
 	Aptoma\Twig\Extension\MarkdownEngineInterface::class
 		=> object(Mopsis\Extensions\Twig\Markdown\MarkdownEngine::class),

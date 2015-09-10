@@ -1,7 +1,9 @@
 <?php namespace Mopsis\Extensions\Eloquent;
 
+use DomainException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Mopsis\Contracts\Hierarchical;
+use Mopsis\Core\App;
 use Mopsis\Core\Cache;
 use Mopsis\Extensions\Stringifier;
 use Mopsis\Security\Token;
@@ -239,21 +241,24 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements \Mop
 		}
 	*/
 	/** @Override */
-	/*
-		public function hasMany($related, $foreignKey = null, $localKey = null)
-		{
-			return App::create('Domain', $related . '\\Gateway')
-				->newRepository(parent::hasMany(App::build('Domain', $related . '\\Model'), $foreignKey, $localKey));
-		}
-	*/
+	public function hasMany($related, $foreignKey = null, $localKey = null)
+	{
+		return parent::hasMany(App::build('Model', $related), $foreignKey, $localKey);
+//		return App::create('Domain', $related . '\\Gateway')
+//			->newRepository(parent::hasMany(App::build('Domain', $related . '\\Model'), $foreignKey, $localKey));
+	}
+
 	/** @Override */
 	public function newCollection(array $models = [])
 	{
-		if (class_exists($collection = get_called_class() . 'Collection')) {
-			return new $collection($models);
+		try {
+			if ($calledClass = App::identify($this)) {
+				$collection = App::build('Collection', implode('\\', $calledClass));
+				return new $collection($models);
+			}
+		} catch (DomainException $e) {
+			return new Collection($models);
 		}
-
-		return new Collection($models);
 	}
 
 	/** @Override */

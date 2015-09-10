@@ -50,6 +50,22 @@ class App
 		return static::$container;
 	}
 
+	public static function identify($class)
+	{
+		if (is_object($class)) {
+			$class = get_class($class);
+		}
+
+		foreach (static::$container->get('classFormats') as $format) {
+			$format = preg_replace('/\{\{[A-Z]+\}\}/', '([A-Z][a-z]+)', str_replace('\\', '\\\\', $format));
+			if (preg_match('/' . $format . '/', $class, $m)) {
+				return array_slice($m, 1);
+			}
+		}
+
+		throw new \DomainException('called class "' . $class . '" cannot be identified');
+	}
+
 	public static function __callStatic($method, $args)
 	{
 		return static::$container->$method(...$args);

@@ -13,14 +13,14 @@ class Token
 	{
 		$string = (string)$string;
 
-		if (!preg_match('/^(\w+):(\d+):[a-f0-9]+$/i', $string, $m)) {
+		if (!preg_match('/^(\w+?)(?:Model)?:(\d+):[a-f0-9]+$/i', $string, $m)) {
 			return false;
 		}
 
 		try {
 			$class = App::build('Domain', str_plural($m[1]) . '\\' . $m[1] . '\\Model');
 		} catch (\DomainException $e) {
-			$class = App::build('Model', '\\' . $m[1]);
+			$class = App::build('Model', str_plural($m[1]) . '\\' . $m[1]);
 		}
 
 		try {

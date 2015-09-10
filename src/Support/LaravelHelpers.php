@@ -10,6 +10,10 @@ class LaravelHelpers
 			return App::getInstance();
 		}
 
+		if (preg_match('/^(\w+):(\w+\\\\\w+)$/', $name, $m)) {
+			$name = App::build($m[1], $m[2]);
+		}
+
 		if ($parameters === null) {
 			return App::get($name);
 		}
