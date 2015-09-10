@@ -7,6 +7,8 @@ class MiscHelpers
 {
 	public static function debug(...$args)
 	{
+		App::get('ErrorHandler')->unregister();
+
 		$ladybug = new Dumper();
 
 		$ladybug->setTheme('modern');

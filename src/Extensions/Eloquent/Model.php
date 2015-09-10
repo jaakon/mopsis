@@ -1,14 +1,16 @@
 <?php namespace Mopsis\Extensions\Eloquent;
 
 use DomainException;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Mopsis\Contracts\Hierarchical;
+use Mopsis\Contracts\Model as ModelInterface;
 use Mopsis\Core\App;
 use Mopsis\Core\Cache;
 use Mopsis\Extensions\Stringifier;
 use Mopsis\Security\Token;
 
-abstract class Model extends \Illuminate\Database\Eloquent\Model implements \Mopsis\Contracts\Model
+abstract class Model extends EloquentModel implements ModelInterface
 {
 	const CREATED_BY = 'created_by';
 	const UPDATED_BY = 'updated_by';
@@ -241,12 +243,11 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements \Mop
 		}
 	*/
 	/** @Override */
-	public function hasMany($related, $foreignKey = null, $localKey = null)
-	{
-		return parent::hasMany(App::build('Model', $related), $foreignKey, $localKey);
+//	public function hasMany($related, $foreignKey = null, $localKey = null)
+//	{
 //		return App::create('Domain', $related . '\\Gateway')
 //			->newRepository(parent::hasMany(App::build('Domain', $related . '\\Model'), $foreignKey, $localKey));
-	}
+//	}
 
 	/** @Override */
 	public function newCollection(array $models = [])

@@ -1,11 +1,12 @@
 <?php namespace Mopsis\Extensions\FluentDao;
 
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Mopsis\Contracts\Model as ModelInterface;
 use Mopsis\Core\Cache;
 use Mopsis\Security\Token;
 use UnexpectedValueException;
 
-abstract class Model implements \Mopsis\Contracts\Model
+abstract class Model implements ModelInterface
 {
 	protected $config;
 	protected $data  = [];

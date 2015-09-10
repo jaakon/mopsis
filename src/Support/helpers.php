@@ -3,6 +3,7 @@
 use Mopsis\Core\App;
 use Mopsis\Extensions\DI\Definition\Helper\DotNotationDefinitionHelper;
 use Mopsis\Support\ArrayHelpers;
+use Mopsis\Support\ClassHelpers;
 use Mopsis\Support\LaravelHelpers;
 use Mopsis\Support\MiscHelpers;
 use Mopsis\Support\ObjectHelpers;
@@ -44,6 +45,11 @@ function config($key = null, $default = null)
 	return LaravelHelpers::config($key, $default);
 }
 
+function controller($className)
+{
+	return ClassHelpers::controller($className);
+}
+
 function debug(...$args)
 {
 	return MiscHelpers::debug(...$args);
@@ -67,6 +73,11 @@ function getClosestMatch($input, $words)
 function is_utf8($string)
 {
 	return StringHelpers::isUtf8($string);
+}
+
+function model($className)
+{
+	return ClassHelpers::model($className);
 }
 
 function object_merge(stdClass $object1, stdClass ...$objects)

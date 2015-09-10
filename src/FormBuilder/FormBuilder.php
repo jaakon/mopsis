@@ -16,9 +16,7 @@ class FormBuilder
 
 		if (!($this->xml = simplexml_load_file($forms, 'SimpleXMLElement', LIBXML_NOCDATA))) {
 			foreach (libxml_get_errors() as $error) {
-				echo '<pre class="debug">';
-				print_r($error);
-				echo '</pre>';
+				debug($error);
 			}
 			libxml_clear_errors();
 			die();

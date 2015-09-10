@@ -32,7 +32,7 @@ return [
 		503 => __DIR__ . '/Resources/static-pages/service-unavailable-error'
 	],
 
-	'flysystem.local.config' => 'storage/files',
+	'flysystem.local.config' => APPLICATION_PATH . '/storage/files',
 
 	'monolog.lineformat'     => "[%datetime%] %level_name%: %message% %context% %extra%\n",
 
