@@ -69,7 +69,7 @@ class StringHelpers
 	public static function pluralize($count, $singular, $plural = null)
 	{
 		if ($plural === null) {
-			switch (App::get('translator.locale')) {
+			switch (App::get('translator')['locale']) {
 				case 'de':
 					$plural = $singular . 'e';
 					break;
@@ -83,8 +83,6 @@ class StringHelpers
 
 	public static function stripInvalidChars($string, $charlist = null)
 	{
-		setlocale(LC_CTYPE, 'de_DE.UTF8');
-
 		return preg_replace('/[^\w' . preg_quote($charlist, '/') . ']+/', '-', iconv('utf-8', 'ascii//TRANSLIT', $string));
 	}
 

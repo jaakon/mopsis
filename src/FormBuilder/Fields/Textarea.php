@@ -2,6 +2,11 @@
 
 class Textarea extends AbstractField
 {
+	public function getValue()
+	{
+		return $this->text();
+	}
+
 	public function setValue($value)
 	{
 		if (is_array($value)) {
@@ -20,10 +25,5 @@ class Textarea extends AbstractField
 		if ($this->attr('rows') === 'auto') {
 			$this->attr('rows', count(explode(PHP_EOL, $this->getValue())) + 1);
 		}
-	}
-
-	public function getValue()
-	{
-		return $this->text();
 	}
 }

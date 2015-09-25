@@ -12,14 +12,11 @@ class Bootstrap extends \Twig_Extension
 	public function getFunctions()
 	{
 		return [
-			new \Twig_SimpleFunction('modalLink', [
-				$this,
-				'modalLink'
-			], ['is_safe' => ['html']]),
-			new \Twig_SimpleFunction('serializeAttributes', [
-				$this,
-				'serializeAttributes'
-			], ['is_safe' => ['html']])
+			new \Twig_SimpleFunction(
+				'modalLink',
+				[$this, 'modalLink'],
+				['is_safe' => ['html']]
+			)
 		];
 	}
 

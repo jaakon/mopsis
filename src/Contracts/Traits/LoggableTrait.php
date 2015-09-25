@@ -22,15 +22,6 @@ trait LoggableTrait
 		return $this;
 	}
 
-	protected function traceAction()
-	{
-		foreach (debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS) as $frame) {
-			if (preg_match('/^Controllers\\\\(\w+)/', $frame['class'], $m)) {
-				return $m[1] . '.' . $frame['function'];
-			}
-		}
-	}
-
 	protected function getDiff()
 	{
 		$diff = [];
@@ -48,5 +39,14 @@ trait LoggableTrait
 			static::UPDATED_AT,
 			static::DELETED_AT
 		], null));
+	}
+
+	protected function traceAction()
+	{
+		foreach (debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS) as $frame) {
+			if (preg_match('/^Controllers\\\\(\w+)/', $frame['class'], $m)) {
+				return $m[1] . '.' . $frame['function'];
+			}
+		}
 	}
 }

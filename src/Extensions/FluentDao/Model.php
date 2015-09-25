@@ -39,6 +39,17 @@ abstract class Model implements ModelInterface
 		return $collection::loadRawData(Sql::db()->getAll(Sql::buildQuery(static::_getDefaultQuery('*', $query, $orderBy)), $values));
 	}
 
+	public static function findOrFail($id)
+	{
+		$instance = static::find($id);
+
+		if ($instance) {
+			return $instance;
+		}
+
+		throw new ModelNotFoundException();
+	}
+
 	public static function get($attribute, $query = null, $values = [], $orderBy = null)
 	{
 		list($query, $values) = Sql::expandQuery($query, $values);

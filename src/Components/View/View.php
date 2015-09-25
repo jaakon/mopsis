@@ -118,7 +118,7 @@ class View
 
 	public function setTemplate($template)
 	{
-		$this->template = preg_replace('/^App\\\/', '', $template);
+		$this->template = $template;
 
 		if (!pathinfo($this->template, PATHINFO_EXTENSION)) {
 			$this->template .= '.twig';

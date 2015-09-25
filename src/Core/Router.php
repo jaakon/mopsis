@@ -34,7 +34,7 @@ class Router
 			$test = preg_replace('/\\\{(.+?)\\\}/', '(?<$1>[^\/]*)', preg_quote($rule['path'], '/'));
 
 			if (!preg_match('/^' . $test . '(?:\/(?<params>.*))?/', rtrim($this->route, '/'), $m)) {
-				$this->logger->debug($rule[3] . ' => path does not match [' . $this->route . ']');
+				$this->logger->debug('Path "' . $this->route . '" does not match "' . $rule['path'] . '"');
 				continue;
 			}
 
@@ -105,7 +105,7 @@ class Router
 			];
 		}
 
-		$this->logger->error($path . ' => INVALID PATH! [' . $this->route . ']');
+		$this->logger->debug('Cannot parse "' . $path . '"');
 
 		return false;
 	}

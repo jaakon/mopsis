@@ -14,6 +14,47 @@ class Stringifier
 		return $this->stringify($this->getValue($key));
 	}
 
+	public function __isset($key)
+	{
+		return true; // for Twig
+	}
+
+	public function toArray()
+	{
+		$data = method_exists($this->object, 'toArray') ? $this->object->toArray() : get_object_vars($this->object);
+
+		return $this->stringifyArray($data);
+	}
+
+	protected function getValue($key)
+	{
+		if ($this->objectHasAsStringMutator($key)) {
+			return $this->objectGetAsStringMutator($key);
+		}
+
+		return $this->object->$key;
+	}
+
+	protected function objectGetAsStringMutator($key)
+	{
+		return $this->object->{'get' . studly_case($key) . 'AsStringAttribute'}();
+	}
+
+	protected function objectHasAsStringMutator($key)
+	{
+		return method_exists($this->object, 'get' . studly_case($key) . 'AsStringAttribute');
+	}
+
+	protected function objectToString($object)
+	{
+		switch (get_class($object)) {
+			case 'Carbon\Carbon':
+				return $object->format(DATETIME_DE_SHORT);
+			default:
+				return get_class($object); //(string) $object;
+		}
+	}
+
 	protected function stringify($value)
 	{
 		if ($value === null) {
@@ -37,47 +78,6 @@ class Stringifier
 		}
 
 		throw new \Exception('cannot stringify value of type "' . gettype($value) . '"');
-	}
-
-	protected function objectToString($object)
-	{
-		switch (get_class($object)) {
-			case 'Carbon\Carbon':
-				return $object->format(DATETIME_DE_SHORT);
-			default:
-				return get_class($object); //(string) $object;
-		}
-	}
-
-	protected function getValue($key)
-	{
-		if ($this->objectHasAsStringMutator($key)) {
-			return $this->objectGetAsStringMutator($key);
-		}
-
-		return $this->object->$key;
-	}
-
-	protected function objectHasAsStringMutator($key)
-	{
-		return method_exists($this->object, 'get' . studly_case($key) . 'AsStringAttribute');
-	}
-
-	protected function objectGetAsStringMutator($key)
-	{
-		return $this->object->{'get' . studly_case($key) . 'AsStringAttribute'}();
-	}
-
-	public function __isset($key)
-	{
-		return true; // for Twig
-	}
-
-	public function toArray()
-	{
-		$data = method_exists($this->object, 'toArray') ? $this->object->toArray() : get_object_vars($this->object);
-
-		return $this->stringifyArray($data);
 	}
 
 	protected function stringifyArray(array $data)

@@ -18,10 +18,21 @@ class App
 
 	public static function build($type, $name)
 	{
+		$class = static::getFullyQualifiedName($type, $name);
+
+		if (!static::$container->has($class)) {
+			throw new \DomainException('class "' . $class . '" for type "' . $type . '" not found');
+		}
+
+		return $class;
+	}
+
+	public static function getFullyQualifiedName($type, $name)
+	{
 		$format = static::$container->get('classFormats')[$type];
 
 		if ($format === null) {
-			throw new \UnexpectedValueException('invalid type "' . $type . '" for entity "' . $name . '"');
+			throw new \UnexpectedValueException('unknown type "' . $type . '" for entity "' . $name . '"');
 		}
 
 		list($module, $domain, $subtype) = explode('\\', $name);
@@ -36,10 +47,6 @@ class App
 
 		if (preg_match('/\{\{(\w+)\}\}/', $class, $m)) {
 			throw new \InvalidArgumentException('value for placeholder "' . $m[1] . '" for type "' . $type . '" is missing');
-		}
-
-		if (!static::$container->has($class)) {
-			throw new \DomainException('class "' . $class . '" for type "' . $type . '" not found');
 		}
 
 		return $class;

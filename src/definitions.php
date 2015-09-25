@@ -21,7 +21,8 @@ return [
 		'Responder'  => 'App\\{{MODULE}}\\Responder\\{{DOMAIN}}{{SUBTYPE}}Responder',
 		'Controller' => 'App\\{{MODULE}}\\{{DOMAIN}}Controller',
 		'Model'      => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}Model',
-		'Collection' => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}Collection'
+		'Collection' => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}Collection',
+		'View'       => '{{MODULE}}\\view\\{{SUBTYPE}}'
 	],
 
 	'static-pages' => [
@@ -265,7 +266,8 @@ return [
 	Cache::class
 		=> object(Stash\Pool::class)
 		->constructor(get('StashDriver'))
-		->method('setNamespace', md5($_SERVER['HTTP_HOST'])),
+		->method('setNamespace', md5($_SERVER['HTTP_HOST']))
+		->method('setLogger', get('Logger')),
 
 	CacheTool::class
 		=> function () {

@@ -1,6 +1,6 @@
 <?php namespace Mopsis\Extensions\FluentDao;
 
-use Mopsis\Contracts\Model;
+use Mopsis\Contracts\Model as ModelContract;
 
 class TypeFactory
 {
@@ -29,7 +29,7 @@ class TypeFactory
 			case 'json':
 				return self::create('\Mopsis\Types\JSON', $value);
 			case 'model':
-				if ($value instanceof Model) {
+				if ($value instanceof ModelContract) {
 					return $value;
 				}
 

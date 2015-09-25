@@ -16,16 +16,6 @@ class Container
 		return $this->hasSetMutator($key) ? $this->{'set' . studly_case($key) . 'Attribute'}($value) : null;
 	}
 
-	protected function hasGetMutator($key)
-	{
-		return method_exists($this, 'get' . studly_case($key) . 'Attribute');
-	}
-
-	protected function hasSetMutator($key)
-	{
-		return method_exists($this, 'set' . studly_case($key) . 'Attribute');
-	}
-
 	public function __isset($key)
 	{
 		return $this->hasGetMutator($key);
@@ -34,5 +24,15 @@ class Container
 	public function stringify()
 	{
 		return $this->stringifier ?: $this->stringifier = new Stringifier($this);
+	}
+
+	protected function hasGetMutator($key)
+	{
+		return method_exists($this, 'get' . studly_case($key) . 'Attribute');
+	}
+
+	protected function hasSetMutator($key)
+	{
+		return method_exists($this, 'set' . studly_case($key) . 'Attribute');
 	}
 }
