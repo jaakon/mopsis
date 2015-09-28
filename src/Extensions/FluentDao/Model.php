@@ -19,7 +19,7 @@ abstract class Model implements ModelInterface
 		return intval(Sql::db()->getValue(Sql::buildQuery(static::_getDefaultQuery('COUNT(*)', $query, null)), $values));
 	}
 
-	public static function create(array $data)
+	public static function create(array $data = [])
 	{
 		return (new static())->import($data);
 	}
@@ -75,6 +75,11 @@ abstract class Model implements ModelInterface
 		return $config['values'][$attribute];
 	}
 
+	public static function is_json($var)
+	{
+		return $var instanceof \Mopsis\Types\JSON;
+	}
+
 	public static function lists($attribute, $key = 'id', $query = null, $values = [], $orderBy = null)
 	{
 		list($query, $values) = Sql::expandQuery($query, $values);
@@ -103,7 +108,7 @@ abstract class Model implements ModelInterface
 
 	public function __call($name, $args)
 	{
-		if (is_json($this->data[$name])) {
+		if (static::is_json($this->data[$name])) {
 			$this->data[$name]->{$args[0]} = $args[1];
 			$this->{$name}                 = $this->data[$name]; // triggers saving
 			return $this;
@@ -256,7 +261,7 @@ abstract class Model implements ModelInterface
 			} elseif (preg_match('/^(\w+)Id$/', $key, $m) && is_object($import[$m[1]])) {
 				$this->{$m[1]} = $import[$m[1]];
 				unset($import[$m[1]]);
-			} elseif (is_json($this->data[$key])) {
+			} elseif (static::is_json($this->data[$key])) {
 				foreach (preg_filter('/^' . preg_quote($key, '/') . '\.(.+)$/', '$1', array_keys($import)) as $importKey) {
 					$this->data[$key]->{$importKey} = $import[$key . '.' . $importKey];
 					unset($import[$key . '.' . $importKey]);
@@ -331,7 +336,7 @@ abstract class Model implements ModelInterface
 		$data = [];
 
 		foreach (array_keys($this->data) as $key) {
-			if (is_json($this->{$key}) && count($this->{$key}->toArray())) {
+			if (static::is_json($this->{$key}) && count($this->{$key}->toArray())) {
 				foreach ($this->{$key}->toArray() as $k => $v) {
 					$data[$key . '.' . $k] = $v;
 				}
@@ -384,7 +389,7 @@ abstract class Model implements ModelInterface
 
 		$connections = ModelFactory::getConnections(get_called_class());
 
-		if (!($connection = $connections[$key])) {
+		if (!($connection = $connections[strtolower($key)])) {
 			throw new UnexpectedValueException('property [' . $key . '] is undefined');
 		}
 
@@ -395,7 +400,7 @@ abstract class Model implements ModelInterface
 				$result = ModelFactory::load($connection['class'], $this->data[$connection['attribute']]);
 				break;
 			case 'inbound':
-				$class  = ModelFactory::findClass($key);
+				$class  = ModelFactory::findClass(strtolower($key));
 				$result = $class::findAll($connection['query'], $this->id);
 				break;
 			case 'mixed_inbound':

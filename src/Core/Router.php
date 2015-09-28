@@ -94,7 +94,7 @@ class Router
 			}
 
 			if (!method_exists($class, $method)) {
-				$this->logger->debug($path . ' => method " ' . $method . '" not found [' . $this->route . ']');
+				$this->logger->debug($path . ' => method "' . $method . '" not found [' . $this->route . ']');
 
 				return false;
 			}

@@ -1,20 +1,57 @@
 <?php namespace Mopsis\Security;
 
 use Mopsis\Core\Cache;
+use Mopsis\Contracts\Hierarchical;
+use Mopsis\Contracts\Model;
+use Mopsis\Contracts\Role;
 
 class RoleManager
 {
 	protected static $roles;
 
-	public static function isRoleAllowedTo($role, $actionOnObject)
+	public static function init()
 	{
 		if (!isset(static::$roles)) {
 			static::loadRoles();
 		}
+	}
 
-		list($action, $object) = explode('_', $actionOnObject);
+	public static function isAllowedTo(Role $role, $action, $object, $instance)
+	{
+		static::init();
 
-		return static::$roles[$role][$action][$object];
+		if (!static::$roles[$role->getKey()][$action][$object]) {
+			return false;
+		}
+
+		$constraint = $role->getConstraint();
+
+		if (!$constraint) {
+			return true;
+		}
+
+		if ($instance === null) {
+			return true;
+		}
+
+		if (!($instance instanceof Model)) {
+			throw new \Exception('invalid object for checking privileges');
+		}
+
+		return static::instanceMeetsConstraint($instance, $constraint);
+	}
+
+	protected static function instanceMeetsConstraint($instance, $constraint)
+	{
+		if ((string)$instance === (string)$constraint) {
+			return true;
+		}
+
+		if ($instance instanceof Hierarchical) {
+			return static::instanceMeetsConstraint($instance->ancestor, $constraint);
+		}
+
+		return false;
 	}
 
 	protected static function loadRoles()

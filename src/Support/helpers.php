@@ -75,6 +75,11 @@ function is_utf8($string)
 	return StringHelpers::isUtf8($string);
 }
 
+function logger($message = null)
+{
+	return MiscHelpers::logger($message);
+}
+
 function model($className)
 {
 	return ClassHelpers::model($className);

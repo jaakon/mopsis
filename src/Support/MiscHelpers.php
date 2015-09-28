@@ -7,8 +7,6 @@ class MiscHelpers
 {
 	public static function debug(...$args)
 	{
-		App::get('ErrorHandler')->unregister();
-
 		$ladybug = new Dumper();
 
 		$ladybug->setTheme('modern');
@@ -33,6 +31,15 @@ class MiscHelpers
 		}
 
 		throw new \Exception('static-page ' . $code);
+	}
+
+	public static function logger($message)
+	{
+		if ($message === null) {
+			return App::make('Logger');
+		}
+
+		return App::make('Logger')->addNotice($message);
 	}
 
 	public static function redirect($url, $responseCode = 302)
