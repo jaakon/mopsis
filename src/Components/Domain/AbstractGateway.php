@@ -51,9 +51,19 @@ abstract class AbstractGateway
 		];
 	}
 
-	public function findMany($sql, array $bindings = [])
+	public function findMany($sql, array $bindings = [], $offset = 0, $length = null)
 	{
-		return $this->find(...$this->expandQuery($sql, $bindings))->get();
+		$query = $this->find(...$this->expandQuery($sql, $bindings));
+
+		if ($offset > 0) {
+			$query = $query->skip($offset);
+		}
+
+		if ($length > 0) {
+			$query = $query->take($length);
+		}
+
+		return $query->get();
 	}
 
 	public function create(Model $instance, $data)

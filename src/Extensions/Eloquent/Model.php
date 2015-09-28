@@ -228,26 +228,26 @@ abstract class Model extends EloquentModel implements ModelInterface
 	{
 		return array_key_exists($key, $this->attributes) || array_key_exists($key, $this->relations) || $this->hasGetMutator($key);
 	}
-	/*
-		public function getUriRecursive()
-		{
-			if ($this->exists && isset($this->uri)) {
-				return $this->uri;
-			}
-
-			if ($this instanceof Hierarchical) {
-				return $this->ancestor->getUriRecursive();
-			}
-
-			return;
+/*
+	public function getUriRecursive()
+	{
+		if ($this->exists && isset($this->uri)) {
+			return $this->uri;
 		}
-	*/
+
+		if ($this instanceof Hierarchical) {
+			return $this->ancestor->getUriRecursive();
+		}
+
+		return;
+	}
+*/
 	/** @Override */
-//	public function hasMany($related, $foreignKey = null, $localKey = null)
-//	{
-//		return App::create('Domain', $related . '\\Gateway')
-//			->newRepository(parent::hasMany(App::build('Domain', $related . '\\Model'), $foreignKey, $localKey));
-//	}
+	public function hasMany($related, $foreignKey = null, $localKey = null)
+	{
+		return App::create('Domain', $related . '\\Gateway')
+			->newRepository(parent::hasMany(App::build('Domain', $related . '\\Model'), $foreignKey, $localKey));
+	}
 
 	/** @Override */
 	public function newCollection(array $models = [])

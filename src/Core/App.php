@@ -11,7 +11,7 @@ class App
 		static::$container = $container;
 	}
 
-	public static function create($type, $name, array $parameters = null)
+	public static function create($type, $name, array $parameters = [])
 	{
 		return static::$container->make(static::build($type, $name), $parameters);
 	}
@@ -64,7 +64,7 @@ class App
 		}
 
 		foreach (static::$container->get('classFormats') as $format) {
-			$format = preg_replace('/\{\{[A-Z]+\}\}/', '([A-Z][a-z]+)', str_replace('\\', '\\\\', $format));
+			$format = preg_replace('/\{\{[A-Z]+\}\}/', '((?:[A-Z][a-z]+)+)', str_replace('\\', '\\\\', $format));
 			if (preg_match('/' . $format . '/', $class, $m)) {
 				return array_slice($m, 1);
 			}
