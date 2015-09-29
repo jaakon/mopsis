@@ -48,6 +48,11 @@ class StringHelpers
 		return static::isUtf8($string) ? $string : utf8_encode($string);
 	}
 
+	public static function isHtml($string)
+	{
+		return is_string($string) && $string !== strip_tags($string);
+	}
+
 	public static function isUtf8($string)
 	{
 		return preg_match('%(?:

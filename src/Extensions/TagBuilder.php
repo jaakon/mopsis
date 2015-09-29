@@ -14,49 +14,55 @@ class TagBuilder
 	protected $attributes;
 	protected $innerHtml;
 
-	public function __construct($tagName, array $attributes = [], $innerHtml = null)
+	public static function create($tagName)
+	{
+		return new static($tagName);
+	}
+
+	public function __construct($tagName)
 	{
 		if (empty($tagName)) {
 			throw new \InvalidArgumentException('Invalid Argument passed');
 		}
 
 		$this->tagName    = $tagName;
-		$this->attributes = new Collection($attributes);
-		$this->innerHtml  = (string)$innerHtml;
-	}
-
-	public function setInnerHtml($innerHtml)
-	{
-		$this->innerHtml = array_reduce(array_wrap($innerHtml), function ($html, $item) {
-			return $html . (string)$item;
-		});
-
-		return $this;
-	}
-
-	public function mergeAttributes($attributes, $replaceExisting = true)
-	{
-		if ($attributes !== null) {
-			foreach ($attributes as $key => $value) {
-				$this->mergeAttribute($key, $value, $replaceExisting);
-			}
-		}
-
-		return $this;
-	}
-
-	public function mergeAttribute($key, $value, $replaceExisting = true)
-	{
-		if ($replaceExisting || !$this->attributes->contains($key)) {
-			$this->attributes->set($key, $value);
-		}
-
-		return $this;
+		$this->attributes = new Collection();
 	}
 
 	public function __toString()
 	{
 		return $this->toString(TagRenderMode::NORMAL);
+	}
+
+	public function addClass($class)
+	{
+		if (empty(trim($class))) {
+			return $this;
+		}
+
+		$classes = explode(' ', $class);
+
+		if ($this->attributes->has('class')) {
+			array_push($classes, ...explode(' ', $this->attributes->get('class')));
+		}
+
+		$this->attributes->put('class', implode(' ', array_unique($classes)));
+
+		return $this;
+	}
+
+	public function attr($key, $value = null)
+	{
+		if (is_array($key)) {
+			return $this->mergeAttributes($key);
+		}
+
+		return $this->mergeAttribute($key, $value);
+	}
+
+	public function html($content)
+	{
+		return $this->setInnerHtml(array_wrap($content));
 	}
 
 	public function toString($renderMode = null)
@@ -73,12 +79,7 @@ class TagBuilder
 		}
 	}
 
-	private function getAttributesAsString()
-	{
-		return implode($this->getAttributesAsArray($this->attributes));
-	}
-
-	private function getAttributesAsArray($rawAttributes, $prefix = null)
+	protected function getAttributesAsArray($rawAttributes, $prefix = null)
 	{
 		$attributes = [];
 
@@ -100,5 +101,39 @@ class TagBuilder
 		}
 
 		return $attributes;
+	}
+
+	protected function getAttributesAsString()
+	{
+		return implode($this->getAttributesAsArray($this->attributes));
+	}
+
+	protected function mergeAttribute($key, $value, $replaceExisting = true)
+	{
+		if ($replaceExisting || !$this->attributes->has($key)) {
+			$this->attributes->put($key, $value);
+		}
+
+		return $this;
+	}
+
+	protected function mergeAttributes($attributes, $replaceExisting = true)
+	{
+		if ($attributes !== null) {
+			foreach ($attributes as $key => $value) {
+				$this->mergeAttribute($key, $value, $replaceExisting);
+			}
+		}
+
+		return $this;
+	}
+
+	protected function setInnerHtml(array $innerHtml)
+	{
+		$this->innerHtml = array_reduce($innerHtml, function ($html, $item) {
+			return $html . (string)$item;
+		});
+
+		return $this;
 	}
 }

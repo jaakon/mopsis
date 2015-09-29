@@ -70,6 +70,11 @@ function getClosestMatch($input, $words)
 	return StringHelpers::getClosestMatch($input, $words);
 }
 
+function is_html($string)
+{
+	return StringHelpers::isHtml($string);
+}
+
 function is_utf8($string)
 {
 	return StringHelpers::isUtf8($string);

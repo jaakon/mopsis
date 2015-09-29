@@ -35,7 +35,7 @@ class RoleManager
 		}
 
 		if (!($instance instanceof Model)) {
-			throw new \Exception('invalid object for checking privileges');
+			return false;
 		}
 
 		return static::instanceMeetsConstraint($instance, $constraint);
