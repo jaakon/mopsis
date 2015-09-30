@@ -134,18 +134,15 @@ class Bootstrap extends \Twig_Extension
 			])
 			->addClass($this->getButtonClasses($button))
 			->addClass('dropdown-toggle')
-			->html($text . ' <span class="caret"></span>');
+			->html($text . '&emsp;<span class="caret"></span>');
 	}
 
 	protected function getDropdownList(array $links)
 	{
-		// array_trim($links, '/--/')
-		// preg_match('/^\[(.+?)\]\((.+?)\)$/', $link, $m)
-
 		return TagBuilder::create('ul')
 			->addClass('dropdown-menu')
 			->html(
-				array_reduce($links, function ($html, $link) {
+				array_reduce($this->prepareLinks($links), function ($html, $link) {
 					return $html . ($link === '--' ? '<li class="divider"></li>' : '<li>' . $link . '</li>');
 				})
 			);
@@ -171,5 +168,25 @@ class Bootstrap extends \Twig_Extension
 				$this->getDropdownButton($button),
 				$this->getDropdownList($links)
 			]);
+	}
+
+	protected function prepareLinks($links)
+	{
+		foreach ($links as &$link) {
+			if (is_html($link)) {
+				continue;
+			}
+
+			if (preg_match('/^(?:\[(.+?)\]\((.+?)\)|(.+)\|(.+?))$/', $link, $m)) {
+				$link = TagBuilder::create('a')
+					->attr('href', $m[2] ?: $m[4])
+					->html($m[1] ?: $m[3])
+					->toString();
+			}
+		}
+
+		return array_trim($links, function ($item) {
+			return $item !== '--';
+		});
 	}
 }

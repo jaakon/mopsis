@@ -46,6 +46,12 @@ class ArrayHelpers
 		return array_filter($diff);
 	}
 
+	public static function trim(array $array, callable $callback = null)
+	{
+		$array = array_reverse(static::filterWithBreakpoint($array, $callback), true);
+		return array_reverse(static::filterWithBreakpoint($array, $callback), true);
+	}
+
 	public static function value($array, $key)
 	{
 		return $array[$key];
@@ -54,5 +60,20 @@ class ArrayHelpers
 	public static function wrap($array)
 	{
 		return is_array($array) ? $array : [$array];
+	}
+
+	protected static function filterWithBreakpoint(array $array, callable $callback = null)
+	{
+		foreach ($array as $index => $item) {
+			if ($callback && $callback($item)) {
+				break;
+			}
+			if (!$callback && $item) {
+				break;
+			}
+			unset($array[$index]);
+		}
+
+		return $array;
 	}
 }
