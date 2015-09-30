@@ -139,6 +139,9 @@ class Bootstrap extends \Twig_Extension
 
 	protected function getDropdownList(array $links)
 	{
+		// array_trim($links, '/--/')
+		// preg_match('/^\[(.+?)\]\((.+?)\)$/', $link, $m)
+
 		return TagBuilder::create('ul')
 			->addClass('dropdown-menu')
 			->html(
