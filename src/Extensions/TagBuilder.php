@@ -110,6 +110,8 @@ class TagBuilder
 
 	protected function mergeAttribute($key, $value, $replaceExisting = true)
 	{
+		$key = snake_case($key, '-');
+
 		if ($replaceExisting || !$this->attributes->has($key)) {
 			$this->attributes->put($key, $value);
 		}

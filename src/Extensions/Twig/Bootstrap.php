@@ -162,9 +162,10 @@ class Bootstrap extends \Twig_Extension
 	protected function getSplitButtonDropdown($text, $url, array $links, array $button, array $attr)
 	{
 		return TagBuilder::create('div')
+			->attr($attr)
 			->addClass('btn-group btn-group-fixed hidden-print')
 			->html([
-				is_html((string)$url) ? $url : $this->getButton($text, $url, $button, $attr),
+				is_html((string)$url) ? $url : $this->getButton($text, $url, $button, []),
 				$this->getDropdownButton($button),
 				$this->getDropdownList($links)
 			]);

@@ -35,7 +35,7 @@ return [
 
 	'flysystem.local.config' => APPLICATION_PATH . '/storage/files',
 
-	'monolog.lineformat'     => "[%datetime%] %level_name%: %message% %context% %extra%\n",
+	'monolog.lineformat' => "[%datetime%] %level_name%: %message% %context% %extra%\n",
 
 	'stash' => [
 		'apc' => [
