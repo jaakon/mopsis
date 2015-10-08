@@ -13,7 +13,7 @@ class Select extends AbstractField
 	{
 		foreach ($this->find('option') as $node) {
 			$option = FieldFactory::create($node);
-			$option->prop('selected', $option->val() === $value);
+			$option->prop('selected', $option->val() === (string) $value);
 		}
 	}
 

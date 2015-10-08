@@ -6,7 +6,7 @@ use Mopsis\Core\Auth;
 
 abstract class AbstractCrudController extends AbstractController
 {
-	protected function _create($formId, Model $instance, $ancestor = null)
+	protected function createModel($formId, Model $instance, $ancestor = null)
 	{
 		if ($ancestor === false) {
 			throw new \Exception('invalid or missing ancestor object');
@@ -14,7 +14,6 @@ abstract class AbstractCrudController extends AbstractController
 
 		$this->view->assign(['ancestorToken' => $ancestor->token]);
 
-		$route  = $this->findRoute();
 		$status = $this->handleFormAction($formId, $instance);
 
 		if ($status !== 200) {
@@ -28,15 +27,14 @@ abstract class AbstractCrudController extends AbstractController
 		$instance->import($this->filter->getResult())->save();
 
 		if (class_exists('\App\Models\Event')) {
-			Event::add($instance, Auth::user(), $route);
+			Event::add($instance, Auth::user(), $this->findRoute());
 		}
 
 		return $this->getResponseObject(201, $instance);
 	}
 
-	protected function _update($formId, Model $instance)
+	protected function updateModel($formId, Model $instance)
 	{
-		$route  = $this->findRoute();
 		$status = $this->handleFormAction($formId, $instance);
 
 		if ($status !== 200) {
@@ -52,13 +50,13 @@ abstract class AbstractCrudController extends AbstractController
 		}
 
 		if (class_exists('\App\Models\Event')) {
-			Event::add($instance, Auth::user(), $route, array_diff_values($oldData, $newData));
+			Event::add($instance, Auth::user(), $this->findRoute(), array_diff_values($oldData, $newData));
 		}
 
 		return $this->getResponseObject(205, $instance);
 	}
 
-	protected function _delete(Model $instance)
+	protected function deleteModel(Model $instance)
 	{
 		if (!$instance->hasProperty('deleted')) {
 			$instance->delete();
@@ -75,7 +73,7 @@ abstract class AbstractCrudController extends AbstractController
 		return $this->getResponseObject(204, $instance);
 	}
 
-	protected function _set(Model $instance, $key, $value)
+	protected function setModelValue(Model $instance, $key, $value)
 	{
 		$instance->{$key} = $value;
 
