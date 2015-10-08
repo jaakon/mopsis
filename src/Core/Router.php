@@ -86,7 +86,7 @@ class Router
 		if (preg_match('/^(\w+\\\\\w+)\.(\w+)$/', $path, $parts)) {
 			try {
 				$class  = App::build('Controller', $parts[1]);
-				$method = $parts[2];
+				$method = lcfirst($parts[2]);
 			} catch (\DomainException $e) {
 				$this->logger->debug($path . ' => ' . $e->getMessage() . ' [' . $this->route . ']');
 
