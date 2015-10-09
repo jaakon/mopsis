@@ -56,7 +56,7 @@ class MiscHelpers
 	{
 		$response = App::get('Aura\Web\Response');
 
-		$response->to(PathHelpers::addLocation($uri), $code, $phrase);
+		$response->redirect->to(PathHelpers::addLocation($uri), $code, $phrase);
 
 		return $response;
 	}

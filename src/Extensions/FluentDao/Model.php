@@ -278,6 +278,7 @@ abstract class Model implements ModelInterface
 					unset($import[$key . '.' . $importKey]);
 				}
 				$this->{$key} = $this->data[$key]; // triggers saving
+				continue;
 			}
 		}
 
@@ -464,6 +465,16 @@ abstract class Model implements ModelInterface
 		}
 
 		if (array_key_exists($key, $this->data)) {
+			if ($value === null && !($this->config['constraints'][$key] & Sql::REQUIRED_VALUE)) {
+				$this->data[$key] = null;
+
+				if ($this->exists) {
+					Sql::db()->update($this->config['table'], 'id=?', $this->data['id'], [$key => null]);
+				}
+
+				return true;
+			}
+
 			$type = $this->config['types'][$key];
 
 			if ($type === 'enum' && !in_array($value, $this->config['values'][$key])) {
@@ -484,7 +495,7 @@ abstract class Model implements ModelInterface
 						}
 						break;
 					default:
-						throw new \Exception('"' . $value . '" has an invalid type for property [' . $key . ']');
+						throw new \Exception('"' . gettype($value) . '" is not an valid type for property [' . $key . ']');
 						break;
 				}
 			}
