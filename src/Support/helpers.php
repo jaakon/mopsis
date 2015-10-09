@@ -70,7 +70,7 @@ function env($key, $default = null)
 	return LaravelHelpers::env($key, $default);
 }
 
-function getClosestMatch($input, $words)
+function closest_match($input, $words)
 {
 	return StringHelpers::getClosestMatch($input, $words);
 }
@@ -105,14 +105,19 @@ function object_to_array($object)
 	return ObjectHelpers::toArray($object);
 }
 
+function location_change($uri, $code = 302, $phrase = null)
+{
+	return MiscHelpers::locationChange($uri, $code, $phrase);
+}
+
 function pluralize($count, $singular, $plural = null)
 {
 	return StringHelpers::pluralize($count, $singular, $plural);
 }
 
-function redirect($url = null, $responseCode = 302)
+function redirect($uri, $code = 302, $phrase = null)
 {
-	return MiscHelpers::redirect($url, $responseCode);
+	return MiscHelpers::redirect($uri, $code, $phrase);
 }
 
 function resolve_path($path)

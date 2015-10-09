@@ -1,5 +1,7 @@
 <?php namespace Mopsis\Support;
 
+use Mopsis\Core\App;
+
 class PathHelpers
 {
 	public static function resolve($path)
@@ -17,5 +19,17 @@ class PathHelpers
 		$path = preg_replace('/\/\w+\/\.\.\//', '/', $path);
 
 		return $path;
+	}
+
+	public static function addLocation($uri)
+	{
+		if (parse_url($uri, PHP_URL_SCHEME)) {
+			return $uri;
+		}
+
+		$request = App::get('Aura\Web\Request');
+
+		return $request->url->get(PHP_URL_SCHEME) . '://' . $request->url->get(PHP_URL_HOST)
+			. static::resolve(rtrim($request->url->get(PHP_URL_PATH), '/') . '/' . $uri);
 	}
 }
