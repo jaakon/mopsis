@@ -46,13 +46,13 @@ return [
 			'servers' => [['server' => '127.0.0.1', 'port' => '6379', 'ttl' => 10]]
 		],
 		'sqlite' => [
-			'path' => 'storage/cache/'
+			'path' => APPLICATION_PATH . '/storage/cache/'
 		]
 	],
 
 	'translator' => [
 		'locale' => 'de',
-		'path'   => 'resources/lang/',
+		'path'   => APPLICATION_PATH . '/resources/lang/',
 	],
 
 	'twig' => [
@@ -67,7 +67,7 @@ return [
 			'production'       => [
 				'base_template_class' => 'Mopsis\Extensions\Twig\Template',
 				'debug'               => false,
-				'cache'               => 'storage/cache/',
+				'cache'               => APPLICATION_PATH . '/storage/cache/twig',
 				'auto_reload'         => false,
 				'strict_variables'    => false
 			],

@@ -4,6 +4,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Mopsis\Contracts\Model as ModelInterface;
 use Mopsis\Core\Cache;
 use Mopsis\Security\Token;
+use Mopsis\Types\JSON;
 use UnexpectedValueException;
 
 abstract class Model implements ModelInterface
@@ -77,7 +78,7 @@ abstract class Model implements ModelInterface
 
 	public static function is_json($var)
 	{
-		return $var instanceof \Mopsis\Types\JSON;
+		return $var instanceof JSON;
 	}
 
 	public static function lists($attribute, $key = 'id', $query = null, $values = [], $orderBy = null)
@@ -194,7 +195,7 @@ abstract class Model implements ModelInterface
 		unset($this->cache[$key]);
 
 		if (method_exists($this, 'set' . ucfirst($key) . 'Attribute')) {
-			return $this->{'set' . ucfirst($key) . 'Attribute'}($value);
+			$this->{'set' . ucfirst($key) . 'Attribute'}($value);
 		}
 
 		$this->_set($key, $value);

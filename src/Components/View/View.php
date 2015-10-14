@@ -2,6 +2,7 @@
 
 use Aura\Web\Request;
 use Mopsis\Components\Domain\AbstractFilter as Filter;
+use Mopsis\Core\App;
 use Twig_Environment as Renderer;
 
 class View
@@ -78,7 +79,17 @@ class View
 
 	public function clearCache()
 	{
-		$this->renderer->clearCacheFiles();
+		$cachePath = App::get('twig.config')['cache'];
+
+		if (!$cachePath) {
+			return $this;
+		}
+
+		$filesystem = App::make('Filesystem');
+
+		$filesystem->getAdapter()->setPathPrefix(dirname($cachePath));
+		$filesystem->deleteDir(basename($cachePath));
+		$filesystem->createDir(basename($cachePath));
 
 		return $this;
 	}

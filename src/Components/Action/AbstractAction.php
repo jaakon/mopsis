@@ -30,9 +30,9 @@ abstract class AbstractAction
 		}
 
 		if (!$this->request->method->isGet()) {
-			redirect($loginPage);
+			return redirect($loginPage);
 		}
 
-		redirect($loginPage . '&redirect=' . urlencode($this->request->url->get(PHP_URL_PATH)));
+		return redirect($loginPage . '&redirect=' . urlencode($this->request->url->get(PHP_URL_PATH)));
 	}
 }

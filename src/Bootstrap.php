@@ -63,7 +63,7 @@ class Bootstrap
 		}
 
 		if ($flushMode === 'all' || $flushMode === 'views') {
-			App::get('Renderer')->clearCacheFiles();
+			App::get('Renderer')->clearCache();
 		}
 
 		Cache::get('css.version', function () {

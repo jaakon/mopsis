@@ -48,5 +48,7 @@ trait LoggableTrait
 				return $m[1] . '.' . $frame['function'];
 			}
 		}
+
+		return null;
 	}
 }

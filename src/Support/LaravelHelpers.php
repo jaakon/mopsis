@@ -50,7 +50,7 @@ class LaravelHelpers
 			case 'empty':
 				return '';
 			case 'null':
-				return;
+				return null;
 		}
 
 		if (preg_match('/^"(.+)"$/', $value, $m)) {

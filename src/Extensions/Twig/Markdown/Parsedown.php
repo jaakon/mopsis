@@ -37,12 +37,14 @@ class Parsedown extends \Parsedown
 
 			return ['hidden' => true];
 		}
+
+		return null;
 	}
 
 	protected function inlinePlaceholder($excerpt)
 	{
 		if (!isset($this->DefinitionData['Placeholder'])) {
-			return;
+			return null;
 		}
 
 		foreach ($this->DefinitionData['Placeholder'] as $key => $value) {
@@ -54,6 +56,8 @@ class Parsedown extends \Parsedown
 				];
 			}
 		}
+
+		return null;
 	}
 
 	protected function element(array $element)

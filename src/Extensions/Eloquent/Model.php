@@ -257,9 +257,9 @@ abstract class Model extends EloquentModel implements ModelInterface
 				$collection = App::build('Collection', implode('\\', $calledClass));
 				return new $collection($models);
 			}
-		} catch (DomainException $e) {
-			return new Collection($models);
-		}
+		} catch (DomainException $e) {}
+
+		return new Collection($models);
 	}
 
 	/** @Override */

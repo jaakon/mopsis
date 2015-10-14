@@ -32,7 +32,7 @@ abstract class AbstractPayload implements PayloadInterface
 			return $this->payload['instance']->getUriRecursive();
 		}
 
-		return;
+		return null;
 	}
 
 	public function getName()
