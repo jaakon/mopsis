@@ -89,7 +89,6 @@ class View
 
 		$filesystem->getAdapter()->setPathPrefix(dirname($cachePath));
 		$filesystem->deleteDir(basename($cachePath));
-		$filesystem->createDir(basename($cachePath));
 
 		return $this;
 	}

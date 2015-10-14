@@ -63,7 +63,7 @@ class Bootstrap
 		}
 
 		if ($flushMode === 'all' || $flushMode === 'views') {
-			App::get('Renderer')->clearCache();
+			App::get('Mopsis\Components\View\View')->clearCache();
 		}
 
 		Cache::get('css.version', function () {
