@@ -124,7 +124,6 @@ abstract class Model implements ModelInterface
 
 		if ($id === null) {
 			$this->data = $this->config['defaults'];
-
 			return;
 		}
 
@@ -256,18 +255,31 @@ abstract class Model implements ModelInterface
 		unset($import['id']);
 
 		foreach (array_diff(array_keys($this->data), ['id']) as $key) {
+			if (array_key_exists($key, $import) && $import[$key] === null) {
+				$this->{$key} = null;
+				unset($import[$key]);
+				continue;
+			}
+
 			if (isset($import[$key])) {
 				$this->{$key} = $import[$key];
 				unset($import[$key]);
-			} elseif (preg_match('/^(\w+)Id$/', $key, $m) && is_object($import[$m[1]])) {
+				continue;
+			}
+
+			if (preg_match('/^(\w+)Id$/', $key, $m) && is_object($import[$m[1]])) {
 				$this->{$m[1]} = $import[$m[1]];
 				unset($import[$m[1]]);
-			} elseif (static::is_json($this->data[$key])) {
+				continue;
+			}
+
+			if (static::is_json($this->data[$key])) {
 				foreach (preg_filter('/^' . preg_quote($key, '/') . '\.(.+)$/', '$1', array_keys($import)) as $importKey) {
 					$this->data[$key]->{$importKey} = $import[$key . '.' . $importKey];
 					unset($import[$key . '.' . $importKey]);
 				}
 				$this->{$key} = $this->data[$key]; // triggers saving
+				continue;
 			}
 		}
 
@@ -314,6 +326,12 @@ abstract class Model implements ModelInterface
 
 //			if ($value & Sql::UNIQUE_VALUE && Sql::db()->exists($this->config['table'], $key.'=?', $this->data[$key]))
 //				throw new \Exception('value of property ['.$key.'] is not unique: "'.$this->data[$key].'"');
+		}
+
+		foreach ($this->data as &$value) {
+			if ($value === false) {
+				$value = 0;
+			}
 		}
 
 		$this->data['id'] = Sql::db()->insert($this->config['table'], $this->data);
@@ -448,6 +466,16 @@ abstract class Model implements ModelInterface
 		}
 
 		if (array_key_exists($key, $this->data)) {
+			if ($value === null && !($this->config['constraints'][$key] & Sql::REQUIRED_VALUE)) {
+				$this->data[$key] = null;
+
+				if ($this->exists) {
+					Sql::db()->update($this->config['table'], 'id=?', $this->data['id'], [$key => null]);
+				}
+
+				return true;
+			}
+
 			$type = $this->config['types'][$key];
 
 			if ($type === 'enum' && !in_array($value, $this->config['values'][$key])) {
@@ -468,7 +496,7 @@ abstract class Model implements ModelInterface
 						}
 						break;
 					default:
-						throw new \Exception('"' . $value . '" has an invalid type for property [' . $key . ']');
+						throw new \Exception('"' . gettype($value) . '" is not an valid type for property [' . $key . ']');
 						break;
 				}
 			}

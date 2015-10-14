@@ -33,6 +33,16 @@ class MiscHelpers
 		throw new \Exception('static-page ' . $code);
 	}
 
+	public static function locationChange($uri, $code = 302, $phrase = null)
+	{
+		$response = App::get('Aura\Web\Response');
+
+		$response->status->set($code, $phrase);
+		$response->content->set(json_encode(['location' => PathHelpers::addLocation($uri)]));
+
+		return $response;
+	}
+
 	public static function logger($message)
 	{
 		if ($message === null) {
@@ -42,20 +52,12 @@ class MiscHelpers
 		return App::make('Logger')->addNotice($message);
 	}
 
-	public static function redirect($url, $responseCode = 302)
+	public static function redirect($uri, $code = 302, $phrase = null)
 	{
-		if (preg_match('/^(ht|f)tps?:\/\//', $url) === 0) {
-			$url = ($_SERVER['REQUEST_SCHEME'] ?: 'http') . '://' . $_SERVER['HTTP_HOST'] . PathHelpers::resolve(preg_replace('/\/+$/', '', $_SERVER['REQUEST_URI']) . '/' . $url);
-		}
+		$response = App::get('Aura\Web\Response');
 
-		if (headers_sent($file, $line)) {
-			echo 'ERROR: Headers already sent in ' . $file . ' on line ' . $line . "!<br/>\n";
-			echo 'Cannot redirect, please click <a href="' . $url . '">[this link]</a> instead.';
-			exit;
-		}
+		$response->redirect->to(PathHelpers::addLocation($uri), $code, $phrase);
 
-		http_response_code($responseCode);
-		header('Location: ' . $url);
-		exit;
+		return $response;
 	}
 }
