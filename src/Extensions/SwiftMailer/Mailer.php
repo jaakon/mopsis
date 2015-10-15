@@ -13,11 +13,11 @@ class Mailer extends Swift_Mailer
 	{
 		$transport = Swift_MailTransport::newInstance();
 
-		if (defined('MAIL_SERVER') && defined('MAIL_PORT')) {
-			$transport = Swift_SmtpTransport::newInstance(MAIL_SERVER, MAIL_PORT, MAIL_ENCRYPTION);
+		if (config('mail.server') && config('mail.port')) {
+			$transport = Swift_SmtpTransport::newInstance(config('mail.server'), config('mail.port'), config('mail.encryption'));
 
-			if (defined('MAIL_USERNAME') && defined('MAIL_PASSWORD')) {
-				$transport->setUsername(MAIL_USERNAME)->setPassword(MAIL_PASSWORD);
+			if (config('mail.username') && config('mail.password')) {
+				$transport->setUsername(config('mail.username'))->setPassword(config('mail.password'));
 			}
 		}
 
@@ -46,10 +46,10 @@ class Mailer extends Swift_Mailer
 
 	public static function newMessage()
 	{
-		$message = Swift_Message::newInstance()->setFrom([MAIL_FROM => MAIL_FROMNAME]);
+		$message = Swift_Message::newInstance()->setFrom([config('mail.from') => config('mail.fromname')]);
 
-		if (defined('MAIL_REPLYTO')) {
-			$message->setReplyTo(MAIL_REPLYTO);
+		if (config('mail.replyto')) {
+			$message->setReplyTo(config('mail.replyto'));
 		}
 
 		return $message;
@@ -62,8 +62,8 @@ class Mailer extends Swift_Mailer
 
 	public function send(Swift_Mime_Message $message, &$failedRecipients = null)
 	{
-		if (defined('MAIL_SUBJECT')) {
-			$message->setSubject(MAIL_SUBJECT . $message->getSubject());
+		if (config('mail.subject')) {
+			$message->setSubject(config('mail.subject') . $message->getSubject());
 		}
 
 		return parent::send($message, $failedRecipients);
