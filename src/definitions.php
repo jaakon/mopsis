@@ -42,6 +42,9 @@ return [
 			'ttl'       => 3600,
 			'namespace' => md5($_SERVER['HTTP_HOST'])
 		],
+		'filesystem' => [
+			'path' => APPLICATION_PATH . '/storage/cache/stash/'
+		],
 		'redis' => [
 			'servers' => [['server' => '127.0.0.1', 'port' => '6379', 'ttl' => 10]]
 		],
@@ -67,7 +70,7 @@ return [
 			'production'       => [
 				'base_template_class' => 'Mopsis\Extensions\Twig\Template',
 				'debug'               => false,
-				'cache'               => APPLICATION_PATH . '/storage/cache/twig',
+				'cache'               => APPLICATION_PATH . '/storage/cache/twig/',
 				'auto_reload'         => false,
 				'strict_variables'    => false
 			],
@@ -234,6 +237,10 @@ return [
 		=> object()
 		->method('setOptions', dot('stash.apc')),
 
+	Stash\Driver\FileSystem::class
+		=> object()
+		->method('setOptions', dot('stash.filesystem')),
+
 	Stash\Driver\Redis::class
 		=> object()
 		->method('setOptions', dot('stash.redis')),
@@ -342,7 +349,18 @@ return [
 		=> object(Twig_Environment::class),
 
 	StashDriver::class
-		=> object(Stash\Driver\Redis::class),
+		=> object(array_filter(
+			[
+				'redis'    => \Stash\Driver\Redis::class,
+				'apc'      => \Stash\Driver\Apc::class,
+				'sqlite3'  => \Stash\Driver\Sqlite::class,
+				'standard' => \Stash\Driver\FileSystem::class
+			],
+			function ($name) {
+				return extension_loaded($name);
+			},
+			ARRAY_FILTER_USE_KEY
+		)[0]),
 
 	Translator::class
 		=> object(Illuminate\Translation\Translator::class)

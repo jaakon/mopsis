@@ -79,7 +79,7 @@ class View
 
 	public function clearCache()
 	{
-		$cachePath = App::get('twig.config')['cache'];
+		$cachePath = rtrim(App::get('twig.config')['cache'], DIRECTORY_SEPARATOR);
 
 		if (!$cachePath) {
 			return $this;
