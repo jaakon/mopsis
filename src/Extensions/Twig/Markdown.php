@@ -7,7 +7,7 @@ class Markdown extends MarkdownExtension
 	public function getFilters()
 	{
 		return [
-			new \Twig_SimpleFunction('markdown', [$this, 'parseMarkdown'], [
+			new \Twig_SimpleFilter('markdown', [$this, 'parseMarkdown'], [
 				'pre_escape' => 'html',
 				'is_safe' => ['html']
 			])

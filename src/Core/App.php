@@ -78,16 +78,3 @@ class App
 		return static::$container->$method(...$args);
 	}
 }
-
-/*
-namespace {
-
-	class App
-	{
-		public static function __callStatic($method, $args)
-		{
-			return \Mopsis\Core\App::$method(...$args);
-		}
-	}
-}
-*/

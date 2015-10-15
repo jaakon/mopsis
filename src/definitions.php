@@ -12,8 +12,7 @@ return [
 		'application_log' => APPLICATION_PATH . '/storage/logs/application.log'
 	],
 
-	'config'
-		=> object(Mopsis\Core\Config::class),
+	'config' => object(Mopsis\Core\Config::class),
 
 	'classFormats' => [
 		'Action'     => 'App\\{{MODULE}}\\Action\\{{DOMAIN}}{{SUBTYPE}}Action',
