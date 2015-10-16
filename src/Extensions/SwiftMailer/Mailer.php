@@ -13,8 +13,8 @@ class Mailer extends Swift_Mailer
 	{
 		$transport = Swift_MailTransport::newInstance();
 
-		if (config('mail.server') && config('mail.port')) {
-			$transport = Swift_SmtpTransport::newInstance(config('mail.server'), config('mail.port'), config('mail.encryption'));
+		if (config('mail.host') && config('mail.port')) {
+			$transport = Swift_SmtpTransport::newInstance(config('mail.host'), config('mail.port'), config('mail.encryption'));
 
 			if (config('mail.username') && config('mail.password')) {
 				$transport->setUsername(config('mail.username'))->setPassword(config('mail.password'));
@@ -46,7 +46,7 @@ class Mailer extends Swift_Mailer
 
 	public static function newMessage()
 	{
-		$message = Swift_Message::newInstance()->setFrom([config('mail.from') => config('mail.fromname')]);
+		$message = Swift_Message::newInstance()->setFrom([config('mail.from') => static::encodeName(config('mail.fromName'))]);
 
 		if (config('mail.replyto')) {
 			$message->setReplyTo(config('mail.replyto'));

@@ -46,7 +46,7 @@ class View
 			$this->renderer->getExtension('formbuilder')->setOptions(['forms' => $this->forms]);
 		}
 
-		return $this->renderer->render($this->template, $this->data);
+		return trim($this->renderer->render($this->template, $this->data));
 	}
 
 	public function addExtension($extension)
