@@ -16,12 +16,13 @@ return [
 
 	'classFormats' => [
 		'Action'     => 'App\\{{MODULE}}\\Action\\{{DOMAIN}}{{SUBTYPE}}Action',
-		'Domain'     => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}{{SUBTYPE}}',
-		'Responder'  => 'App\\{{MODULE}}\\Responder\\{{DOMAIN}}{{SUBTYPE}}Responder',
-		'Controller' => 'App\\{{MODULE}}\\{{DOMAIN}}Controller',
-		'Model'      => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}Model',
 		'Collection' => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}Collection',
-		'View'       => '{{MODULE}}\\view\\{{SUBTYPE}}'
+		'Controller' => 'App\\{{MODULE}}\\{{DOMAIN}}Controller',
+		'Domain'     => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}{{SUBTYPE}}',
+		'Gateway'    => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}Gateway',
+		'Model'      => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}Model',
+		'Responder'  => 'App\\{{MODULE}}\\Responder\\{{DOMAIN}}{{SUBTYPE}}Responder',
+		'View'       => '{{MODULE}}\\views\\{{SUBTYPE}}'
 	],
 
 	'static-pages' => [

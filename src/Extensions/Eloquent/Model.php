@@ -245,8 +245,8 @@ abstract class Model extends EloquentModel implements ModelInterface
 	/** @Override */
 	public function hasMany($related, $foreignKey = null, $localKey = null)
 	{
-		return App::create('Domain', $related . '\\Gateway')
-			->newRepository(parent::hasMany(App::build('Domain', $related . '\\Model'), $foreignKey, $localKey));
+		return App::create('Gateway', $related)
+			->newRepository(parent::hasMany(model($related), $foreignKey, $localKey));
 	}
 
 	/** @Override */

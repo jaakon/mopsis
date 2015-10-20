@@ -22,6 +22,10 @@ abstract class AbstractRepository
 			return $this->callScope($scope, $parameters);
 		}
 
+		if (method_exists($this->relation, $method)) {
+			return $this->relation->$method(...$parameters);
+		}
+
 		$result = $this->query->$method(...$parameters);
 
 		if ($result instanceof Builder) {
