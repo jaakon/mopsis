@@ -30,6 +30,11 @@ function array_diff_values(array $array1, array $array2)
 	return ArrayHelpers::diffValues($array1, $array2);
 }
 
+function array_dot($array, $prepend = '')
+{
+	return ArrayHelpers::dot($array, $prepend);
+}
+
 function array_trim(array $array, callable $callback = null)
 {
 	return ArrayHelpers::trim($array, $callback);

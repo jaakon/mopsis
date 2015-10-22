@@ -1,4 +1,4 @@
-<?php namespace Mopsis\Reflection;
+<?php namespace Mopsis\Extensions\Reflection;
 
 class ReflectionMethod extends \ReflectionMethod
 {

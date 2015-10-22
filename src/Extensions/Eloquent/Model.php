@@ -243,13 +243,6 @@ abstract class Model extends EloquentModel implements ModelInterface
 	}
 */
 	/** @Override */
-	public function hasMany($related, $foreignKey = null, $localKey = null)
-	{
-		return App::create('Gateway', $related)
-			->newRepository(parent::hasMany(model($related), $foreignKey, $localKey));
-	}
-
-	/** @Override */
 	public function newCollection(array $models = [])
 	{
 		try {
@@ -272,6 +265,12 @@ abstract class Model extends EloquentModel implements ModelInterface
 		}
 
 		return $builder;
+	}
+
+	public function newRepository($relationType, $related, ...$configuration)
+	{
+		return App::create('Gateway', $related)
+			->newRepository($this->$relationType(model($related), ...$configuration));
 	}
 
 	public function set($key, $value)

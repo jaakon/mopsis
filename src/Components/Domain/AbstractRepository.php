@@ -26,15 +26,25 @@ abstract class AbstractRepository
 			return $this->relation->$method(...$parameters);
 		}
 
-		$result = $this->query->$method(...$parameters);
+		if (method_exists($this->query, $method)) {
+			$result = $this->query->$method(...$parameters);
 
-		if ($result instanceof Builder) {
-			return $this;
+			if ($result instanceof Builder) {
+				return $this;
+			}
+
+			$this->newQuery();
+
+			return $result;
 		}
 
-		$this->newQuery();
+		return null;
+	}
 
-		return $result;
+	public function __clone()
+	{
+		$this->baseQuery = clone $this->baseQuery;
+		$this->query     = clone $this->baseQuery;
 	}
 
 	protected function callScope($scope, $parameters)
@@ -51,11 +61,5 @@ abstract class AbstractRepository
 		$this->query = clone $this->baseQuery;
 
 		return $this;
-	}
-
-	public function __clone()
-	{
-		$this->baseQuery = clone $this->baseQuery;
-		$this->query     = clone $this->baseQuery;
 	}
 }

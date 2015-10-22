@@ -39,9 +39,6 @@
 		"twig/twig":                   "~1.20"
 	},
 	"autoload": {
-		"files": [
-			"src/Support/helpers.php"
-		],
 		"psr-4": {
 			"Mopsis\\": "src/"
 		}

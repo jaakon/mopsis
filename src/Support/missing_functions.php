@@ -147,23 +147,6 @@ class MissingFunctions
 		return preg_match('/^(ht|f)tps?:\/\/|(mailto:|javascript:|#)/i', $url) > 0 ? $url : $scheme . '://' . $host . resolve_path($path . $url);
 	}
 
-	public static function redirect($url = null, $responseCode = 302)
-	{
-		if (preg_match('/^(ht|f)tps?:\/\//', $url) === 0) {
-			$url = ($_SERVER['REQUEST_SCHEME'] ?: 'http') . '://' . $_SERVER['HTTP_HOST'] . resolve_path(preg_replace('/\/+$/', '', $_SERVER['REQUEST_URI']) . '/' . $url);
-		}
-
-		if (!headers_sent($file, $line)) {
-			http_response_code($responseCode);
-			header('Location: ' . $url);
-			exit;
-		}
-
-		echo 'ERROR: Headers already sent in ' . $file . ' on line ' . $line . "!<br/>\n";
-		echo 'Cannot redirect, please click <a href="' . $url . '">[this link]</a> instead.';
-		exit;
-	}
-
 	public static function wget($url, $data = [], $referer = null, $timeout = 10)
 	{
 		$result = send_http_request('GET', $url, $data, $referer, $timeout);

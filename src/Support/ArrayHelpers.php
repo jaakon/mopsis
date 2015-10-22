@@ -46,6 +46,21 @@ class ArrayHelpers
 		return array_filter($diff);
 	}
 
+	public static function dot($array, $prepend = '')
+	{
+		$results = [];
+
+		foreach ($array as $key => $value) {
+			if (is_array($value) && count($value)) {
+				$results = array_merge($results, static::dot($value, $prepend.$key.'.'));
+			} else {
+				$results[$prepend.$key] = $value;
+			}
+		}
+
+		return $results;
+	}
+
 	public static function trim(array $array, callable $callback = null)
 	{
 		$array = array_reverse(static::filterWithBreakpoint($array, $callback), true);

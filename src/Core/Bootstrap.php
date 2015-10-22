@@ -1,7 +1,5 @@
-<?php namespace Mopsis;
+<?php namespace Mopsis\Core;
 
-use Assetic\Asset\AssetCollection;
-use Assetic\Asset\GlobAsset;
 use Aura\Web\Response;
 use DI\ContainerBuilder;
 use Mopsis\Core\App;
@@ -36,7 +34,7 @@ class Bootstrap
 		}
 
 		$builder = new ContainerBuilder;
-		$builder->addDefinitions(__DIR__ . '/definitions.php');
+		$builder->addDefinitions(__DIR__ . '/../definitions.php');
 		$builder->addDefinitions(APPLICATION_PATH . '/config/definitions.php');
 
 		App::initialize($builder->build());
