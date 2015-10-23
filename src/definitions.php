@@ -22,7 +22,7 @@ return [
 		'Gateway'    => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}Gateway',
 		'Model'      => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}Model',
 		'Responder'  => 'App\\{{MODULE}}\\Responder\\{{DOMAIN}}{{SUBTYPE}}Responder',
-		'View'       => '{{MODULE}}\\views\\{{SUBTYPE}}'
+		'View'       => '{{MODULE}}\\{{SUBTYPE}}'
 	],
 
 	'static-pages' => [
@@ -93,7 +93,7 @@ return [
 			return $extensions;
 		},
 
-	'twigloader.config' => ['app', 'app/views'],
+	'twigloader.config' => ['resources/views'],
 
 	Aptoma\Twig\Extension\MarkdownEngineInterface::class
 		=> object(Mopsis\Extensions\Twig\Markdown\MarkdownEngine::class),

@@ -26,7 +26,8 @@ abstract class Template extends \Twig_Template
 		try {
 			return parent::getAttribute($object, $item, $arguments, $type, $isDefinedTest, $ignoreStrictCheck);
 		} catch (\BadMethodCallException $e) {
-			throw new \Exception('cannot find method or property "' . $item . '" on ' . gettype($object));
+			$element = is_object($object) ? get_class($object) : gettype($object);
+			throw new \Exception('cannot find method or property "' . $item . '" of ' . $element);
 		}
 	}
 }

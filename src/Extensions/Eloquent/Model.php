@@ -225,7 +225,12 @@ abstract class Model extends EloquentModel implements ModelInterface
 
 	public function hasAttribute($key)
 	{
-		return array_key_exists($key, $this->attributes) || array_key_exists($key, $this->relations) || $this->hasGetMutator($key);
+		return (
+			array_key_exists($key, $this->attributes) ||
+			array_key_exists(snake_case($key), $this->attributes) ||
+			array_key_exists($key, $this->relations) ||
+			$this->hasGetMutator($key)
+		);
 	}
 
 	/** @Override */

@@ -67,7 +67,7 @@ abstract class AbstractResponder
 
 	protected function getViewPath()
 	{
-		return preg_replace('/^\w+\\\(\w+)\\\.+$/', '$1/views/', get_called_class());
+		return preg_replace('/^\w+\\\(\w+)\\\.+$/', '$1/', get_called_class());
 	}
 
 	protected function init()
