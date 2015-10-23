@@ -1,5 +1,6 @@
 <?php namespace Mopsis\Extensions\Twig;
 
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Mopsis\Extensions\Eloquent\Model;
 
 abstract class Template extends \Twig_Template
@@ -16,6 +17,16 @@ abstract class Template extends \Twig_Template
 			}
 		}
 
-		return parent::getAttribute($object, $item, $arguments, $type, $isDefinedTest, $ignoreStrictCheck);
+		if ($type !== self::METHOD_CALL && $object instanceof Relation) {
+			if ($object instanceof \Illuminate\Database\Eloquent\Relations\BelongsTo) {
+				return $object->getResults()->$item;
+			}
+		}
+
+		try {
+			return parent::getAttribute($object, $item, $arguments, $type, $isDefinedTest, $ignoreStrictCheck);
+		} catch (\BadMethodCallException $e) {
+			throw new \Exception('cannot find method or property "' . $item . '" on ' . gettype($object));
+		}
 	}
 }

@@ -100,9 +100,9 @@ function model($className)
 	return ClassHelpers::model($className);
 }
 
-function object_merge(stdClass $object1, stdClass ...$objects)
+function object_merge(stdClass $baseObject, stdClass ...$objects)
 {
-	return ObjectHelpers::merge($object1, ...$objects);
+	return ObjectHelpers::merge($baseObject, ...$objects);
 }
 
 function object_to_array($object)

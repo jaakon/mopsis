@@ -51,4 +51,28 @@ trait LoggableTrait
 
 		return null;
 	}
+/*
+		if (class_exists('\App\Models\Event')) {
+			Event::add($instance, Auth::user(), $this->findRoute(), array_diff_values($oldData, $newData));
+		}
+
+		if (class_exists('\App\Models\Event')) {
+			Event::add($instance, Auth::user(), $this->findRoute());
+		}
+
+		if (class_exists('\App\Models\Event')) {
+			Event::add($instance, Auth::user(), $this->findRoute(), [$key => $value]);
+		}
+
+		protected function findRoute()
+		{
+			return class_basename($this) . '.' . debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)[2]['function'];
+		}
+
+		if ($instance->hasProperty('uri')) {
+			$instance->set('uri', null)->uri;
+		}
+
+*/
+
 }

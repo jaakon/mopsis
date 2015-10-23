@@ -6,12 +6,8 @@ use Mopsis\Core\Auth;
 
 abstract class AbstractCrudController extends AbstractController
 {
-	protected function createModel($formId, Model $instance, $ancestor = null)
+	protected function createModel($formId, Model $instance, Model $ancestor = null)
 	{
-		if ($ancestor === false) {
-			throw new \Exception('invalid or missing ancestor object');
-		}
-
 		$this->view->assign(['ancestorToken' => $ancestor->token]);
 
 		$status = $this->handleFormAction($formId, $instance);
@@ -24,11 +20,8 @@ abstract class AbstractCrudController extends AbstractController
 			$instance->set(strtolower(class_basename($ancestor)), $ancestor);
 		}
 
-		$instance->import($this->filter->getResult())->save();
-
-		if (class_exists('\App\Models\Event')) {
-			Event::add($instance, Auth::user(), $this->findRoute());
-		}
+		$instance->update($this->filter->getResult()); // newQuery == PROBLEMS?
+		//$instance->fill($this->filter->getResult())->save();
 
 		return $this->getResponseObject(201, $instance);
 	}
@@ -41,57 +34,36 @@ abstract class AbstractCrudController extends AbstractController
 			return $this->getResponseObject($status, $instance);
 		}
 
-		$oldData = $instance->toArray();
-		$instance->import($this->filter->getResult());
-		$newData = $instance->toArray();
-
-		if ($instance->hasProperty('uri')) {
-			$instance->set('uri', null)->uri;
-		}
-
-		if (class_exists('\App\Models\Event')) {
-			Event::add($instance, Auth::user(), $this->findRoute(), array_diff_values($oldData, $newData));
-		}
+		$instance->update($this->filter->getResult());
 
 		return $this->getResponseObject(205, $instance);
 	}
 
 	protected function deleteModel(Model $instance)
 	{
-		if (!$instance->hasProperty('deleted')) {
-			$instance->delete();
+		if ($instance->hasProperty('deleted')) {
+			$instance->deleted = true;
 
 			return $this->getResponseObject(204, $instance);
 		}
 
-		$instance->deleted = true;
-
-		if (class_exists('\App\Models\Event')) {
-			Event::add($instance, Auth::user(), $this->findRoute());
-		}
+		$instance->delete();
 
 		return $this->getResponseObject(204, $instance);
 	}
 
-	protected function setModelValue(Model $instance, $key, $value)
+	protected function setModelProperty(Model $instance, $key, $value)
 	{
-		$instance->{$key} = $value;
-
-		if (class_exists('\App\Models\Event')) {
-			Event::add($instance, Auth::user(), $this->findRoute(), [$key => $value]);
-		}
+		$instance->setAttribute($key, $value);
 
 		return $this->getResponseObject(205, $instance);
 	}
 
-	protected function findRoute()
-	{
-		return class_basename($this) . '.' . debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)[2]['function'];
-	}
-
 	protected function handleFormAction($formId, Model $instance)
 	{
-		$this->view->setFormValues($formId, $instance->toArray(true))->assign(['formId' => $formId]);
+		$this->view
+			->setFormValues($formId, $instance->toArray(true)) // true --> usePrettyValues
+			->assign(['formId' => $formId]);
 
 		if ($instance->exists) {
 			$this->view->assign(['token' => $instance->token]);
@@ -116,7 +88,7 @@ abstract class AbstractCrudController extends AbstractController
 
 	private function getResponseObject($code, $entity)
 	{
-		return (object)[
+		return (object) [
 			'status'   => $code,
 			'instance' => $entity,
 			'success'  => $code !== 202 && $code !== 422

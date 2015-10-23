@@ -46,13 +46,13 @@ class FormBuilder
 		return preg_replace('/\{\w+\.\w+\}/', '', $this->fillPlaceholder($html, $data));
 	}
 
-	protected function addValues($data, $prefix, $attributes1, $attributes2 = [])
+	protected function addValues($data, $prefix, ...$data)
 	{
-		foreach ($attributes1 as $key => $value) {
-			$data[$prefix . '.' . $key] = (string)$value;
-		}
+		$data = array_map(function ($object) {
+			return object_to_array($object);
+		}, $data);
 
-		foreach ($attributes2 as $key => $value) {
+		foreach (array_merge(...$data) as $key => $value) {
 			$data[$prefix . '.' . $key] = (string)$value;
 		}
 
@@ -259,11 +259,11 @@ class FormBuilder
 		}
 
 		foreach ([
-			         'form',
-			         'block',
-			         'row',
-			         'help'
-		         ] as $element) {
+					 'form',
+					 'block',
+					 'row',
+					 'help'
+				 ] as $element) {
 			$layout[$element] = [
 				'before' => $this->getStringFromXml($xml, $element . '/before', $layout[$element]['before']),
 				'after'  => $this->getStringFromXml($xml, $element . '/after', $layout[$element]['after'])
@@ -279,11 +279,11 @@ class FormBuilder
 				}
 
 				foreach ([
-					         'before',
-					         'element',
-					         'options',
-					         'after'
-				         ] as $subtype) {
+							 'before',
+							 'element',
+							 'options',
+							 'after'
+						 ] as $subtype) {
 					if (($string = $this->getStringFromXml($item, $subtype, false)) !== false) {
 						$items[$item->getName()][$subtype] = $string;
 					}

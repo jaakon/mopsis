@@ -154,16 +154,16 @@ abstract class Model implements ModelInterface
 			return $this->cache[$key];
 		}
 
-		return $this->_get($key);
+		return $this->getAttribute($key);
 	}
 
 	public function __invoke($key, $value = null)
 	{
 		if (func_num_args() === 1) {
-			return $this->{$key};
+			return $this->$key;
 		}
 
-		$this->{$key} = $value;
+		$this->$key = $value;
 
 		return $this;
 	}
@@ -197,7 +197,7 @@ abstract class Model implements ModelInterface
 			$this->{'set' . ucfirst($key) . 'Attribute'}($value);
 		}
 
-		$this->_set($key, $value);
+		$this->setAttribute($key, $value);
 	}
 
 	public function __toString()
@@ -230,6 +230,56 @@ abstract class Model implements ModelInterface
 		return $this;
 	}
 
+	public function getAttribute($key)
+	{
+		if (array_key_exists($key, $this->data)) {
+			return $this->data[$key];
+		}
+
+		if (isset($this->cache[$key])) {
+			return $this->cache[$key];
+		}
+
+		$connections = ModelFactory::getConnections(get_called_class());
+
+		if (!($connection = $connections[strtolower($key)])) {
+			throw new UnexpectedValueException('property [' . $key . '] is undefined');
+		}
+
+		$result = null;
+
+		switch ($connection['type']) {
+			case 'outbound':
+				$result = ModelFactory::load($connection['class'], $this->data[$connection['attribute']]);
+				break;
+			case 'inbound':
+				$class  = ModelFactory::findClass(strtolower($key));
+				$result = $class::findAll($connection['query'], $this->id);
+				break;
+			case 'mixed_inbound':
+				$class  = ModelFactory::findClass($key);
+				$result = $class::findAll($connection['query'], (string)$this);
+				break;
+			case 'crossbound':
+				$collection = str_replace('Models', 'Collections', ModelFactory::findClass($key));
+				$result     = $collection::load(Sql::db()->getCol(Sql::buildQuery([
+					'select' => $connection['identifier'],
+					'from'   => $connection['pivot'],
+					'where'  => $connection['query'],
+				]), $this->id));
+				break;
+			default:
+				throw new \Exception('connection type [' . $type . '] is invalid');
+		}
+
+		return $this->cache[$key] = $result;
+	}
+
+	public function getHashAttribute()
+	{
+		return new Token($this);
+	}
+
 	public function getSortOrder()
 	{
 		if (!isset($this->orderBy) || !is_array($this->orderBy) || !count($this->orderBy)) {
@@ -239,9 +289,19 @@ abstract class Model implements ModelInterface
 		return implode(',', $this->orderBy);
 	}
 
+	public function getTokenAttribute()
+	{
+		return new Token($this, session_id());
+	}
+
 	public function hasProperty($key)
 	{
 		return array_key_exists($key, $this->data);
+	}
+
+	public function update($data)
+	{
+		return $this->import($data)->save();
 	}
 
 	public function import($import)
@@ -256,13 +316,13 @@ abstract class Model implements ModelInterface
 
 		foreach (array_diff(array_keys($this->data), ['id']) as $key) {
 			if (array_key_exists($key, $import) && $import[$key] === null) {
-				$this->{$key} = null;
+				$this->$key = null;
 				unset($import[$key]);
 				continue;
 			}
 
 			if (isset($import[$key])) {
-				$this->{$key} = $import[$key];
+				$this->$key = $import[$key];
 				unset($import[$key]);
 				continue;
 			}
@@ -278,14 +338,14 @@ abstract class Model implements ModelInterface
 					$this->data[$key]->{$importKey} = $import[$key . '.' . $importKey];
 					unset($import[$key . '.' . $importKey]);
 				}
-				$this->{$key} = $this->data[$key]; // triggers saving
+				$this->$key = $this->data[$key]; // triggers saving
 				continue;
 			}
 		}
 
 		foreach ($import as $key => $value) {
 			if ($value !== null && method_exists($this, 'set' . ucfirst($key) . 'Attribute')) {
-				$this->{$key} = $value;
+				$this->$key = $value;
 			}
 		}
 
@@ -345,121 +405,12 @@ abstract class Model implements ModelInterface
 
 	public function set($key, $value)
 	{
-		$this->{$key} = $value;
+		$this->$key = $value;
 
 		return $this;
 	}
 
-	public function toArray($usePrettyValues = false)
-	{
-		$data = [];
-
-		foreach (array_keys($this->data) as $key) {
-			if (static::is_json($this->{$key}) && count($this->{$key}->toArray())) {
-				foreach ($this->{$key}->toArray() as $k => $v) {
-					$data[$key . '.' . $k] = $v;
-				}
-			} elseif ($usePrettyValues) {
-				$prettyKey  = 'pretty' . ucfirst($key);
-				$data[$key] = isset($this->{$prettyKey}) ? $this->{$prettyKey} : $this->{$key};
-			} else {
-				$data[$key] = $this->{$key};
-			}
-		}
-
-		return $data;
-	}
-
-	protected static function _getDefaultQuery($attribute, $query, $orderBy)
-	{
-		$class = get_called_class();
-
-		return [
-			'select'  => implode(', ', array_wrap($attribute)),
-			'from'    => ModelFactory::findTable($class),
-			'where'   => $query,
-			'orderBy' => $orderBy ?: (new $class)->getSortOrder()
-		];
-	}
-
-	protected static function _stringToClass($value, $class)
-	{
-		return $value instanceof $class ? $value : new $class($value);
-	}
-
-	protected function _clearCache($key = null)
-	{
-		if ($key === null) {
-			$this->cache = [];
-		} else {
-			unset($this->cache[$key]);
-		}
-	}
-
-	protected function _get($key)
-	{
-		if (array_key_exists($key, $this->data)) {
-			return $this->data[$key];
-		}
-
-		if (isset($this->cache[$key])) {
-			return $this->cache[$key];
-		}
-
-		$connections = ModelFactory::getConnections(get_called_class());
-
-		if (!($connection = $connections[strtolower($key)])) {
-			throw new UnexpectedValueException('property [' . $key . '] is undefined');
-		}
-
-		$result = null;
-
-		switch ($connection['type']) {
-			case 'outbound':
-				$result = ModelFactory::load($connection['class'], $this->data[$connection['attribute']]);
-				break;
-			case 'inbound':
-				$class  = ModelFactory::findClass(strtolower($key));
-				$result = $class::findAll($connection['query'], $this->id);
-				break;
-			case 'mixed_inbound':
-				$class  = ModelFactory::findClass($key);
-				$result = $class::findAll($connection['query'], (string)$this);
-				break;
-			case 'crossbound':
-				$collection = str_replace('Models', 'Collections', ModelFactory::findClass($key));
-				$result     = $collection::load(Sql::db()->getCol(Sql::buildQuery([
-					'select' => $connection['identifier'],
-					'from'   => $connection['pivot'],
-					'where'  => $connection['query'],
-				]), $this->id));
-				break;
-			default:
-				throw new \Exception('connection type [' . $type . '] is invalid');
-		}
-
-		return $this->cache[$key] = $result;
-	}
-
-	protected function _getCachedAttribute($attribute, callable $callback, $ttl = null)
-	{
-		return Cache::get([
-			(string)$this,
-			$attribute
-		], $callback, $ttl);
-	}
-
-	public function getHashAttribute()
-	{
-		return new Token($this);
-	}
-
-	public function getTokenAttribute()
-	{
-		return new Token($this, session_id());
-	}
-
-	protected function _set($key, $value)
+	public function setAttribute($key, $value)
 	{
 		if ($key === 'id') {
 			throw new \Exception('property [id] is readonly');
@@ -542,5 +493,59 @@ abstract class Model implements ModelInterface
 		$this->{$connection['attribute']} = $value->id;
 
 		return true;
+	}
+
+	public function toArray($usePrettyValues = false)
+	{
+		$data = [];
+
+		foreach (array_keys($this->data) as $key) {
+			if (static::is_json($this->$key) && count($this->$key->toArray())) {
+				foreach ($this->$key->toArray() as $k => $v) {
+					$data[$key . '.' . $k] = $v;
+				}
+			} elseif ($usePrettyValues) {
+				$prettyKey  = 'pretty' . ucfirst($key);
+				$data[$key] = isset($this->$prettyKey) ? $this->$prettyKey : $this->$key;
+			} else {
+				$data[$key] = $this->$key;
+			}
+		}
+
+		return $data;
+	}
+
+	protected static function _getDefaultQuery($attribute, $query, $orderBy)
+	{
+		$class = get_called_class();
+
+		return [
+			'select'  => implode(', ', array_wrap($attribute)),
+			'from'    => ModelFactory::findTable($class),
+			'where'   => $query,
+			'orderBy' => $orderBy ?: (new $class)->getSortOrder()
+		];
+	}
+
+	protected static function _stringToClass($value, $class)
+	{
+		return $value instanceof $class ? $value : new $class($value);
+	}
+
+	protected function _clearCache($key = null)
+	{
+		if ($key === null) {
+			$this->cache = [];
+		} else {
+			unset($this->cache[$key]);
+		}
+	}
+
+	protected function _getCachedAttribute($attribute, callable $callback, $ttl = null)
+	{
+		return Cache::get([
+			(string)$this,
+			$attribute
+		], $callback, $ttl);
 	}
 }

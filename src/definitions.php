@@ -17,7 +17,7 @@ return [
 	'classFormats' => [
 		'Action'     => 'App\\{{MODULE}}\\Action\\{{DOMAIN}}{{SUBTYPE}}Action',
 		'Collection' => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}Collection',
-		'Controller' => 'App\\{{MODULE}}\\{{DOMAIN}}Controller',
+		'Controller' => 'App\\{{MODULE}}\\Controller',
 		'Domain'     => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}{{SUBTYPE}}',
 		'Gateway'    => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}Gateway',
 		'Model'      => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}Model',

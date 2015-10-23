@@ -13,7 +13,7 @@ abstract class Container
 
 		if (is_array($criteria)) {
 			foreach ($criteria as $key => $value) {
-				$this->{$key} = $value;
+				$this->$key = $value;
 			}
 		}
 	}
@@ -83,7 +83,7 @@ abstract class Container
 
 	public function set($key, $value)
 	{
-		$this->{$key} = $value;
+		$this->$key = $value;
 
 		return $this;
 	}

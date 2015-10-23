@@ -23,7 +23,7 @@ class Textarea extends AbstractField
 	public function updateSize()
 	{
 		if ($this->attr('rows') === 'auto') {
-			$this->attr('rows', count(explode(PHP_EOL, $this->getValue())) + 1);
+			$this->attr('rows', count(explode(PHP_EOL, $this->getValue())));
 		}
 	}
 }

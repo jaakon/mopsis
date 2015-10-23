@@ -110,28 +110,27 @@ abstract class Model extends EloquentModel implements ModelInterface
 		return $this;
 	}
 
-	/*
-		public function findRelations(Model $model)
-		{
-			$class = new ReflectionClass($this);
-			$className = $class->getName();
-			$modelName = get_class($model);
+	public function findRelations(Model $model)
+	{
+		$class     = new ReflectionClass($this);
+		$className = $class->getName();
+		$modelName = get_class($model);
 
-			return array_map(
-				function ($method) {
-					return $method->name;
-				},
-				array_filter(
-					$class->getMethods(\ReflectionMethod::IS_PUBLIC),
-					function ($method) use ($className, $modelName) {
-						return $method->class === $className
-						&& !preg_match('/^[gs]et\w+Attribute$/', $method->name)
-						&& strpos($method->getBody(), $modelName) !== false;
-					}
-				)
-			);
-		}
-	*/
+		return array_map(
+			function ($method) {
+				return $method->name;
+			},
+			array_filter(
+				$class->getMethods(\ReflectionMethod::IS_PUBLIC),
+				function ($method) use ($className, $modelName) {
+					return $method->class === $className
+					&& !preg_match('/^[gs]et\w+Attribute$/', $method->name)
+					&& strpos($method->getBody(), $modelName) !== false;
+				}
+			)
+		);
+	}
+
 	/** @Override */
 	public function getAttribute($key)
 	{
@@ -228,20 +227,7 @@ abstract class Model extends EloquentModel implements ModelInterface
 	{
 		return array_key_exists($key, $this->attributes) || array_key_exists($key, $this->relations) || $this->hasGetMutator($key);
 	}
-/*
-	public function getUriRecursive()
-	{
-		if ($this->exists && isset($this->uri)) {
-			return $this->uri;
-		}
 
-		if ($this instanceof Hierarchical) {
-			return $this->ancestor->getUriRecursive();
-		}
-
-		return;
-	}
-*/
 	/** @Override */
 	public function newCollection(array $models = [])
 	{
@@ -265,12 +251,6 @@ abstract class Model extends EloquentModel implements ModelInterface
 		}
 
 		return $builder;
-	}
-
-	public function newRepository($relationType, $related, ...$configuration)
-	{
-		return App::create('Gateway', $related)
-			->newRepository($this->$relationType(model($related), ...$configuration));
 	}
 
 	public function set($key, $value)
