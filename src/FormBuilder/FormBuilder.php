@@ -46,13 +46,13 @@ class FormBuilder
 		return preg_replace('/\{\w+\.\w+\}/', '', $this->fillPlaceholder($html, $data));
 	}
 
-	protected function addValues($data, $prefix, ...$data)
+	protected function addValues($data, $prefix, ...$values)
 	{
-		$data = array_map(function ($object) {
+		$values = array_map(function ($object) {
 			return object_to_array($object);
-		}, $data);
+		}, $values);
 
-		foreach (array_merge(...$data) as $key => $value) {
+		foreach (array_merge(...$values) as $key => $value) {
 			$data[$prefix . '.' . $key] = (string)$value;
 		}
 
