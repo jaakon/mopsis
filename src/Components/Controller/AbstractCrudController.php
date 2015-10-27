@@ -3,6 +3,7 @@
 use App\Models\Event;
 use Mopsis\Contracts\Model;
 use Mopsis\Core\Auth;
+use Mopsis\Extensions\Eloquent\Model as Eloquent;
 
 abstract class AbstractCrudController extends AbstractController
 {
@@ -20,8 +21,11 @@ abstract class AbstractCrudController extends AbstractController
 			$instance->set(strtolower(class_basename($ancestor)), $ancestor);
 		}
 
-		$instance->update($this->filter->getResult()); // newQuery == PROBLEMS?
-		//$instance->fill($this->filter->getResult())->save();
+		if ($instance instanceof Eloquent) {
+			$instance->fill($this->filter->getResult())->save();
+		} else {
+			$instance->update($this->filter->getResult());
+		}
 
 		return $this->getResponseObject(201, $instance);
 	}

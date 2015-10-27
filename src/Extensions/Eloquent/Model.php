@@ -61,6 +61,8 @@ abstract class Model extends EloquentModel implements ModelInterface
 		}
 
 		foreach ($this->getDataTypes() as $attribute => $type) {
+			$this->fillable[] = $attribute;
+
 			if ($type === null) {
 				continue;
 			}

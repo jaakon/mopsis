@@ -39,7 +39,10 @@ class Bootstrap
 
 		App::initialize($builder->build());
 
-		App::get('config')->load(APPLICATION_PATH . '/config/config.php', APPLICATION_PATH . '/config/credentials.php');
+		App::get('config')->load(
+			APPLICATION_PATH . '/config/config.php',
+			APPLICATION_PATH . '/config/credentials.php'
+		);
 
 		App::get('Database');
 		App::get('ErrorHandler');
