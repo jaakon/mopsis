@@ -1,6 +1,8 @@
 <?php namespace Mopsis\FormBuilder\Fields;
 
-class Textarea extends AbstractField
+use Mopsis\FormBuilder\Contracts\Resizable;
+
+class Textarea extends AbstractField implements Resizable
 {
 	public function getValue()
 	{

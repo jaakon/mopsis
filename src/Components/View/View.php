@@ -43,7 +43,7 @@ class View
 		$this->functions  = [];
 
 		if ($this->renderer->hasExtension('formbuilder')) {
-			$this->renderer->getExtension('formbuilder')->setOptions(['forms' => $this->forms]);
+			$this->renderer->getExtension('formbuilder')->setConfigurations($this->forms);
 		}
 
 		return trim($this->renderer->render($this->template, $this->data));
@@ -97,31 +97,38 @@ class View
 	{
 		$messages = $filter->getMessages();
 
-		$this->setFormValues($formId, $this->request->post->get())->setFormErrors($formId, array_keys($messages))->assign(['errors' => array_flatten($messages)]);
+		$this
+			->setFormValues($formId, $this->request->post->get())
+			->setFormErrors($formId, array_keys($messages))
+			->assign(['errors' => array_flatten($messages)]);
 
 		return $this;
 	}
 
 	public function setFormErrors($formId, ...$data)
 	{
-		$this->initializeForm($formId);
-		$this->forms[$formId]['errors'] = array_merge($this->forms[$formId]['errors'], ...$data);
+		$this->setFormData('errors', $formId, $data);
 
 		return $this;
 	}
 
 	public function setFormOptions($formId, ...$data)
 	{
-		$this->initializeForm($formId);
-		$this->forms[$formId]['options'] = array_merge($this->forms[$formId]['options'], ...$data);
+		$this->setFormData('options', $formId, $data);
+
+		return $this;
+	}
+
+	public function setFormSettings($formId, ...$data)
+	{
+		$this->setFormData('settings', $formId, $data);
 
 		return $this;
 	}
 
 	public function setFormValues($formId, ...$data)
 	{
-		$this->initializeForm($formId);
-		$this->forms[$formId]['values'] = array_merge($this->forms[$formId]['values'], ...$data);
+		$this->setFormData('values', $formId, $data);
 
 		return $this;
 	}
@@ -137,18 +144,25 @@ class View
 		return $this;
 	}
 
-	private function initializeForm($formId)
+	protected function initializeForm($formId)
 	{
 		if (empty($formId)) {
-			throw new \Exception('form id must not be empty');
+			throw new \Exception('formId must not be empty');
 		}
 
 		if (!isset($this->forms[$formId])) {
 			$this->forms[$formId] = [
-				'values'  => [],
-				'options' => [],
-				'errors'  => []
+				'errors'   => [],
+				'options'  => [],
+				'settings' => [],
+				'values'   => []
 			];
 		}
+	}
+
+	protected function setFormData($key, $formId, array $data)
+	{
+		$this->initializeForm($formId);
+		$this->forms[$formId][$key] = array_merge($this->forms[$formId][$key], ...$data);
 	}
 }

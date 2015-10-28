@@ -1,8 +1,9 @@
 <?php namespace Mopsis\FormBuilder\Fields;
 
+use Mopsis\FormBuilder\Contracts\Resizable;
 use Mopsis\FormBuilder\FieldFactory;
 
-class Select extends AbstractField
+class Select extends AbstractField implements Resizable
 {
 	public function getValue()
 	{

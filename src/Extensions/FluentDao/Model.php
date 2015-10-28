@@ -301,7 +301,7 @@ abstract class Model implements ModelInterface
 
 	public function update($data)
 	{
-		return $this->import($data)->save();
+		return $this->import($data)->save(false);
 	}
 
 	public function import($import)

@@ -1,77 +1,42 @@
 <?php namespace Mopsis\FormBuilder;
 
+use Mopsis\FormBuilder\Contracts\Resizable;
+use Mopsis\Extensions\SimpleXML\SimpleXMLElement;
+use Mopsis\Extensions\SimpleXML\XMLProcessingException;
 use Mopsis\Security\Csrf;
+use stdClass;
 
 class FormBuilder
 {
 	const NO_GROUPS = '@@no-groups@@';
 
 	protected $xml;
+	protected $strict;
 	protected $config;
-	protected $options = [];
 
-	public function __construct($forms)
+	public function __construct($forms, $strict = false)
 	{
-		libxml_use_internal_errors(true);
-
-		if (!($this->xml = simplexml_load_file($forms, 'SimpleXMLElement', LIBXML_NOCDATA))) {
-			foreach (libxml_get_errors() as $error) {
-				debug($error);
-			}
-			libxml_clear_errors();
-			die();
-		}
+		$this->xml    = new SimpleXMLElement($forms);
+		$this->strict = $strict;
 	}
 
-	public function getForm($id, $url, $data = null)
+	public function getForm($id, $url, stdClass $config)
 	{
-		if (!($xml = $this->xml->xpath('//form[@id="' . $id . '"]')[0])) {
-			throw new \Exception('form "' . $id . '" not found');
+		$xml = $this->xml->first('//form[@id="' . $id . '"]');
+
+		if (!$xml) {
+			throw new XMLProcessingException('form "' . $id . '" cannot be found in xmlData');
 		}
 
-		if (is_array($data) && count($data['options'])) {
-			$this->options = $data['options'];
-		}
+		$this->config = $config;
+		$this->layout = $this->loadLayout($xml->attr('layout'));
 
-		$form = $this->buildForm($xml, $url, $this->loadLayout($xml->attributes()->layout));
+		$data = array_merge($this->loadDefaults($xml), $config->settings, [
+			'form.url'  => $url,
+			'form.csrf' => $this->addCsrfToken()
+		]);
 
-		return is_array($data) ? $this->setFormData($form, $data['values'], $data['errors']) : $form;
-	}
-
-	protected function buildForm($form, $url, $layout)
-	{
-		$data = $this->addValues($this->loadDefaults($form), 'form', $form->attributes(), ['url' => $url]);
-		$html = $layout['form']['before'] . $this->addCsrfToken() . $this->buildBlocks($form, $data, $layout) . $layout['form']['after'];
-
-		return preg_replace('/\{\w+\.\w+\}/', '', $this->fillPlaceholder($html, $data));
-	}
-
-	protected function addValues($data, $prefix, ...$values)
-	{
-		$values = array_map(function ($object) {
-			return object_to_array($object);
-		}, $values);
-
-		foreach (array_merge(...$values) as $key => $value) {
-			$data[$prefix . '.' . $key] = (string)$value;
-		}
-
-		return $data;
-	}
-
-	protected function loadDefaults($form)
-	{
-		if (!count($attributes = $form->xpath('defaults/attribute'))) {
-			return [];
-		}
-
-		$defaults = [];
-
-		foreach ($attributes as $attribute) {
-			$defaults[(string)$attribute->attributes()->name] = (string)$attribute->attributes()->value;
-		}
-
-		return $defaults;
+		return $this->fillForm($this->buildNode($xml, $data));
 	}
 
 	protected function addCsrfToken()
@@ -81,87 +46,81 @@ class FormBuilder
 		return '<input type="hidden" name="' . $token->key . '" value="' . $token->value . '">';
 	}
 
-	protected function buildBlocks($form, $inheritedData, $layout)
+	protected function addValues(array $data, $prefix, array ...$values)
 	{
-		$html = '';
+		$values = array_merge(...$values);
 
-		foreach ($form->xpath('block') as $i => $block) {
-			$data = $this->addValues($inheritedData, 'block', $block->attributes(), ['no' => $i]);
-			$html .= $this->fillPlaceholder($layout['block']['before'] . $this->buildRows($block, $data, $layout) . $layout['block']['after'], $data);
+		if (!count($values)) {
+			return $data;
 		}
 
-		return $html;
-	}
-
-	protected function fillPlaceholder($html, $data)
-	{
-		foreach ($data as $key => $value) {
-			$html = str_replace('{' . $key . '}', $value, $html);
+		foreach ($values as $key => $value) {
+			$data[$prefix . '.' . $key] = is_object($value) ? (string) $value : $value;
 		}
 
-		return $html;
+		return $data;
 	}
 
-	protected function buildRows($block, $inheritedData, $layout)
+	protected function buildItem(SimpleXMLElement $xml, array $data)
 	{
-		$html = '';
+		$data['item.id'] = $data['form.id'] . '-' . $data['item.name'];
 
-		foreach ($block->xpath('row') as $i => $row) {
-			$data = $this->addValues($inheritedData, 'row', $row->attributes(), ['no' => $i]);
+		if ($xml->has('rule[@spec="required"]')) {
+			$data['item.required'] = 'required';
+		}
 
-			if ($items = $this->buildItems($row, $data, $layout)) {
-				$html .= $this->fillPlaceholder($layout['row']['before'] . $items . $layout['row']['after'], $data);
+		if ($xml->has('option')) {
+			$data['item.options'] = $this->buildOptions($xml->xpath('option'), $data);
+		}
+
+		if ($xml->has('help')) {
+			$data['item.help'] = $this->buildNode($xml->first('help'), $data);
+		}
+
+		$layout = $this->getLayoutForItem($data['item.type']);
+		$html   = $layout['before'] . $layout['element'] . $layout['after'];
+
+		return $this->fillPlaceholder($html, $data);
+	}
+
+	protected function buildNode(SimpleXMLElement $xml, array $baseData)
+	{
+		$tagName = $xml->getName();
+		$data    = $this->addValues($baseData, $tagName, $xml->attributes(), ['content' => $xml->text()]);
+
+		if ($tagName === 'item') {
+			return $this->buildItem($xml, $data);
+		}
+
+		if ($data[$tagName . '.content'] === null) {
+			foreach ($xml->children() as $i => $node) {
+				$data[$tagName . '.content'] .= $this->buildNode($node, $this->addValues($data, $tagName, ['no' => $i]));
 			}
 		}
 
-		return $html;
+		return $this->fillPlaceholder($this->getLayout($tagName), $data);
 	}
 
-	protected function buildItems($row, $inheritedData, $layout)
-	{
-		$html = '';
-
-		foreach ($row->xpath('item') as $i => $item) {
-			$data = $this->addValues($inheritedData, 'item', $item->attributes(), [
-				'no'       => $i,
-				'required' => count($item->xpath('rule[@spec="required"]')) ? 'required' : null,
-				'text'     => (string)$item
-			]);
-
-			$data['item.id']      = $data['form.id'] . '-' . $data['item.name'];
-			$data['item.options'] = $this->buildOptions($item, $data, $layout);
-
-			if ($data['item.requires'] && !$data['item.' . $data['item.requires']]) {
-				continue;
-			}
-
-			if (count($help = $item->xpath('help'))) {
-				$data['item.help'] = $this->fillPlaceholder($layout['help']['before'] . $help[0] . $layout['help']['after'], $data);
-			}
-
-			$itemLayout = $this->getItemLayout($layout, $data['item.type']);
-			$html .= $this->fillPlaceholder($itemLayout['before'] . $itemLayout['element'] . $itemLayout['after'], $data);
-		}
-
-		return $html;
-	}
-
-	protected function buildOptions($item, $inheritedData, $layout)
+	protected function buildOptions(array $options, array $baseData)
 	{
 		$html    = '';
-		$layout  = $this->getItemLayout($layout, $inheritedData['item.type']);
-		$options = $item->xpath('option');
+		$layout  = $this->getLayoutForItem($baseData['item.type']);
 
-		if (count($options)) {
-			foreach ($options as $i => $option) {
-				$data                = $this->addValues($inheritedData, 'option', $option->attributes(), ['no' => $i]);
-				$data['option.id']   = $data['item.id'] . '-' . $i;
-				$data['option.text'] = htmlentities($option ?: $data['option.value']);
-				$html .= $this->fillPlaceholder($layout['options'], $data);
-			}
+		foreach ($options as $i => $xml) {
+			$data = $this->addValues($baseData, 'option', $xml->attributes(), [
+				'no'   => $i,
+				'id'   => $baseData['item.id'] . '-' . $i,
+				'text' => htmlentities($xml->text() ?: $xml->attr('value'))
+			]);
+
+			$html .= $this->fillPlaceholder($layout['options'], $data);
 		}
 
-		$optGroups = $this->prepareOptions($this->options[$inheritedData['item.name']]);
+		if (!is_array($this->config->options[$baseData['item.name']])) {
+			return $html;
+		}
+
+		$optGroups = $this->buildOptionsGroups($this->config->options[$baseData['item.name']]);
 
 		if (count($optGroups, \COUNT_RECURSIVE) > 1) {
 			foreach ($optGroups as $group => $options) {
@@ -170,7 +129,7 @@ class FormBuilder
 				}
 
 				foreach ($options as $value => $text) {
-					$data                = $this->addValues($inheritedData, 'option', [
+					$data = $this->addValues($baseData, 'option', [
 						'no'    => ++$i,
 						'value' => $value
 					]);
@@ -188,12 +147,7 @@ class FormBuilder
 		return $html;
 	}
 
-	protected function getItemLayout($layout, $type)
-	{
-		return array_merge($layout['items']['default'], $layout['items'][$type] ?: []);
-	}
-
-	protected function prepareOptions($options)
+	protected function buildOptionsGroups(array $options)
 	{
 		if (!isset($options['data'])) {
 			return [static::NO_GROUPS => $options];
@@ -220,97 +174,23 @@ class FormBuilder
 		return $results;
 	}
 
-	protected function loadLayout($layoutId, $anchestors = [])
+	protected function fillForm($html)
 	{
-		$xml     = $this->xml->xpath('//layout[@id="' . $layoutId . '"]')[0];
-		$extends = $xml->attributes()->extends;
-		$layout  = [
-			'form'  => [
-				'before' => null,
-				'after'  => null
-			],
-			'block' => [
-				'before' => null,
-				'after'  => null
-			],
-			'row'   => [
-				'before' => null,
-				'after'  => null
-			],
-			'help'  => [
-				'before' => null,
-				'after'  => null
-			],
-			'items' => []
-		];
+		$values = $this->config->values;
+		$errors = $this->config->errors;
 
-		if ($xml->attributes()->config) {
-			$config       = json_decode((string)$xml->attributes()->config, true);
-			$this->config = (object)array_merge($config, (array)$this->config);
+		if (!count($values) && !count($errors)) {
+			return $html;
 		}
 
-		if ($extends) {
-			if (in_array($extends, $anchestors)) {
-				throw new \Exception('loop detected while extending "' . $layoutId . '"');
-			}
-
-			$anchestors[] = $extends;
-			$layout       = $this->loadLayout($extends, $anchestors);
-		}
-
-		foreach ([
-					 'form',
-					 'block',
-					 'row',
-					 'help'
-				 ] as $element) {
-			$layout[$element] = [
-				'before' => $this->getStringFromXml($xml, $element . '/before', $layout[$element]['before']),
-				'after'  => $this->getStringFromXml($xml, $element . '/after', $layout[$element]['after'])
-			];
-		}
-
-		$items = $layout['items'];
-
-		if ($itemsXml = $xml->xpath('items')[0]) {
-			foreach ($itemsXml as $item) {
-				if (!isset($items[$item->getName()])) {
-					$items[$item->getName()] = [];
-				}
-
-				foreach ([
-							 'before',
-							 'element',
-							 'options',
-							 'after'
-						 ] as $subtype) {
-					if (($string = $this->getStringFromXml($item, $subtype, false)) !== false) {
-						$items[$item->getName()][$subtype] = $string;
-					}
-				}
-			}
-		}
-
-		$layout['items'] = $items;
-
-		return $layout;
-	}
-
-	protected function getStringFromXml($xml, $path, $default = null)
-	{
-		return ($node = $xml->xpath($path)) ? (string)$node[0] : $default;
-	}
-
-	protected function setFormData($html, $values, $errors)
-	{
 		$dom = \FluentDOM::QueryCss(utf8_decode($html), 'text/html');
 
-		foreach ($dom->find('input,select,textarea') as $node) {
+		foreach ($dom->find('input,select,textarea')->filter('[name]') as $node) {
 			$field = FieldFactory::create($node);
-			$key   = preg_match('/(.+)\[(.*)\]$/', $field->attr('name'), $m) ? $m[1] : $field->attr('name');
-			$value = $values[$key];
+			$name  = preg_match('/(.+)\[(.*)\]$/', $field->attr('name'), $m) ? $m[1] : $field->attr('name');
+			$value = $values[$name];
 
-			if (preg_match('/(.+?)\.(.+)/', $key, $n) && isset($values[$n[1]])) {
+			if (preg_match('/(.+?)\.(.+)/', $name, $n) && isset($values[$n[1]])) {
 				switch (gettype($values[$n[1]])) {
 					case 'array':
 						$value = $values[$n[1]][$n[2]];
@@ -330,13 +210,13 @@ class FormBuilder
 				$value = $value[$m[2]];
 			}
 
-			if (in_array($key, $errors)) {
-				$field->addClass($this->config->errorClass ?: 'validation-error');
+			if (in_array($name, $errors)) {
+				$field->addClass('validation-error');
 			}
 
 			$field->val($value);
 
-			if ($field instanceof Fields\Select || $field instanceof Fields\Textarea) {
+			if ($field instanceof Resizable) {
 				$field->updateSize();
 			}
 		}
@@ -344,72 +224,96 @@ class FormBuilder
 		return $dom;
 	}
 
-	public function getSanitizerRules($formId)
+	protected function fillPlaceholder($html, array $data)
 	{
-		$results = [];
-
-		foreach ($this->xml->xpath('//form[@id="' . $formId . '"]//item[@name]') as $item) {
-			$field = (string)$item->attributes()->name;
-			$rules = [];
-
-			foreach ($item->xpath('rule[@type="sanitize"]') as $rule) {
-				$rules[] = [
-					'spec'  => (string)$rule->attributes()->spec,
-					'args'  => explode('|', (string)$rule->attributes()->args),
-					'blank' => isset($rule->attributes()->blankValue) ? (string)$rule->attributes()->blankValue : null
-				];
-			}
-
-			if (count($rules)) {
-				$results[$field] = $rules;
-			}
+		foreach ($data as $key => $value) {
+			$html = str_replace('{' . $key . '}', $value, $html);
 		}
 
-		return $results;
+		return preg_replace('/\s*\{\w+\.\w+\}/', '', $html);
 	}
 
-	public function getUploaderRules($formId)
+	protected function getLayout($type)
 	{
-		$results = [];
+		$layout = $this->layout[$type];
 
-		foreach ($this->xml->xpath('//form[@id="' . $formId . '"]//item[@type="files" and @name]') as $item) {
-			$field = (string)$item->attributes()->name;
-			$rules = [];
-
-			foreach ($item->xpath('rule[@type="upload"]') as $rule) {
-				$rules[] = [
-					'spec'    => (string)$rule->attributes()->spec,
-					'args'    => explode('|', (string)$rule->attributes()->args),
-					'message' => (string)$rule->attributes()->suppressMessage === 'true' ? false : (string)$rule,
-				];
-			}
-
-			$results[$field] = $rules;
+		if ($this->strict && !$layout) {
+			throw new XMLProcessingException('layout for element "' . $type . '" cannot be found in xmlData');
 		}
 
-		return $results;
+		return $layout['before'] . ($layout['element'] ?: '{' . $type . '.content}'). $layout['after'];
 	}
 
-	public function getValidatorRules($formId)
+	protected function getLayoutForItem($type)
 	{
-		$results = [];
+		return array_merge($this->layout['items']['default'], $this->layout['items'][$type] ?: []);
+	}
 
-		foreach ($this->xml->xpath('//form[@id="' . $formId . '"]//item[@name]') as $item) {
-			$field = (string)$item->attributes()->name;
-			$rules = [];
+	protected function loadDefaults(SimpleXMLElement $xml)
+	{
+		$defaults = [];
 
-			foreach ($item->xpath('rule[@type="validate"]') as $rule) {
-				$rules[] = [
-					'spec'    => (string)$rule->attributes()->spec,
-					'args'    => explode('|', (string)$rule->attributes()->args),
-					'message' => (string)$rule->attributes()->suppressMessage === 'true' ? false : (string)$rule,
-					'mode'    => (string)$rule->attributes()->failureMode ?: 'hard'
-				];
-			}
-
-			$results[$field] = $rules;
+		foreach ($xml->xpath('./defaults/default') ?: [] as $default) {
+			$defaults[$default->attr('name')] = $default->attr('value');
 		}
 
-		return $results;
+		return $defaults;
+	}
+
+	protected function loadLayout($id, array $anchestors = [])
+	{
+		$xml = $this->xml->first('//layout[@id="' . $id . '"]');
+
+		if (!$xml) {
+			throw new XMLProcessingException('layout "' . $id . '" cannot be found in xmlData');
+		}
+
+		$layout  = [];
+		$extends = $xml->attr('extends');
+
+		if ($extends) {
+			if (in_array($extends, $anchestors)) {
+				throw new XMLProcessingException('loop detected while extending "' . $id . '"');
+			}
+
+			$anchestors[] = $id;
+			$layout       = $this->loadLayout($extends, $anchestors);
+		}
+
+		foreach ($xml->children() as $node) {
+			$tagName = $node->getName();
+
+			if (!isset($layout[$tagName])) {
+				$layout[$tagName] = [];
+			}
+
+			if ($tagName === 'items') {
+				$layout[$tagName] = array_merge($layout[$tagName], $this->loadLayoutForItems($node));
+				continue;
+			}
+
+			$layout[$tagName] = array_merge($layout[$tagName], [
+				'before' => $node->text('before'),
+				'after'  => $node->text('after')
+			]);
+		}
+
+		return $layout;
+	}
+
+	protected function loadLayoutForItems(SimpleXMLElement $xml)
+	{
+		$layout = [];
+
+		foreach ($xml->children() as $node) {
+			$tagName          = $node->getName();
+			$layout[$tagName] = [];
+
+			foreach ($node->children() as $part) {
+				$layout[$tagName][$part->getName()] = $part->text();
+			}
+		}
+
+		return $layout;
 	}
 }
