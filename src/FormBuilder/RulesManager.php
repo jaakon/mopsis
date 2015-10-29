@@ -6,18 +6,29 @@ use Mopsis\Extensions\SimpleXML\XMLProcessingException;
 class RulesManager
 {
 	protected $xml;
+	protected $formId;
+	protected $items;
 
-	public function __construct($forms)
+	public function __construct($xmlData)
 	{
-		$this->xml = new SimpleXMLElement($forms);
+		$this->xml = (new SimpleXMLElement($xmlData))->first('/formbuilder/forms');
 	}
 
-	public function getSanitizerRules($id)
+	public function __invoke($formId)
 	{
-		$items   = $this->getItems($id);
+		if ($formId !== $this->formId) {
+			$this->items  = $this->load($formId);
+			$this->formId = $formId;
+		}
+
+		return $this;
+	}
+
+	public function getSanitizerRules()
+	{
 		$results = [];
 
-		foreach ($items as $item) {
+		foreach ($this->items as $item) {
 			$field = $item->attr('name');
 			$rules = [];
 
@@ -37,19 +48,18 @@ class RulesManager
 		return $results;
 	}
 
-	public function getUploaderRules($id)
+	public function getUploaderRules()
 	{
-		$items   = $this->getItems($id);
 		$results = [];
 
-		foreach ($items as $item) {
+		foreach ($this->items as $item) {
 			$field = $item->attr('name');
 			$rules = [];
 
 			foreach ($item->xpath('rule[@type="upload"]') as $rule) {
 				$rules[] = [
 					'spec'    => $rule->attr('spec'),
-					'args'    => explode('|', (string)$rule->attr('args')),
+					'args'    => explode('|', $rule->attr('args')),
 					'message' => $rule->attr('suppressMessage') === 'true' ? false : $rule->text()
 				];
 			}
@@ -60,19 +70,18 @@ class RulesManager
 		return $results;
 	}
 
-	public function getValidatorRules($id)
+	public function getValidatorRules()
 	{
-		$items   = $this->getItems($id);
 		$results = [];
 
-		foreach ($items as $item) {
+		foreach ($this->items as $item) {
 			$field = $item->attr('name');
 			$rules = [];
 
 			foreach ($item->xpath('rule[@type="validate"]') as $rule) {
 				$rules[] = [
 					'spec'    => $rule->attr('spec'),
-					'args'    => explode('|', (string)$rule->attr('args')),
+					'args'    => explode('|', $rule->attr('args')),
 					'message' => $rule->attr('suppressMessage') === 'true' ? false : $rule->text(),
 					'mode'    => $rule->attr('failureMode') ?: 'hard'
 				];
@@ -84,19 +93,14 @@ class RulesManager
 		return $results;
 	}
 
-	protected function getForm($id)
+	protected function load($formId)
 	{
-		$xml = $this->xml->first('//form[@id="' . $id . '"]');
+		$xml = $this->xml->first('form[@id="' . $formId . '"]');
 
 		if (!$xml) {
-			throw new XMLProcessingException('form "' . $id . '" cannot be found in xmlData');
+			throw new XMLProcessingException('form "' . $formId . '" cannot be found in xmlData');
 		}
 
-		return $xml;
-	}
-
-	protected function getItems($id)
-	{
-		return $this->getForm($id)->xpath('//item[@name]') ?: [];
+		return $xml->xpath('//item[@name]') ?: [];
 	}
 }

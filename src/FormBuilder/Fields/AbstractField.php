@@ -6,11 +6,7 @@ class AbstractField extends Query
 {
 	public function val($value = null)
 	{
-		if (!func_num_args()) {
-			return $this->getValue();
-		}
-
-		return $this->setValue($value);
+		return func_num_args() ? $this->setValue($value) : $this->getValue();
 	}
 
 	public function getValue()

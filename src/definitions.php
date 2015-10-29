@@ -225,7 +225,7 @@ return [
 
 	Mopsis\FormBuilder\FormBuilder::class
 		=> object()
-		->constructorParameter('forms', dot('app.forms')),
+		->constructorParameter('xmlData', dot('app.forms')),
 
 	Psr\Log\LoggerInterface::class
 		=> get('Logger'),

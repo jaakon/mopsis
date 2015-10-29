@@ -12,7 +12,7 @@ class Select extends AbstractField implements Resizable
 
 	public function setValue($value)
 	{
-		foreach ($this->find('option') as $node) {
+		foreach ($this->find('//option') as $node) {
 			$option = FieldFactory::create($node);
 			$option->prop('selected', $option->val() === (string) $value);
 		}

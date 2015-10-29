@@ -11,32 +11,33 @@ class FormBuilder
 	const NO_GROUPS = '@@no-groups@@';
 
 	protected $xml;
-	protected $strict;
 	protected $config;
+	protected $layout;
+	protected $strict;
 
-	public function __construct($forms, $strict = false)
+	public function __construct($xmlData, $strict = false)
 	{
-		$this->xml    = new SimpleXMLElement($forms);
+		$this->xml    = (new SimpleXMLElement($xmlData))->first('/formbuilder');
 		$this->strict = $strict;
 	}
 
 	public function getForm($id, $url, stdClass $config)
 	{
-		$xml = $this->xml->first('//form[@id="' . $id . '"]');
+		$xml = $this->xml->first('forms/form[@id="' . $id . '"]');
 
 		if (!$xml) {
 			throw new XMLProcessingException('form "' . $id . '" cannot be found in xmlData');
 		}
 
 		$this->config = $config;
-		$this->layout = $this->loadLayout($xml->attr('layout'));
+		$this->layout = (new LayoutsManager($this->xml, $this->strict))->__invoke($xml->attr('layout'));
 
-		$data = array_merge($this->loadDefaults($xml), $config->settings, [
+		$data = array_merge($this->loadDefaults($xml), $config->settings['@global'] ?: [], [
 			'form.url'  => $url,
 			'form.csrf' => $this->addCsrfToken()
 		]);
 
-		return $this->fillForm($this->buildNode($xml, $data));
+		return $this->fillFormValues($this->buildNode($xml, $data));
 	}
 
 	protected function addCsrfToken()
@@ -65,6 +66,10 @@ class FormBuilder
 	{
 		$data['item.id'] = $data['form.id'] . '-' . $data['item.name'];
 
+		if (is_array($this->config->settings[$data['item.name']])) {
+			$data = array_merge($data, $this->config->settings[$data['item.name']]);
+		}
+
 		if ($xml->has('rule[@spec="required"]')) {
 			$data['item.required'] = 'required';
 		}
@@ -73,38 +78,39 @@ class FormBuilder
 			$data['item.options'] = $this->buildOptions($xml->xpath('option'), $data);
 		}
 
+		$addedOptions = $this->config->options[$data['item.name']];
+
+		if (is_array($addedOptions) && count($addedOptions)) {
+			$data['item.options'] .= $this->buildAddedOptions($addedOptions, $data);
+		}
+
 		if ($xml->has('help')) {
 			$data['item.help'] = $this->buildNode($xml->first('help'), $data);
 		}
 
-		$layout = $this->getLayoutForItem($data['item.type']);
-		$html   = $layout['before'] . $layout['element'] . $layout['after'];
-
-		return $this->fillPlaceholder($html, $data);
+		return $this->fillPlaceholder($this->layout->getHtmlForItem($data['item.type']), $data);
 	}
 
 	protected function buildNode(SimpleXMLElement $xml, array $baseData)
 	{
 		$tagName = $xml->getName();
-		$data    = $this->addValues($baseData, $tagName, $xml->attributes(), ['content' => $xml->text()]);
+		$data    = $this->addValues($baseData, $tagName, $xml->attributes(), ['text' => $xml->text()]);
 
 		if ($tagName === 'item') {
 			return $this->buildItem($xml, $data);
 		}
 
-		if ($data[$tagName . '.content'] === null) {
-			foreach ($xml->children() as $i => $node) {
-				$data[$tagName . '.content'] .= $this->buildNode($node, $this->addValues($data, $tagName, ['no' => $i]));
-			}
+		foreach ($xml->children() as $i => $node) {
+			$data[$tagName . '.content'] .= $this->buildNode($node, $this->addValues($data, $tagName, ['no' => $i]));
 		}
 
-		return $this->fillPlaceholder($this->getLayout($tagName), $data);
+		return $this->fillPlaceholder($this->layout->getHtml($tagName), $data);
 	}
 
 	protected function buildOptions(array $options, array $baseData)
 	{
 		$html    = '';
-		$layout  = $this->getLayoutForItem($baseData['item.type']);
+		$layout  = $this->layout->getHtmlForItem($baseData['item.type'], 'options');
 
 		foreach ($options as $i => $xml) {
 			$data = $this->addValues($baseData, 'option', $xml->attributes(), [
@@ -113,14 +119,18 @@ class FormBuilder
 				'text' => htmlentities($xml->text() ?: $xml->attr('value'))
 			]);
 
-			$html .= $this->fillPlaceholder($layout['options'], $data);
+			$html .= $this->fillPlaceholder($layout, $data);
 		}
 
-		if (!is_array($this->config->options[$baseData['item.name']])) {
-			return $html;
-		}
+		return $html;
+	}
 
-		$optGroups = $this->buildOptionsGroups($this->config->options[$baseData['item.name']]);
+	protected function buildAddedOptions(array $options, array $baseData)
+	{
+		$html    = '';
+		$layout  = $this->layout->getHtmlForItem($baseData['item.type'], 'options');
+
+		$optGroups = $this->prepareOptionGroups($this->config->options[$baseData['item.name']]);
 
 		if (count($optGroups, \COUNT_RECURSIVE) > 1) {
 			foreach ($optGroups as $group => $options) {
@@ -135,7 +145,7 @@ class FormBuilder
 					]);
 					$data['option.id']   = $data['item.id'] . '-' . $i;
 					$data['option.text'] = htmlentities($text ?: $value);
-					$html .= $this->fillPlaceholder($layout['options'], $data);
+					$html .= $this->fillPlaceholder($layout, $data);
 				}
 
 				if ($group !== static::NO_GROUPS) {
@@ -147,7 +157,7 @@ class FormBuilder
 		return $html;
 	}
 
-	protected function buildOptionsGroups(array $options)
+	protected function prepareOptionGroups(array $options)
 	{
 		if (!isset($options['data'])) {
 			return [static::NO_GROUPS => $options];
@@ -155,26 +165,22 @@ class FormBuilder
 
 		$results = [];
 
-		if (!isset($options['group'])) {
-			foreach ($options['data'] as $entry) {
-				$results[$entry[$options['key']]] = $entry[$options['value']];
-			}
-
-			return [static::NO_GROUPS => $results];
-		}
-
 		foreach ($options['data'] as $entry) {
-			if (!is_array($results[$entry[$options['group']]])) {
-				$results[$entry[$options['group']]] = [];
+			$group = $options['group'] ? $entry[$options['group']] : static::NO_GROUPS;
+			$key   = $entry[$options['key']];
+			$value = $entry[$options['value']];
+
+			if (!is_array($results[$group])) {
+				$results[$group] = [];
 			}
 
-			$results[$entry[$options['group']]][$entry[$options['key']]] = $entry[$options['value']];
+			$results[$group][$key] = $value;
 		}
 
 		return $results;
 	}
 
-	protected function fillForm($html)
+	protected function fillFormValues($html)
 	{
 		$values = $this->config->values;
 		$errors = $this->config->errors;
@@ -233,87 +239,14 @@ class FormBuilder
 		return preg_replace('/\s*\{\w+\.\w+\}/', '', $html);
 	}
 
-	protected function getLayout($type)
-	{
-		$layout = $this->layout[$type];
-
-		if ($this->strict && !$layout) {
-			throw new XMLProcessingException('layout for element "' . $type . '" cannot be found in xmlData');
-		}
-
-		return $layout['before'] . ($layout['element'] ?: '{' . $type . '.content}'). $layout['after'];
-	}
-
-	protected function getLayoutForItem($type)
-	{
-		return array_merge($this->layout['items']['default'], $this->layout['items'][$type] ?: []);
-	}
-
 	protected function loadDefaults(SimpleXMLElement $xml)
 	{
 		$defaults = [];
 
-		foreach ($xml->xpath('./defaults/default') ?: [] as $default) {
+		foreach ($xml->xpath('defaults/default') ?: [] as $default) {
 			$defaults[$default->attr('name')] = $default->attr('value');
 		}
 
 		return $defaults;
-	}
-
-	protected function loadLayout($id, array $anchestors = [])
-	{
-		$xml = $this->xml->first('//layout[@id="' . $id . '"]');
-
-		if (!$xml) {
-			throw new XMLProcessingException('layout "' . $id . '" cannot be found in xmlData');
-		}
-
-		$layout  = [];
-		$extends = $xml->attr('extends');
-
-		if ($extends) {
-			if (in_array($extends, $anchestors)) {
-				throw new XMLProcessingException('loop detected while extending "' . $id . '"');
-			}
-
-			$anchestors[] = $id;
-			$layout       = $this->loadLayout($extends, $anchestors);
-		}
-
-		foreach ($xml->children() as $node) {
-			$tagName = $node->getName();
-
-			if (!isset($layout[$tagName])) {
-				$layout[$tagName] = [];
-			}
-
-			if ($tagName === 'items') {
-				$layout[$tagName] = array_merge($layout[$tagName], $this->loadLayoutForItems($node));
-				continue;
-			}
-
-			$layout[$tagName] = array_merge($layout[$tagName], [
-				'before' => $node->text('before'),
-				'after'  => $node->text('after')
-			]);
-		}
-
-		return $layout;
-	}
-
-	protected function loadLayoutForItems(SimpleXMLElement $xml)
-	{
-		$layout = [];
-
-		foreach ($xml->children() as $node) {
-			$tagName          = $node->getName();
-			$layout[$tagName] = [];
-
-			foreach ($node->children() as $part) {
-				$layout[$tagName][$part->getName()] = $part->text();
-			}
-		}
-
-		return $layout;
 	}
 }
