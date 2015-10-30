@@ -140,6 +140,9 @@ return [
 			'conditional' => function () {
 				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\Conditional::class);
 			},
+			'decimal' => function () {
+				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\Decimal::class);
+			},
 			'optional' => function () {
 				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\Optional::class);
 			},
