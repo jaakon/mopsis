@@ -24,8 +24,22 @@ class Textarea extends AbstractField implements Resizable
 
 	public function updateSize()
 	{
-		if ($this->attr('rows') === 'auto') {
-			$this->attr('rows', count(explode(PHP_EOL, $this->getValue())));
+		if (!$this->hasAttr('rows') || ctype_digit($this->attr('rows'))) {
+			return;
 		}
+
+		$rows = count(explode(PHP_EOL, $this->getValue()));
+
+		if ($this->attr('rows') === 'auto') {
+			$this->attr('rows', $rows);
+			return;
+		}
+
+		if (preg_match('/\{(\d*),(\d*)\}/', $this->attr('rows'), $m)) {
+			$this->attr('rows', between($rows, $m[1], $m[2]));
+			return;
+		}
+
+		throw new Exception('invalid value "' . $this->attr('rows') . '" for attribute "rows"');
 	}
 }

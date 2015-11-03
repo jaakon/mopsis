@@ -3,12 +3,19 @@
 use Mopsis\Extensions\SimpleXML\SimpleXMLElement;
 use Mopsis\Extensions\SimpleXML\XMLProcessingException;
 
-class LayoutsManager
+class LayoutProvider
 {
 	protected $xml;
 	protected $strict;
 	protected $layout;
 	protected $layoutId;
+
+	public static function create($xmlData, $layoutId, $strict = false)
+	{
+		$provider = new static($xmlData, $strict);
+
+		return $provider($layoutId);
+	}
 
 	public function __construct($xmlData, $strict = false)
 	{

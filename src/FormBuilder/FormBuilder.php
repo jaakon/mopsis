@@ -30,7 +30,7 @@ class FormBuilder
 		}
 
 		$this->config = $config;
-		$this->layout = (new LayoutsManager($this->xml, $this->strict))->__invoke($xml->attr('layout'));
+		$this->layout = LayoutProvider::create($this->xml, $xml->attr('layout'), $this->strict);
 
 		$data = array_merge($this->loadDefaults($xml), $config->settings['@global'] ?: [], [
 			'form.url'  => $url,
@@ -100,7 +100,7 @@ class FormBuilder
 			return $this->buildItem($xml, $data);
 		}
 
-		foreach ($xml->children() as $i => $node) {
+		foreach ($xml->all('*[not(self::defaults)]') as $i => $node) {
 			$data[$tagName . '.content'] .= $this->buildNode($node, $this->addValues($data, $tagName, ['no' => $i]));
 		}
 

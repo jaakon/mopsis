@@ -5,6 +5,19 @@ use Mopsis\Core\App;
 
 class MiscHelpers
 {
+	public static function between($value, $min, $max)
+	{
+		if (!ctype_digit($min)) {
+			$min = -1 * \PHP_INT_MAX;
+		}
+
+		if (!ctype_digit($max)) {
+			$max = \PHP_INT_MAX;
+		}
+
+		return min(max($value, $min), $max);
+	}
+
 	public static function debug(...$args)
 	{
 		$ladybug = new Dumper();

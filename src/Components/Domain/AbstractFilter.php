@@ -4,7 +4,7 @@ use Aura\Filter\SubjectFilter as Filter;
 use FileUpload\FileUpload;
 use FileUpload\FileUploadAggregator;
 use Mopsis\Core\App;
-use Mopsis\FormBuilder\FormBuilder;
+use Mopsis\FormBuilder\RulesProvider;
 use Mopsis\FormBuilder\UploadValidator;
 
 abstract class AbstractFilter
@@ -12,7 +12,7 @@ abstract class AbstractFilter
 	const EMPTY_MESSAGE = '_NULL_';
 
 	protected $facade;
-	protected $formbuilder;
+	protected $rules;
 	protected $uploader;
 
 	protected $result;
@@ -22,13 +22,13 @@ abstract class AbstractFilter
 	protected $uploaderRulesLoaded  = false;
 	protected $validatorRulesLoaded = false;
 
-//	public function __construct(Filter $facade, Formbuilder $formbuilder, FileUploadAggregator $uploader)
+//	public function __construct(Filter $facade, RulesProvider $rules, FileUploadAggregator $uploader)
 
-	public function __construct(Filter $facade, Formbuilder $formbuilder, $uploader = null)
+	public function __construct(Filter $facade, RulesProvider $rules, $uploader = null)
 	{
-		$this->facade      = $facade;
-		$this->formbuilder = $formbuilder;
-		$this->uploader    = $uploader;
+		$this->facade   = $facade;
+		$this->rules    = $rules;
+		$this->uploader = $uploader;
 	}
 
 	public function addRule($field, array $rule, $isRequired = true)
@@ -151,8 +151,9 @@ abstract class AbstractFilter
 		}
 
 		$this->sanitizerRulesLoaded = true;
+		$this->rules->load($formId);
 
-		foreach ($this->formbuilder->getSanitizerRules($formId) as $field => $rules) {
+		foreach ($this->rules->forSanitizer() as $field => $rules) {
 			foreach ($rules as $rule) {
 				$filter = $this->facade->sanitize($field);
 
@@ -172,8 +173,9 @@ abstract class AbstractFilter
 		}
 
 		$this->uploaderRulesLoaded = true;
+		$this->rules->load($formId);
 
-		foreach ($this->formbuilder->getUploaderRules($formId) as $field => $rules) {
+		foreach ($this->rules->forUploader() as $field => $rules) {
 			$uploadHandler = App::get('UploadHandler');
 
 			if (isset($prefixes[$field]) || isset($prefixes['*'])) {
@@ -195,12 +197,13 @@ abstract class AbstractFilter
 		}
 
 		$this->validatorRulesLoaded = true;
+		$this->rules->load($formId);
 
 		$this->facade->validate($_SESSION['csrf']['key'])->isNot('blank')->asStopRule();
 		$this->facade->validate($_SESSION['csrf']['key'])->is('equalToValue', $_SESSION['csrf']['value'])->asStopRule();
 		$this->facade->useFieldMessage($_SESSION['csrf']['key'], 'Ungültiges oder abgelaufenes Sicherheitstoken. Bitte Formular erneut versenden.');
 
-		foreach ($this->formbuilder->getValidatorRules($formId) as $field => $rules) {
+		foreach ($this->rules->forValidator() as $field => $rules) {
 			if (!count($rules)) {
 				$this->facade->validate($field)->is('optional');
 				continue;

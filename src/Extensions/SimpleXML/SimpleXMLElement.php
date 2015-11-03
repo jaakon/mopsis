@@ -48,6 +48,11 @@ class SimpleXMLElement
 		return $this->element->__toString();
 	}
 
+	public function all($path)
+	{
+		return $this->xpath($path) ?: [];
+	}
+
 	public function attr($name, $namespace = null)
 	{
 		$isPrefix       = ($namespace !== null);

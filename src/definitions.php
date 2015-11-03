@@ -230,6 +230,10 @@ return [
 		=> object()
 		->constructorParameter('xmlData', dot('app.forms')),
 
+	Mopsis\FormBuilder\RulesProvider::class
+		=> object()
+		->constructorParameter('xmlData', dot('app.forms')),
+
 	Psr\Log\LoggerInterface::class
 		=> get('Logger'),
 
@@ -330,7 +334,7 @@ return [
 		=> function (ContainerInterface $c) {
 			$logger = new Monolog\Logger('default');
 
-			$logger->pushHandler(new Monolog\Handler\ChromePHPHandler(Monolog\Logger::DEBUG));
+			$logger->pushHandler(new Monolog\Handler\ChromePHPHandler(Monolog\Logger::INFO));
 			$logger->pushHandler($c->get(MonologNoticeHandler::class));
 			$logger->pushHandler($c->get(MonologErrorHandler::class));
 			$logger->pushHandler(new Monolog\Handler\PushoverHandler('aw6zvva5hvy67Y1gvnagx7y3GZzEDA', 'uF1VyiRtDd1XXnEKA41imF2P88gxJ4', PROJECT_TITLE, Monolog\Logger::ERROR, false));

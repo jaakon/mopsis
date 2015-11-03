@@ -50,6 +50,11 @@ function array_wrap($data)
 	return ArrayHelpers::wrap($data);
 }
 
+function between($value, $min, $max)
+{
+	return MiscHelpers::between($value, $min, $max);
+}
+
 function config($key = null, $default = null)
 {
 	return LaravelHelpers::config($key, $default);
