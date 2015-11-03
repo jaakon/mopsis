@@ -86,7 +86,11 @@ return [
 				$c->get(Mopsis\Extensions\Twig\Markdown::class)
 			];
 
-			if ($c->get('twig.config')['debug']) {
+			if (class_exists(Twig_Extensions_Extension_Intl::class)) {
+				$extensions[] = $c->get(Twig_Extensions_Extension_Intl::class);
+			}
+
+			if ($c->get('twig.config')['debug'] && class_exists(Twig_Extension_Debug::class)) {
 				$extensions[] = $c->get(Twig_Extension_Debug::class);
 			}
 

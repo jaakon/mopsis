@@ -12,20 +12,19 @@ class TypeFactory
 
 		switch ($type) {
 			case 'string':
-				return (string)$value;
+				return (string) $value;
 			case 'integer':
-				return (int)$value;
+				return (int) $value;
 			case 'boolean':
-				return (bool)$value;
+				return (bool) $value;
 			case 'float':
-				return (float)$value;
 			case 'decimal':
-				return str_replace(',', '.', $value);
+				return (float) $value;
 			case 'date':
 			case 'datetime':
 				return $value !== '' ? self::create('\Mopsis\Types\DateTime', $value ?: 'now') : null;
 			case 'enum':
-				return (string)$value;
+				return (string) $value;
 			case 'json':
 				return self::create('\Mopsis\Types\JSON', $value);
 			case 'model':

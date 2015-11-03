@@ -25,8 +25,8 @@ class Bootstrap
 
 	public function initialize()
 	{
-		setlocale(LC_CTYPE, 'de_DE.UTF8');
-		setlocale(LC_TIME, 'de_DE.UTF8');
+		setlocale(LC_ALL, ['de_DE.UTF8', 'de-DE']);
+
 		session_start();
 
 		if (!defined('APPLICATION_PATH')) {

@@ -3,6 +3,7 @@
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Mopsis\Contracts\Model as ModelInterface;
 use Mopsis\Core\Cache;
+use Mopsis\Extensions\Stringifier;
 use Mopsis\Security\Token;
 use Mopsis\Types\JSON;
 use UnexpectedValueException;
@@ -12,6 +13,7 @@ abstract class Model implements ModelInterface
 	protected $config;
 	protected $data  = [];
 	protected $cache = [];
+	protected $stringifier;
 
 	public static function count($query = null, $values = [])
 	{
@@ -495,6 +497,11 @@ abstract class Model implements ModelInterface
 		return true;
 	}
 
+	public function stringify()
+	{
+		return $this->stringifier ?: $this->stringifier = new Stringifier($this);
+	}
+
 	public function toArray($usePrettyValues = false)
 	{
 		$data = [];
@@ -504,12 +511,10 @@ abstract class Model implements ModelInterface
 				foreach ($this->$key->toArray() as $k => $v) {
 					$data[$key . '.' . $k] = $v;
 				}
-			} elseif ($usePrettyValues) {
-				$prettyKey  = 'pretty' . ucfirst($key);
-				$data[$key] = isset($this->$prettyKey) ? $this->$prettyKey : $this->$key;
-			} else {
-				$data[$key] = $this->$key;
+				continue;
 			}
+
+			$data[$key] = $usePrettyValues ? $this->stringify()->$key : $this->$key;
 		}
 
 		return $data;
