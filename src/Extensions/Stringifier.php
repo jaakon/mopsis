@@ -29,28 +29,28 @@ class Stringifier
 
 	public function toArray()
 	{
-		return $this->castArrayToString(object_to_array($this->object));
+		return $this->castArrayValuesToString(object_to_array($this->object));
 	}
 
-	protected function castArrayToString(array $data)
+	protected function castArrayValuesToString(array $array)
 	{
-		foreach ($data as $key => $value) {
+		foreach ($array as $key => $value) {
 			if (is_array($value)) {
-				$data[$key] = $this->castArrayToString($value);
+				$array[$key] = $this->castArrayValuesToString($value);
 				continue;
 			}
 
-			$data[$key] = $this->castValueToString($this->getValue($key) ?: $value);
+			$array[$key] = $this->castValueToString($value);
 		}
 
-		return $data;
+		return $array;
 	}
 
 	protected function castFloatToString($float)
 	{
 		$locale = localeconv();
 
-		return preg_replace('/([^,])0+$/', '$1', number_format(
+		return preg_replace('/(?:(,\d*[1-9])|,)0+$/', '$1', number_format( // trim tailing zeros
 			$float,
 			$locale['frac_digits'],
 			$locale['decimal_point'],
@@ -88,7 +88,7 @@ class Stringifier
 			case 'object':
 				return $this->castObjectToString($value);
 			case 'array':
-				return json_encode($value);
+				return json_encode($this->castArrayValuesToString($value));
 		}
 
 		if (is_callable($value)) {

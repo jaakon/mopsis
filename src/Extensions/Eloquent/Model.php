@@ -284,6 +284,11 @@ abstract class Model extends EloquentModel implements ModelInterface
 		return $attributes;
 	}
 
+	public function toFormData()
+	{
+		return $this->stringify()->toArray();
+	}
+
 	protected function getCachedAttribute($attribute, callable $callback, $ttl = null)
 	{
 		return Cache::get([

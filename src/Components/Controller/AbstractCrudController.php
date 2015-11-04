@@ -66,7 +66,7 @@ abstract class AbstractCrudController extends AbstractController
 	protected function handleFormAction($formId, Model $instance)
 	{
 		$this->view
-			->setFormValues($formId, $instance->toArray(true)) // true --> usePrettyValues
+			->setFormValues($formId, $instance->toFormData())
 			->assign(['formId' => $formId]);
 
 		if ($instance->exists) {

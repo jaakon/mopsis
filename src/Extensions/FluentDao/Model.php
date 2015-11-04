@@ -502,7 +502,7 @@ abstract class Model implements ModelInterface
 		return $this->stringifier ?: $this->stringifier = new Stringifier($this);
 	}
 
-	public function toArray($usePrettyValues = false)
+	public function toArray()
 	{
 		$data = [];
 
@@ -514,10 +514,15 @@ abstract class Model implements ModelInterface
 				continue;
 			}
 
-			$data[$key] = $usePrettyValues ? $this->stringify()->$key : $this->$key;
+			$data[$key] = $this->$key;
 		}
 
 		return $data;
+	}
+
+	public function toFormData()
+	{
+		return $this->stringify()->toArray();
 	}
 
 	protected static function _getDefaultQuery($attribute, $query, $orderBy)

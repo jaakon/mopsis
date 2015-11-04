@@ -1,10 +1,12 @@
 <?php namespace Mopsis\Extensions\FluentDao;
 
 use Mopsis\Contracts\User;
+use Mopsis\Extensions\Stringifier;
 
 class Collection extends \Illuminate\Support\Collection
 {
 	protected $privilege;
+	protected $stringifier;
 
 	public static function load(array $ids)
 	{
@@ -49,16 +51,6 @@ class Collection extends \Illuminate\Support\Collection
 		return $this->hasGetMutator($key) ? $this->mutateAttribute($key) : null;
 	}
 
-	protected function hasGetMutator($key)
-	{
-		return method_exists($this, 'get' . studly_case($key) . 'Attribute');
-	}
-
-	protected function mutateAttribute($key)
-	{
-		return $this->{'get' . studly_case($key) . 'Attribute'}();
-	}
-
 	public function __isset($key)
 	{
 		return $this->hasGetMutator($key);
@@ -69,23 +61,6 @@ class Collection extends \Illuminate\Support\Collection
 		return $this->filter(function ($item) use ($user, $privilege) {
 			return $user->may($privilege ?: $this->privilege, $item);
 		});
-	}
-
-	public function getLengthAttribute()
-	{
-		return $this->count();
-	}
-
-	public function set($key, $value)
-	{
-		foreach ($this->items as $item) {
-			$item->{$key} = $value;
-		}
-	}
-
-	public function sortBySql($orderBy)
-	{
-		return count($this->items) > 1 ? $this->filterBySql('1=1', [], $orderBy) : $this;
 	}
 
 	public function filterBySql($query, $values = [], $orderBy = null)
@@ -108,5 +83,37 @@ class Collection extends \Illuminate\Support\Collection
 		}
 
 		return $data;
+	}
+
+	public function getLengthAttribute()
+	{
+		return $this->count();
+	}
+
+	public function set($key, $value)
+	{
+		foreach ($this->items as $item) {
+			$item->{$key} = $value;
+		}
+	}
+
+	public function sortBySql($orderBy)
+	{
+		return count($this->items) > 1 ? $this->filterBySql('1=1', [], $orderBy) : $this;
+	}
+
+	public function stringify()
+	{
+		return $this->stringifier ?: $this->stringifier = new Stringifier($this);
+	}
+
+	protected function hasGetMutator($key)
+	{
+		return method_exists($this, 'get' . studly_case($key) . 'Attribute');
+	}
+
+	protected function mutateAttribute($key)
+	{
+		return $this->{'get' . studly_case($key) . 'Attribute'}();
 	}
 }

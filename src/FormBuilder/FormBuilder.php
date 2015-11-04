@@ -212,7 +212,7 @@ class FormBuilder
 				}
 			}
 
-			if (!empty($m[2])) {
+			if (!empty($m[2]) && is_array($value)) {
 				$value = $value[$m[2]];
 			}
 
