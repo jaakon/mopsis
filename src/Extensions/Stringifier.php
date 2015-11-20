@@ -40,7 +40,7 @@ class Stringifier
 				continue;
 			}
 
-			$array[$key] = $this->castValueToString($value);
+			$array[$key] = $this->castValueToString($this->$key ?: $value);
 		}
 
 		return $array;
