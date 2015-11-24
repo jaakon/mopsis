@@ -213,6 +213,11 @@ abstract class Model implements ModelInterface
 			throw new \Exception('object is not bound');
 		}
 
+		if ($this->hasProperty('deleted')) {
+			$this->deleted = true;
+			return $this;
+		}
+
 		foreach (ModelFactory::getConnections(get_called_class()) as $class => $connection) {
 			if ($connection['type'] !== 'mixed_inbound') {
 				continue;

@@ -1,5 +1,6 @@
 <?php namespace Mopsis\FormBuilder\Fields;
 
+use Exception;
 use Mopsis\FormBuilder\Contracts\Resizable;
 
 class Textarea extends AbstractField implements Resizable

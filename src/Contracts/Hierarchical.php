@@ -2,5 +2,5 @@
 
 interface Hierarchical
 {
-	public function getAncestorAttribute();
+	public function ancestor();
 }

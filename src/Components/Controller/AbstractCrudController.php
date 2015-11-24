@@ -7,7 +7,24 @@ use Mopsis\Extensions\Eloquent\Model as Eloquent;
 
 abstract class AbstractCrudController extends AbstractController
 {
-	protected function createModel($formId, Model $instance, Model $ancestor = null)
+	protected function createModel($formId, Model $instance)
+	{
+		$status = $this->handleFormAction($formId, $instance);
+
+		if ($status !== 200) {
+			return $this->getResponseObject($status, $instance);
+		}
+
+		if ($instance instanceof Eloquent) {
+			$instance->fill($this->filter->getResult())->save();
+		} else {
+			$instance->update($this->filter->getResult());
+		}
+
+		return $this->getResponseObject(201, $instance);
+	}
+
+	protected function createChildModel($formId, Model $instance, Model $ancestor)
 	{
 		$this->view->assign(['ancestorToken' => $ancestor->token]);
 
@@ -17,13 +34,11 @@ abstract class AbstractCrudController extends AbstractController
 			return $this->getResponseObject($status, $instance);
 		}
 
-		if ($ancestor) {
-			$instance->set(strtolower(class_basename($ancestor)), $ancestor);
-		}
-
 		if ($instance instanceof Eloquent) {
+			$instance->ancestor()->associate($ancestor);
 			$instance->fill($this->filter->getResult())->save();
 		} else {
+			$instance->set(strtolower(class_basename($this)), $ancestor);
 			$instance->update($this->filter->getResult());
 		}
 
@@ -45,12 +60,6 @@ abstract class AbstractCrudController extends AbstractController
 
 	protected function deleteModel(Model $instance)
 	{
-		if ($instance->hasProperty('deleted')) {
-			$instance->deleted = true;
-
-			return $this->getResponseObject(204, $instance);
-		}
-
 		$instance->delete();
 
 		return $this->getResponseObject(204, $instance);

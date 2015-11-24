@@ -1,6 +1,6 @@
 <?php namespace Mopsis\Contracts\Traits;
 
-use App\Models\Event;
+use Mopsis\Core\App;
 use Mopsis\Core\Auth;
 
 trait LoggableTrait
@@ -11,7 +11,9 @@ trait LoggableTrait
 			return $this;
 		}
 
-		$event = new Event([
+		$eventClass = App::get('Event');
+
+		$event = new $eventClass([
 			'message' => $message ?: $this->traceAction(),
 			'values'  => json_encode($this->getDiff())
 		]);

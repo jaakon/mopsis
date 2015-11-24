@@ -2,6 +2,7 @@
 
 use DateTime;
 use Exception;
+use stdClass;
 use Mopsis\Contracts\Model;
 
 class Stringifier
@@ -13,7 +14,11 @@ class Stringifier
 
 	public function __get($key)
 	{
-		$value = $this->getValue($key);
+		if ($this->objectHasAsStringMutator($key)) {
+			return $this->objectGetAsStringMutator($key);
+		}
+
+		$value = $this->object->$key;
 
 		if (is_string($value)) {
 			return $value;
@@ -40,7 +45,7 @@ class Stringifier
 				continue;
 			}
 
-			$array[$key] = $this->castValueToString($this->$key ?: $value);
+			$array[$key] = $this->$key ?: $this->castValueToString($value);
 		}
 
 		return $array;
@@ -66,6 +71,10 @@ class Stringifier
 
 		if (method_exists($object, '__toString')) {
 			return (string) $object;
+		}
+
+		if ($object instanceof stdClass) {
+//			return json_encode(object_to_array($object));
 		}
 
 		throw new Exception('cannot cast instance of ' . get_class($object) . ' to string');
@@ -96,15 +105,6 @@ class Stringifier
 		}
 
 		throw new \Exception('cannot cast value of type "' . gettype($value) . '" to string');
-	}
-
-	protected function getValue($key)
-	{
-		if ($this->objectHasAsStringMutator($key)) {
-			return $this->objectGetAsStringMutator($key);
-		}
-
-		return $this->object->$key;
 	}
 
 	protected function objectGetAsStringMutator($key)
