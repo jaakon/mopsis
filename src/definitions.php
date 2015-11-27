@@ -334,6 +334,9 @@ return [
 	Flash::class
 		=> object(Mopsis\Extensions\Flash::class),
 
+	Json::class
+		=> object(Yadakhov\Json::class),
+
 	Logger::class
 		=> function (ContainerInterface $c) {
 			$logger = new Monolog\Logger('default');

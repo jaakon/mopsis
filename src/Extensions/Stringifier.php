@@ -4,6 +4,7 @@ use DateTime;
 use Exception;
 use stdClass;
 use Mopsis\Contracts\Model;
+use Yadakhov\Json;
 
 class Stringifier
 {
@@ -69,12 +70,12 @@ class Stringifier
 			return $object->format(config('stringify.datetime'));
 		}
 
-		if (method_exists($object, '__toString')) {
-			return (string) $object;
+		if ($object instanceof Json) {
+			return $object;
 		}
 
-		if ($object instanceof stdClass) {
-//			return json_encode(object_to_array($object));
+		if (method_exists($object, '__toString')) {
+			return (string) $object;
 		}
 
 		throw new Exception('cannot cast instance of ' . get_class($object) . ' to string');

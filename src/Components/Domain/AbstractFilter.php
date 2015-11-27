@@ -105,7 +105,16 @@ abstract class AbstractFilter
 			foreach ($data as $key => $value) {
 				array_set($this->result, $key, $value);
 			}
+
+			foreach (array_keys($this->rules->forValidator()) as $key) { // checkboxes are otherwise missing
+				if (!array_has($this->result, $key)) {
+					array_set($this->result, $key, null);
+				}
+			}
+
 			unset($this->result[$_SESSION['csrf']['key']]);
+
+
 
 			return true;
 		}

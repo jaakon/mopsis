@@ -4,6 +4,8 @@ class Checkbox extends AbstractField
 {
 	public function setValue($value)
 	{
-		$this->prop('checked', is_array($value) ? in_array($this->val(), $value) : !!$value);
+		$values = array_map('strval', array_wrap($value));
+
+		$this->prop('checked', in_array($this->val(), $values));
 	}
 }

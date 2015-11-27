@@ -19,14 +19,12 @@ class MultiSelect extends Select
 
 	public function setValue($value)
 	{
-		if (!is_array($value)) {
-			$value = [$value];
-		}
+		$values = array_map('strval', array_wrap($value));
 
 		foreach ($this->find('option') as $node) {
 			$option = FieldFactory::create($node);
 
-			$option->prop('selected', in_array($option->val(), $value, true));
+			$option->prop('selected', in_array($option->val(), $values, true));
 		}
 	}
 }
