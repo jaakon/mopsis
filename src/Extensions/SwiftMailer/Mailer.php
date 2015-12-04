@@ -46,7 +46,8 @@ class Mailer extends Swift_Mailer
 
 	public static function newMessage()
 	{
-		$message = Swift_Message::newInstance()->setFrom([config('mail.from') => static::encodeName(config('mail.fromName'))]);
+		$message = Swift_Message::newInstance()
+			->setFrom([config('mail.from') => static::encodeName(config('mail.fromName'))]);
 
 		if (config('mail.replyto')) {
 			$message->setReplyTo(config('mail.replyto'));

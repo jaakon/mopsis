@@ -27,9 +27,12 @@ abstract class Model extends EloquentModel implements ModelInterface
 		parent::boot();
 		static::observe(new ModelObserver);
 
-		if (class_exists($observer = get_called_class() . 'Observer')) {
-			static::observe(new $observer);
-		}
+		try {
+			if ($calledClass = App::identify($this)) {
+				$observer = App::build('Observer', implode('\\', $calledClass));
+				static::observe(new $observer);
+			}
+		} catch (DomainException $e) {}
 	}
 
 	/**
@@ -112,6 +115,27 @@ abstract class Model extends EloquentModel implements ModelInterface
 		return $this;
 	}
 
+	public function findRelations(Model $model)
+	{
+		$class     = new ReflectionClass($this);
+		$className = $class->getName();
+		$modelName = get_class($model);
+
+		return array_map(
+			function ($method) {
+				return $method->name;
+			},
+			array_filter(
+				$class->getMethods(\ReflectionMethod::IS_PUBLIC),
+				function ($method) use ($className, $modelName) {
+					return $method->class === $className
+					&& !preg_match('/^[gs]et\w+Attribute$/', $method->name)
+					&& strpos($method->getBody(), $modelName) !== false;
+				}
+			)
+		);
+	}
+
 	/** @Override */
 	public function getAttribute($key)
 	{
@@ -128,7 +152,7 @@ abstract class Model extends EloquentModel implements ModelInterface
 	public function getDataTypes()
 	{
 		return Cache::get([
-			$this->getTable(),
+			get_called_class(),
 			'@dataTypes'
 		], function () {
 			$columns = [];
@@ -139,21 +163,18 @@ abstract class Model extends EloquentModel implements ModelInterface
 				}
 
 				switch (true) {
-					case preg_match('/^varchar\(\d+\)$/', $column->Type):
-						$columns[$column->Field] = 'string';
+					case preg_match('/^tinyint\(1\)$/', $column->Type):
+						$columns[$column->Field] = 'boolean';
 						continue;
 					case preg_match('/^int\(10\)( unsigned)?$/', $column->Type):
 						$columns[$column->Field] = 'integer';
 						continue;
-					case preg_match('/^timestamp|date(time)?$/', $column->Type):
-						$columns[$column->Field] = 'datetime';
-						continue;
-					case preg_match('/^tinyint\(1\)$/', $column->Type):
-						$columns[$column->Field] = 'boolean';
-						continue;
 					case preg_match('/^float( unsigned)?$/', $column->Type):
 					case preg_match('/^decimal\(\d+,\d+\)( unsigned)?$/', $column->Type):
 						$columns[$column->Field] = 'float';
+						continue;
+					case preg_match('/^timestamp|date(time)?$/', $column->Type):
+						$columns[$column->Field] = 'datetime';
 						continue;
 					default:
 						$columns[$column->Field] = null;
@@ -269,16 +290,6 @@ abstract class Model extends EloquentModel implements ModelInterface
 	public function toFormData()
 	{
 		return $this->stringify()->toArray();
-	}
-
-	/** @Override */
-	protected function castAttribute($key, $value)
-	{
-		if ($this->getCastType($key) === 'json') {
-			return App::make('Json', ['body' => $value]);
-		}
-
-		return parent::castAttribute($key, $value);
 	}
 
 	protected function getCachedAttribute($attribute, callable $callback, $ttl = null)
