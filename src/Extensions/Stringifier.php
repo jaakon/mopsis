@@ -2,8 +2,6 @@
 
 use DateTime;
 use Exception;
-use stdClass;
-use Mopsis\Contracts\Model;
 use Yadakhov\Json;
 
 class Stringifier
@@ -57,11 +55,7 @@ class Stringifier
 		$locale = localeconv();
 
 		return preg_replace('/(?:(,\d*[1-9])|,)0+$/', '$1', number_format( // trim tailing zeros
-			$float,
-			$locale['frac_digits'],
-			$locale['decimal_point'],
-			$locale['thousands_sep']
-		));
+			$float, $locale['frac_digits'], $locale['decimal_point'], $locale['thousands_sep']));
 	}
 
 	protected function castObjectToString($object)

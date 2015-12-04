@@ -1,10 +1,5 @@
 <?php namespace Mopsis\Extensions\SimpleXML;
 
-/**
- * Trait XMLInternalErrorsHelper
- *
- * @package Box\Spout\Reader\Wrapper
- */
 trait XMLInternalErrorsHelper
 {
 	/** @var bool Stores whether XML errors were initially stored internally - used to reset */
@@ -27,7 +22,7 @@ trait XMLInternalErrorsHelper
 	 * It also always resets the "libxml_use_internal_errors" setting back to its initial value.
 	 *
 	 * @return void
-	 * @throws \Box\Spout\Reader\Exception\XMLProcessingException
+	 * @throws XMLProcessingException
 	 */
 	protected function resetXMLInternalErrorsSettingAndThrowIfXMLErrorOccured()
 	{
@@ -50,24 +45,6 @@ trait XMLInternalErrorsHelper
 	}
 
 	/**
-	 * Returns the error message for the last XML error that occured.
-	 * @see libxml_get_last_error
-	 *
-	 * @return String|null Last XML error message or null if no error
-	 */
-	private function getLastXMLErrorMessage()
-	{
-		$errorMessage = null;
-		$error = libxml_get_last_error();
-
-		if ($error !== false) {
-			$errorMessage = trim($error->message);
-		}
-
-		return $errorMessage;
-	}
-
-	/**
 	 * @return void
 	 */
 	protected function resetXMLInternalErrorsSetting()
@@ -75,4 +52,21 @@ trait XMLInternalErrorsHelper
 		libxml_use_internal_errors($this->initialUseInternalErrorsValue);
 	}
 
+	/**
+	 * Returns the error message for the last XML error that occured.
+	 *
+	 * @see libxml_get_last_error
+	 * @return String|null Last XML error message or null if no error
+	 */
+	private function getLastXMLErrorMessage()
+	{
+		$errorMessage = null;
+		$error        = libxml_get_last_error();
+
+		if ($error !== false) {
+			$errorMessage = trim($error->message);
+		}
+
+		return $errorMessage;
+	}
 }

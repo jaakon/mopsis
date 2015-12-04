@@ -31,7 +31,7 @@ abstract class Model implements ModelInterface
 	{
 		list($query, $values) = Sql::expandQuery($query, $values);
 
-		return ModelFactory::load(get_called_class(), (ctype_digit((string)$query) ? $query : static::get('id', $query, $values, $orderBy)), $useCache);
+		return ModelFactory::load(get_called_class(), (ctype_digit((string) $query) ? $query : static::get('id', $query, $values, $orderBy)), $useCache);
 	}
 
 	public static function findAll($query = null, $values = [], $orderBy = null)
@@ -88,10 +88,7 @@ abstract class Model implements ModelInterface
 		list($query, $values) = Sql::expandQuery($query, $values);
 		$result = [];
 
-		foreach (Sql::db()->getAll(Sql::buildQuery(static::_getDefaultQuery([
-			$attribute,
-			$key
-		], $query, $orderBy)), $values) as $entry) {
+		foreach (Sql::db()->getAll(Sql::buildQuery(static::_getDefaultQuery([$attribute, $key], $query, $orderBy)), $values) as $entry) {
 			$result[$entry[$key]] = $entry[$attribute];
 		}
 
@@ -126,10 +123,11 @@ abstract class Model implements ModelInterface
 
 		if ($id === null) {
 			$this->data = $this->config['defaults'];
+
 			return;
 		}
 
-		if (!ctype_digit((string)$id)) {
+		if (!ctype_digit((string) $id)) {
 			throw new \InvalidArgumentException('invalid id "' . $id . '" for class "' . get_called_class() . '"');
 		}
 
@@ -215,6 +213,7 @@ abstract class Model implements ModelInterface
 
 		if ($this->hasProperty('deleted')) {
 			$this->deleted = true;
+
 			return $this;
 		}
 
@@ -265,18 +264,14 @@ abstract class Model implements ModelInterface
 				break;
 			case 'mixed_inbound':
 				$class  = ModelFactory::findClass($key);
-				$result = $class::findAll($connection['query'], (string)$this);
+				$result = $class::findAll($connection['query'], (string) $this);
 				break;
 			case 'crossbound':
 				$collection = str_replace('Models', 'Collections', ModelFactory::findClass($key));
-				$result     = $collection::load(Sql::db()->getCol(Sql::buildQuery([
-					'select' => $connection['identifier'],
-					'from'   => $connection['pivot'],
-					'where'  => $connection['query'],
-				]), $this->id));
+				$result     = $collection::load(Sql::db()->getCol(Sql::buildQuery(['select' => $connection['identifier'], 'from' => $connection['pivot'], 'where' => $connection['query'],]), $this->id));
 				break;
 			default:
-				throw new \Exception('connection type [' . $type . '] is invalid');
+				throw new \Exception('connection type [' . $connection['type'] . '] is invalid');
 		}
 
 		return $this->cache[$key] = $result;
@@ -289,11 +284,12 @@ abstract class Model implements ModelInterface
 
 	public function getSortOrder()
 	{
-		if (!isset($this->orderBy) || !is_array($this->orderBy) || !count($this->orderBy)) {
-			return 'id';
+		/** @noinspection PhpParamsInspection */
+		if (isset($this->orderBy) && is_array($this->orderBy) && count($this->orderBy)) {
+			return implode(',', $this->orderBy);
 		}
 
-		return implode(',', $this->orderBy);
+		return 'id';
 	}
 
 	public function getTokenAttribute()
@@ -366,7 +362,7 @@ abstract class Model implements ModelInterface
 		$this->data['id'] = null;
 
 		$this->import($import);
-		$this->data['id'] = (int)$id;
+		$this->data['id'] = (int) $id;
 
 		return $this;
 	}
@@ -391,8 +387,8 @@ abstract class Model implements ModelInterface
 				throw new \Exception('required property [' . $key . '] is not set');
 			}
 
-//			if ($value & Sql::UNIQUE_VALUE && Sql::db()->exists($this->config['table'], $key.'=?', $this->data[$key]))
-//				throw new \Exception('value of property ['.$key.'] is not unique: "'.$this->data[$key].'"');
+			//			if ($value & Sql::UNIQUE_VALUE && Sql::db()->exists($this->config['table'], $key.'=?', $this->data[$key]))
+			//				throw new \Exception('value of property ['.$key.'] is not unique: "'.$this->data[$key].'"');
 		}
 
 		foreach ($this->data as &$value) {
@@ -534,12 +530,7 @@ abstract class Model implements ModelInterface
 	{
 		$class = get_called_class();
 
-		return [
-			'select'  => implode(', ', array_wrap($attribute)),
-			'from'    => ModelFactory::findTable($class),
-			'where'   => $query,
-			'orderBy' => $orderBy ?: (new $class)->getSortOrder()
-		];
+		return ['select' => implode(', ', array_wrap($attribute)), 'from' => ModelFactory::findTable($class), 'where' => $query, 'orderBy' => $orderBy ?: (new $class)->getSortOrder()];
 	}
 
 	protected static function _stringToClass($value, $class)
@@ -558,9 +549,6 @@ abstract class Model implements ModelInterface
 
 	protected function _getCachedAttribute($attribute, callable $callback, $ttl = null)
 	{
-		return Cache::get([
-			(string)$this,
-			$attribute
-		], $callback, $ttl);
+		return Cache::get([(string) $this, $attribute], $callback, $ttl);
 	}
 }

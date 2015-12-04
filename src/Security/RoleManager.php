@@ -1,9 +1,9 @@
 <?php namespace Mopsis\Security;
 
-use Mopsis\Core\Cache;
 use Mopsis\Contracts\Hierarchical;
 use Mopsis\Contracts\Model;
 use Mopsis\Contracts\Role;
+use Mopsis\Core\Cache;
 
 class RoleManager
 {
@@ -43,7 +43,7 @@ class RoleManager
 
 	protected static function instanceMeetsConstraint($instance, $constraint)
 	{
-		if ((string)$instance === (string)$constraint) {
+		if ((string) $instance === (string) $constraint) {
 			return true;
 		}
 

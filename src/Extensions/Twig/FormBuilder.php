@@ -11,19 +11,12 @@ class FormBuilder extends \Twig_Extension
 
 	public function getFilters()
 	{
-		return [
-			new \Twig_SimpleFilter('filter', 'array_filter', ['is_safe' => ['html']])
-		];
+		return [new \Twig_SimpleFilter('filter', 'array_filter', ['is_safe' => ['html']])];
 	}
 
 	public function getFunctions()
 	{
-		return [
-			new \Twig_SimpleFunction('FormBuilder', [
-				$this,
-				'getFormBuilder'
-			], ['is_safe' => ['html']])
-		];
+		return [new \Twig_SimpleFunction('FormBuilder', [$this, 'getFormBuilder'], ['is_safe' => ['html']])];
 	}
 
 	public function getFormBuilder($formId, $uri)

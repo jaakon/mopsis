@@ -1,6 +1,6 @@
 <?php namespace Mopsis\Core;
 
-use Illuminate\Contracts\Validation\ValidationException;
+use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Mopsis\Contracts\User;
 
@@ -49,7 +49,7 @@ class Auth
 				redirect($redirect);
 			}
 
-			throw new ValidationException('user has no access');
+			throw new Exception('user has no access');
 		}
 
 		if (static::user()->may($permission, $model)) {
@@ -60,13 +60,13 @@ class Auth
 			redirect($redirect);
 		}
 
-		throw new ValidationException('user has no "' . $permission . '" permission for model "' . $model . '"');
+		throw new Exception('user has no "' . $permission . '" permission for model "' . $model . '"');
 	}
 
 	public static function login(User $user, $remember = false)
 	{
 		static::$user     = $user;
-		$_SESSION['user'] = (string)$user->token;
+		$_SESSION['user'] = (string) $user->token;
 
 		if ($remember) {
 			App::get('Cookie')->forever('user', $user->hash);
@@ -104,7 +104,7 @@ class Auth
 		if (isset($_COOKIE['user'])) {
 			try {
 				$user             = $userClass::unpack($_COOKIE['user']);
-				$_SESSION['user'] = (string)$user->token;
+				$_SESSION['user'] = (string) $user->token;
 
 				return $user;
 			} catch (ModelNotFoundException $e) {

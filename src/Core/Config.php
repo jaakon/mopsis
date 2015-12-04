@@ -21,6 +21,7 @@ class Config extends Repository
 			throw new \Exception('configuration file "' . $configFile . '" not found');
 		}
 
+		/** @noinspection PhpIncludeInspection */
 		$this->set(array_dot(include $configFile));
 	}
 }

@@ -3,13 +3,7 @@
 class SimpleXMLElement
 {
 	use XMLInternalErrorsHelper;
-
 	protected $element;
-
-	public function __call($name, $arguments)
-	{
-		return $this->element->{$name}(...$arguments);
-	}
 
 	public function __construct($xmlData)
 	{
@@ -43,14 +37,36 @@ class SimpleXMLElement
 		throw new XMLProcessingException('Unknown xmlData given to Mopsis\SimpleXMLElement. Expected a XML String or a SimpleXMLElement object.');
 	}
 
-	public function __toString()
+	public function getWrappedElement()
 	{
-		return $this->element->__toString();
+		return $this->element;
 	}
 
+	public function __call($name, $arguments)
+	{
+		return $this->element->{$name}(...$arguments);
+	}
+
+	public function __toString()
+	{
+		return strval($this->element);
+	}
+
+	/**
+	 * @return SimpleXMLElement[]
+	 */
 	public function all($path)
 	{
 		return $this->xpath($path) ?: [];
+	}
+
+	public function xpath($path)
+	{
+		if (!($elements = $this->element->xpath($path))) {
+			return false;
+		}
+
+		return array_map([$this, 'wrapSimpleXMLElement'], $elements);
 	}
 
 	public function attr($name, $namespace = null)
@@ -85,11 +101,15 @@ class SimpleXMLElement
 		return $children;
 	}
 
-	public function first($path)
+	protected function wrapSimpleXMLElement(\SimpleXMLElement $element)
 	{
-		$elements = $this->xpath($path);
+		$elementAsXML = $element->asXML();
 
-		return $elements && count($elements) ? $elements[0] : false;
+		if ($elementAsXML === false) {
+			return null;
+		}
+
+		return new self($elementAsXML);
 	}
 
 	public function getFirstChildByTagName($tagName)
@@ -101,14 +121,16 @@ class SimpleXMLElement
 		return $this->wrapSimpleXMLElement($this->element->{$tagName});
 	}
 
-	public function getWrappedElement()
-	{
-		return $this->element;
-	}
-
 	public function has($path)
 	{
 		return !!$this->first($path);
+	}
+
+	public function first($path): SimpleXMLElement
+	{
+		$elements = $this->xpath($path);
+
+		return $elements && count($elements) ? $elements[0] : false;
 	}
 
 	public function registerXPathNamespace($prefix, $namespace)
@@ -132,25 +154,5 @@ class SimpleXMLElement
 		}
 
 		return trim((string) $element) ?: null;
-	}
-
-	public function xpath($path)
-	{
-		if (!($elements = $this->element->xpath($path))) {
-			return false;
-		}
-
-		return array_map([$this, 'wrapSimpleXMLElement'], $elements);
-	}
-
-	protected function wrapSimpleXMLElement(\SimpleXMLElement $element)
-	{
-		$elementAsXML = $element->asXML();
-
-		if ($elementAsXML === false) {
-			return null;
-		}
-
-		return new self($elementAsXML);
 	}
 }

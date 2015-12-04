@@ -1,5 +1,7 @@
 <?php namespace Mopsis\Support;
 
+use stdClass;
+
 class ObjectHelpers
 {
 	public static function merge(stdClass $baseObject, stdClass ...$objects)

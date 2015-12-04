@@ -1,15 +1,14 @@
 <?php namespace Mopsis\FormBuilder;
 
-use Mopsis\FormBuilder\Contracts\Resizable;
 use Mopsis\Extensions\SimpleXML\SimpleXMLElement;
 use Mopsis\Extensions\SimpleXML\XMLProcessingException;
+use Mopsis\FormBuilder\Contracts\Resizable;
 use Mopsis\Security\Csrf;
 use stdClass;
 
 class FormBuilder
 {
 	const NO_GROUPS = '@@no-groups@@';
-
 	protected $xml;
 	protected $config;
 	protected $layout;
@@ -32,10 +31,7 @@ class FormBuilder
 		$this->config = $config;
 		$this->layout = LayoutProvider::create($this->xml, $xml->attr('layout'), $this->strict);
 
-		$data = array_merge($this->loadDefaults($xml), $config->settings['@global'] ?: [], [
-			'form.url'  => $url,
-			'form.csrf' => $this->addCsrfToken()
-		]);
+		$data = array_merge($this->loadDefaults($xml), $config->settings['@global'] ?: [], ['form.url' => $url, 'form.csrf' => $this->addCsrfToken()]);
 
 		return $this->fillFormValues($this->buildNode($xml, $data));
 	}
@@ -109,15 +105,11 @@ class FormBuilder
 
 	protected function buildOptions(array $options, array $baseData)
 	{
-		$html    = '';
-		$layout  = $this->layout->getHtmlForItem($baseData['item.type'], 'options');
+		$html   = '';
+		$layout = $this->layout->getHtmlForItem($baseData['item.type'], 'options');
 
 		foreach ($options as $i => $xml) {
-			$data = $this->addValues($baseData, 'option', $xml->attributes(), [
-				'no'   => $i,
-				'id'   => $baseData['item.id'] . '-' . $i,
-				'text' => htmlentities($xml->text() ?: $xml->attr('value'))
-			]);
+			$data = $this->addValues($baseData, 'option', $xml->attributes(), ['no' => $i, 'id' => $baseData['item.id'] . '-' . $i, 'text' => htmlentities($xml->text() ?: $xml->attr('value'))]);
 
 			$html .= $this->fillPlaceholder($layout, $data);
 		}
@@ -127,10 +119,10 @@ class FormBuilder
 
 	protected function buildAddedOptions(array $options, array $baseData)
 	{
-		$html    = '';
-		$layout  = $this->layout->getHtmlForItem($baseData['item.type'], 'options');
-
-		$optGroups = $this->prepareOptionGroups($this->config->options[$baseData['item.name']]);
+		$layout    = $this->layout->getHtmlForItem($baseData['item.type'], 'options');
+		$optGroups = $this->prepareOptionGroups($options);
+		$html      = '';
+		$no        = 0;
 
 		if (count($optGroups, \COUNT_RECURSIVE) > 1) {
 			foreach ($optGroups as $group => $options) {
@@ -139,11 +131,8 @@ class FormBuilder
 				}
 
 				foreach ($options as $value => $text) {
-					$data = $this->addValues($baseData, 'option', [
-						'no'    => ++$i,
-						'value' => $value
-					]);
-					$data['option.id']   = $data['item.id'] . '-' . $i;
+					$data                = $this->addValues($baseData, 'option', ['no' => ++$no, 'value' => $value]);
+					$data['option.id']   = $data['item.id'] . '-' . $no;
 					$data['option.text'] = htmlentities($text ?: $value);
 					$html .= $this->fillPlaceholder($layout, $data);
 				}

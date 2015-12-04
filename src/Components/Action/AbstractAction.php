@@ -1,10 +1,11 @@
 <?php namespace Mopsis\Components\Action;
 
+use Mopsis\Core\Auth;
+
 abstract class AbstractAction
 {
 	const ACCESS_PRIVATE = 'private';
 	const ACCESS_PUBLIC  = 'public';
-
 	protected $access = self::ACCESS_PRIVATE;
 	protected $request;
 	protected $responder;

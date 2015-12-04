@@ -29,6 +29,10 @@ class AbstractField extends Query
 
 		if ($enabled) {
 			$this->attr($name, true);
+
+			return true;
 		}
+
+		return false;
 	}
 }

@@ -5,11 +5,6 @@ use Mopsis\FormBuilder\Contracts\Resizable;
 
 class Textarea extends AbstractField implements Resizable
 {
-	public function getValue()
-	{
-		return $this->text();
-	}
-
 	public function setValue($value)
 	{
 		if (is_array($value)) {
@@ -33,14 +28,21 @@ class Textarea extends AbstractField implements Resizable
 
 		if ($this->attr('rows') === 'auto') {
 			$this->attr('rows', $rows);
+
 			return;
 		}
 
 		if (preg_match('/\{(\d*),(\d*)\}/', $this->attr('rows'), $m)) {
 			$this->attr('rows', between($rows, $m[1], $m[2]));
+
 			return;
 		}
 
 		throw new Exception('invalid value "' . $this->attr('rows') . '" for attribute "rows"');
+	}
+
+	public function getValue()
+	{
+		return $this->text();
 	}
 }

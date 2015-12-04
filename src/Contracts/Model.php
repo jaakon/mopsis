@@ -2,4 +2,5 @@
 
 interface Model
 {
+	public function __toString();
 }

@@ -10,6 +10,6 @@ class Money
 			return false;
 		}
 
-		return (bool)preg_match('/^-?\d{1,3}(\d*|(\.\d{3})*)(,\d{2})?$/', $value);
+		return (bool) preg_match('/^-?\d{1,3}(\d*|(\.\d{3})*)(,\d{2})?$/', $value);
 	}
 }

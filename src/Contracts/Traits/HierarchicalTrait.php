@@ -16,5 +16,7 @@ trait HierarchicalTrait
 		if ($this->ancestor) {
 			return $this->ancestor->getUriRecursive();
 		}
+
+		return null;
 	}
 }

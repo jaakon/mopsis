@@ -26,7 +26,7 @@ class MiscHelpers
 		$ladybug->setOption('expanded', false);
 		$ladybug->setOption('helpers', ['debug']);
 
-		echo $ladybug->dump(...$args);
+		return $ladybug->dump(...$args);
 	}
 
 	public static function getStaticPage($code)
@@ -37,7 +37,7 @@ class MiscHelpers
 			return file_get_contents($pages[$code]);
 		}
 
-		$baseCode = floor($code / 100) * 100;
+		$baseCode = strval(floor($code / 100) * 100);
 
 		if (isset($pages[$baseCode])) {
 			return file_get_contents($pages[$baseCode]);

@@ -5,7 +5,7 @@ abstract class Container
 	protected $data  = null;
 	protected $cache = [];
 
-//=== PUBLIC METHODS ===========================================================
+	//=== PUBLIC METHODS ===========================================================
 
 	public function __construct($criteria = null)
 	{
@@ -54,7 +54,7 @@ abstract class Container
 			return $this->{'set' . ucfirst($key) . 'Attribute'}($value);
 		}
 
-		$this->_set($key, $value);
+		return $this->_set($key, $value);
 	}
 
 	protected function _get($key)
@@ -68,7 +68,7 @@ abstract class Container
 		throw new \Exception('property [' . $key . '] is undefined');
 	}
 
-//=== PROTECTED METHODS ========================================================
+	//=== PROTECTED METHODS ========================================================
 
 	protected function _set($key, $value)
 	{

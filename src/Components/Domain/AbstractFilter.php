@@ -1,28 +1,22 @@
 <?php namespace Mopsis\Components\Domain;
 
 use Aura\Filter\SubjectFilter as Filter;
-use FileUpload\FileUpload;
-use FileUpload\FileUploadAggregator;
 use Mopsis\Core\App;
 use Mopsis\FormBuilder\RulesProvider;
-use Mopsis\FormBuilder\UploadValidator;
 
 abstract class AbstractFilter
 {
 	const EMPTY_MESSAGE = '_NULL_';
-
 	protected $facade;
 	protected $rules;
 	protected $uploader;
-
 	protected $result;
 	protected $messages;
-
 	protected $sanitizerRulesLoaded = false;
 	protected $uploaderRulesLoaded  = false;
 	protected $validatorRulesLoaded = false;
 
-//	public function __construct(Filter $facade, RulesProvider $rules, FileUploadAggregator $uploader)
+	//	public function __construct(Filter $facade, RulesProvider $rules, FileUploadAggregator $uploader)
 
 	public function __construct(Filter $facade, RulesProvider $rules, $uploader = null)
 	{
@@ -113,8 +107,6 @@ abstract class AbstractFilter
 			}
 
 			unset($this->result[$_SESSION['csrf']['key']]);
-
-
 
 			return true;
 		}

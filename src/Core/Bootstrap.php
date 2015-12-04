@@ -2,8 +2,6 @@
 
 use Aura\Web\Response;
 use DI\ContainerBuilder;
-use Mopsis\Core\App;
-use Mopsis\Core\Cache;
 use Mopsis\Extensions\Aura\Web\ResponseSender;
 
 class Bootstrap
@@ -17,10 +15,13 @@ class Bootstrap
 		$this->initialize();
 		$this->updateCache($flushMode);
 
+		/** @noinspection PhpIncludeInspection */
 		include APPLICATION_PATH . '/app/initialize.php';
 
 		$response = $this->executeRoute();
 		(new ResponseSender($response))->__invoke();
+
+		return true;
 	}
 
 	public function initialize()
@@ -38,10 +39,7 @@ class Bootstrap
 
 		App::initialize($builder->build());
 
-		App::get('config')->load(
-			APPLICATION_PATH . '/config/config.php',
-			APPLICATION_PATH . '/config/credentials.php'
-		);
+		App::get('config')->load(APPLICATION_PATH . '/config/config.php', APPLICATION_PATH . '/config/credentials.php');
 
 		App::get('Database');
 		App::get('ErrorHandler');

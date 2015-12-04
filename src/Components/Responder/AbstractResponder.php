@@ -9,10 +9,7 @@ use Mopsis\Components\View\View;
 abstract class AbstractResponder
 {
 	protected $accept;
-	protected $available      = [
-		'text/html'        => '.twig',
-		'application/json' => '.json'
-	];
+	protected $available      = ['text/html' => '.twig', 'application/json' => '.json'];
 	protected $payload;
 	protected $payloadData;
 	protected $payloadMethods = [];

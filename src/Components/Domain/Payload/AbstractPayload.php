@@ -1,6 +1,6 @@
 <?php namespace Mopsis\Components\Domain\Payload;
 
-use Mopsis\Components\Model\Model;
+use Mopsis\Contracts\Model;
 
 abstract class AbstractPayload implements PayloadInterface
 {

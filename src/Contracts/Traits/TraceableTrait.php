@@ -13,16 +13,11 @@ trait TraceableTrait
 		return $this->events;
 	}
 
-	/** @Override */
+	// @Override
 	public function setCreatedAt($value)
 	{
 		parent::setCreatedAt($value);
 		$this->setCreatingUser();
-	}
-
-	public function setCreatedBy($value)
-	{
-		$this->{static::CREATED_BY} = $value;
 	}
 
 	public function setCreatingUser()
@@ -30,20 +25,26 @@ trait TraceableTrait
 		$this->setCreatedBy(Auth::user()->getKey());
 	}
 
-	/** @Override */
+	public function setCreatedBy($value)
+	{
+		$this->{static::CREATED_BY} = $value;
+	}
+
+	// @Override
+
 	public function setUpdatedAt($value)
 	{
 		parent::setUpdatedAt($value);
 		$this->setUpdatingUser();
 	}
 
-	public function setUpdatedBy($value)
-	{
-		$this->{static::UPDATED_BY} = $value;
-	}
-
 	public function setUpdatingUser()
 	{
 		$this->setUpdatedBy(Auth::user()->getKey());
+	}
+
+	public function setUpdatedBy($value)
+	{
+		$this->{static::UPDATED_BY} = $value;
 	}
 }

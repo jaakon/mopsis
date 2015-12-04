@@ -3,5 +3,6 @@
 interface Role
 {
 	public function getConstraint();
+
 	public function getKey();
 }

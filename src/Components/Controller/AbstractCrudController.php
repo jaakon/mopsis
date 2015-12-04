@@ -1,8 +1,6 @@
 <?php namespace Mopsis\Components\Controller;
 
-use App\Models\Event;
 use Mopsis\Contracts\Model;
-use Mopsis\Core\Auth;
 use Mopsis\Extensions\Eloquent\Model as Eloquent;
 
 abstract class AbstractCrudController extends AbstractController
@@ -22,6 +20,36 @@ abstract class AbstractCrudController extends AbstractController
 		}
 
 		return $this->getResponseObject(201, $instance);
+	}
+
+	protected function handleFormAction($formId, Model $instance)
+	{
+		$this->view->setFormValues($formId, $instance->toFormData())->assign(['formId' => $formId]);
+
+		if ($instance->exists) {
+			$this->view->assign(['token' => $instance->token]);
+		}
+
+		if (!$this->request->method->isPost()) {
+			return 202;
+		}
+
+		if ($instance->exists && $this->filter->forUpdate($formId, $this->request->post->get())) {
+			return 200;
+		}
+
+		if (!$instance->exists && $this->filter->forInsert($formId, $this->request->post->get())) {
+			return 200;
+		}
+
+		$this->view->prefillForm($formId, $this->filter);
+
+		return 422;
+	}
+
+	private function getResponseObject($code, $entity)
+	{
+		return (object) ['status' => $code, 'instance' => $entity, 'success' => $code !== 202 && $code !== 422];
 	}
 
 	protected function createChildModel($formId, Model $instance, Model $ancestor)
@@ -70,41 +98,5 @@ abstract class AbstractCrudController extends AbstractController
 		$instance->setAttribute($key, $value);
 
 		return $this->getResponseObject(205, $instance);
-	}
-
-	protected function handleFormAction($formId, Model $instance)
-	{
-		$this->view
-			->setFormValues($formId, $instance->toFormData())
-			->assign(['formId' => $formId]);
-
-		if ($instance->exists) {
-			$this->view->assign(['token' => $instance->token]);
-		}
-
-		if (!$this->request->method->isPost()) {
-			return 202;
-		}
-
-		if ($instance->exists && $this->filter->forUpdate($formId, $this->request->post->get())) {
-			return 200;
-		}
-
-		if (!$instance->exists && $this->filter->forInsert($formId, $this->request->post->get())) {
-			return 200;
-		}
-
-		$this->view->prefillForm($formId, $this->filter);
-
-		return 422;
-	}
-
-	private function getResponseObject($code, $entity)
-	{
-		return (object) [
-			'status'   => $code,
-			'instance' => $entity,
-			'success'  => $code !== 202 && $code !== 422
-		];
 	}
 }

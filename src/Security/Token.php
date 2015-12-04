@@ -11,7 +11,7 @@ class Token
 
 	public static function extract($string)
 	{
-		$string = (string)$string;
+		$string = (string) $string;
 
 		if (!preg_match('/^(\w+?)(?:Model)?:(\d+):[a-f0-9]+$/i', $string, $m)) {
 			return false;

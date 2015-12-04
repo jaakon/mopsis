@@ -2,35 +2,9 @@
 
 class Pager
 {
-	protected $options = [
-		'cycle',
-		'delimiter',
-		'directoryRendering',
-		'directoryRenderingSelected',
-		'firstAvailable',
-		'firstNotAvailable',
-		'lastAvailable',
-		'lastNotAvailable',
-		'previousAvailable',
-		'previousNotAvailable',
-		'nextAvailable',
-		'nextNotAvailable',
-	];
-
-	protected $args = [
-		'cycle' => false
-	];
-
-	protected $result = [
-		'data',
-		'pos',
-		'pages',
-		'directory',
-		'first',
-		'last',
-		'previous',
-		'next',
-	];
+	protected $options = ['cycle', 'delimiter', 'directoryRendering', 'directoryRenderingSelected', 'firstAvailable', 'firstNotAvailable', 'lastAvailable', 'lastNotAvailable', 'previousAvailable', 'previousNotAvailable', 'nextAvailable', 'nextNotAvailable',];
+	protected $args = ['cycle' => false];
+	protected $result = ['data', 'pos', 'pages', 'directory', 'first', 'last', 'previous', 'next',];
 
 	public function __construct(array $data, $pageSize, $currentPage, array $args)
 	{
@@ -64,6 +38,11 @@ class Pager
 		$this->result['data']      = array_slice($data, ($this->result['pos'] - 1) * $pageSize, $pageSize);
 	}
 
+	protected function getHtml($option, $pos)
+	{
+		return str_replace(['{PAGE}'], [$pos], $this->args[$option]);
+	}
+
 	public function __get($key)
 	{
 		if (!isset($this->result[$key])) {
@@ -71,10 +50,5 @@ class Pager
 		}
 
 		return $this->result[$key];
-	}
-
-	protected function getHtml($option, $pos)
-	{
-		return str_replace(['{PAGE}'], [$pos], $this->args[$option]);
 	}
 }

@@ -9,7 +9,6 @@ class View
 {
 	protected $renderer;
 	protected $request;
-
 	private $template;
 	private $data       = [];
 	private $forms      = [];
@@ -97,10 +96,7 @@ class View
 	{
 		$messages = $filter->getMessages();
 
-		$this
-			->setFormValues($formId, $this->request->post->get())
-			->setFormErrors($formId, array_keys($messages))
-			->assign(['errors' => array_flatten($messages)]);
+		$this->setFormValues($formId, $this->request->post->get())->setFormErrors($formId, array_keys($messages))->assign(['errors' => array_flatten($messages)]);
 
 		return $this;
 	}
@@ -151,12 +147,7 @@ class View
 		}
 
 		if (!isset($this->forms[$formId])) {
-			$this->forms[$formId] = [
-				'errors'   => [],
-				'options'  => [],
-				'settings' => [],
-				'values'   => []
-			];
+			$this->forms[$formId] = ['errors' => [], 'options' => [], 'settings' => [], 'values' => []];
 		}
 	}
 

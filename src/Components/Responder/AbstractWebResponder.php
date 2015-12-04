@@ -66,6 +66,6 @@ abstract class AbstractWebResponder extends AbstractResponder
 
 		$this->response->status->setCode(500);
 		$this->response->content->set($exception->getMessage());
-//		$this->response->content->set(static_page(500));
+		//		$this->response->content->set(static_page(500));
 	}
 }

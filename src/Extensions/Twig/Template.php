@@ -1,5 +1,8 @@
 <?php namespace Mopsis\Extensions\Twig;
 
+use BadMethodCallException;
+use Exception;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Mopsis\Extensions\Eloquent\Model;
 
@@ -18,16 +21,16 @@ abstract class Template extends \Twig_Template
 		}
 
 		if ($type !== self::METHOD_CALL && $object instanceof Relation) {
-			if ($object instanceof \Illuminate\Database\Eloquent\Relations\BelongsTo) {
+			if ($object instanceof BelongsTo) {
 				return $object->getResults()->$item;
 			}
 		}
 
 		try {
 			return parent::getAttribute($object, $item, $arguments, $type, $isDefinedTest, $ignoreStrictCheck);
-		} catch (\BadMethodCallException $e) {
+		} catch (BadMethodCallException $e) {
 			$element = is_object($object) ? get_class($object) : gettype($object);
-			throw new \Exception('cannot find method or property "' . $item . '" of ' . $element);
+			throw new Exception('cannot find method or property "' . $item . '" of ' . $element);
 		}
 	}
 }

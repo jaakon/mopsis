@@ -1,5 +1,6 @@
 <?php namespace Mopsis\FormBuilder\Fields;
 
+use Exception;
 use Mopsis\FormBuilder\Contracts\Resizable;
 use Mopsis\FormBuilder\FieldFactory;
 
@@ -28,11 +29,13 @@ class Select extends AbstractField implements Resizable
 
 		if ($this->attr('size') === 'auto') {
 			$this->attr('size', $size);
+
 			return;
 		}
 
 		if (preg_match('/\{(\d*),(\d*)\}/', $this->attr('size'), $m)) {
 			$this->attr('size', between($size, $m[1], $m[2]));
+
 			return;
 		}
 

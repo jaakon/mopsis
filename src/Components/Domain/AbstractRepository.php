@@ -41,12 +41,6 @@ abstract class AbstractRepository
 		return null;
 	}
 
-	public function __clone()
-	{
-		$this->baseQuery = clone $this->baseQuery;
-		$this->query     = clone $this->baseQuery;
-	}
-
 	protected function callScope($scope, $parameters)
 	{
 		$that = clone $this;
@@ -61,5 +55,11 @@ abstract class AbstractRepository
 		$this->query = clone $this->baseQuery;
 
 		return $this;
+	}
+
+	public function __clone()
+	{
+		$this->baseQuery = clone $this->baseQuery;
+		$this->query     = clone $this->baseQuery;
 	}
 }

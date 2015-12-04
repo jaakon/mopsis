@@ -12,7 +12,6 @@ abstract class AbstractController
 	protected $request;
 	protected $filter;
 	protected $view;
-
 	protected $loginMandatory;
 
 	public function __construct(Request $request, Filter $filter, View $view)

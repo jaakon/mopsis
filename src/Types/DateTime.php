@@ -3,9 +3,9 @@
 class DateTime extends \DateTime
 {
 	const DE_SHORT = 'd.m.Y';
-//	const DE_SHORT		= 'Y-m-d';
+	//	const DE_SHORT		= 'Y-m-d';
 	const DE_LONG = 'd.m.Y H:i';
-//	const DE_LONG		= 'Y-m-d H:i';
+	//	const DE_LONG		= 'Y-m-d H:i';
 	const DE_FULL    = 'd.m.Y - H:i:s \U\h\r';
 	const TIME_SHORT = 'H:i';
 	const TIME_LONG  = 'H:i:s';
@@ -13,55 +13,7 @@ class DateTime extends \DateTime
 	const DATETIME   = 'Y-m-d\TH:i';
 	const TIMESTAMP  = 'U';
 	const ISO8601    = 'Y-m-d';
-
-	private static $_localStrings = [
-		'l' => [
-			'Montag',
-			'Dienstag',
-			'Mittwoch',
-			'Donnerstag',
-			'Freitag',
-			'Samstag',
-			'Sonntag'
-		],
-		'D' => [
-			'Mo',
-			'Di',
-			'Mi',
-			'Do',
-			'Fr',
-			'Sa',
-			'So'
-		],
-		'F' => [
-			'Januar',
-			'Februar',
-			'März',
-			'April',
-			'Mai',
-			'Juni',
-			'Juli',
-			'August',
-			'September',
-			'Oktober',
-			'November',
-			'Dezember'
-		],
-		'M' => [
-			'Jan',
-			'Feb',
-			'Mär',
-			'Apr',
-			'Mai',
-			'Jun',
-			'Jul',
-			'Aug',
-			'Sep',
-			'Okt',
-			'Nov',
-			'Dez'
-		],
-	];
+	private static $_localStrings = ['l' => ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'], 'D' => ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'], 'F' => ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'], 'M' => ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],];
 
 	public function __construct($time = 'now', $timezone = null)
 	{

@@ -1,7 +1,11 @@
 <?php namespace Mopsis\Components\Domain;
 
-use Mopsis\Components\Model\Model;
+use Illuminate\Database\Query\Builder;
+use Mopsis\Extensions\Eloquent\Model;
 
+/**
+ * @property Model $model
+ */
 abstract class AbstractGateway
 {
 	protected $model;
@@ -31,7 +35,7 @@ abstract class AbstractGateway
 		return $this->find(...$this->expandQuery($sql, $bindings))->first();
 	}
 
-	public function find($sql, array $bindings)
+	public function find($sql, array $bindings): Builder
 	{
 		return $this->model->whereRaw($sql, $bindings);
 	}
@@ -39,16 +43,10 @@ abstract class AbstractGateway
 	protected function expandQuery($sql, array $bindings)
 	{
 		if (!is_array($sql)) {
-			return [
-				$sql,
-				$bindings
-			];
+			return [$sql, $bindings];
 		}
 
-		return [
-			'`' . implode('`=? AND `', array_keys($sql)) . '`=?',
-			array_values($sql)
-		];
+		return ['`' . implode('`=? AND `', array_keys($sql)) . '`=?', array_values($sql)];
 	}
 
 	public function findMany($sql, array $bindings = [], $offset = 0, $length = null)

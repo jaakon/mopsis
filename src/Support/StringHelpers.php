@@ -48,11 +48,6 @@ class StringHelpers
 		return static::isUtf8($string) ? $string : utf8_encode($string);
 	}
 
-	public static function isHtml($string)
-	{
-		return is_string($string) && $string !== strip_tags($string);
-	}
-
 	public static function isUtf8($string)
 	{
 		return preg_match('%(?:
@@ -64,6 +59,11 @@ class StringHelpers
 			|[\xF1-\xF3][\x80-\xBF]{3}			# planes 4-15
 			|\xF4[\x80-\x8F][\x80-\xBF]{2}		# plane 16
 		)+%xs', $string);
+	}
+
+	public static function isHtml($string)
+	{
+		return is_string($string) && $string !== strip_tags($string);
 	}
 
 	public static function utf8Decode($string)

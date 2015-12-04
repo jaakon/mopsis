@@ -42,13 +42,13 @@ class ModelObserver
 		}
 	}
 
-//	public function saved(Model $model)
-//	{
-//	}
+	//	public function saved(Model $model)
+	//	{
+	//	}
 
-//	public function deleting(Model $model)
-//	{
-//	}
+	//	public function deleting(Model $model)
+	//	{
+	//	}
 
 	public function deleted(Model $model)
 	{
@@ -57,11 +57,11 @@ class ModelObserver
 		}
 	}
 
-//	public function restoring(Model $model)
-//	{
-//	}
+	//	public function restoring(Model $model)
+	//	{
+	//	}
 
-//	public function restored(Model $model)
-//	{
-//	}
+	//	public function restored(Model $model)
+	//	{
+	//	}
 }

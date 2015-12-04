@@ -1,7 +1,6 @@
 <?php
 
 use Mopsis\Core\App;
-use Mopsis\Extensions\DI\Definition\Helper\DotNotationDefinitionHelper;
 use Mopsis\Support\ArrayHelpers;
 use Mopsis\Support\ClassHelpers;
 use Mopsis\Support\LaravelHelpers;
@@ -67,7 +66,7 @@ function controller($className)
 
 function debug(...$args)
 {
-	return MiscHelpers::debug(...$args);
+	echo MiscHelpers::debug(...$args);
 }
 
 function duration($hours)

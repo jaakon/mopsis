@@ -15,7 +15,6 @@ abstract class Model extends EloquentModel implements ModelInterface
 	const CREATED_BY = 'created_by';
 	const UPDATED_BY = 'updated_by';
 	const DELETED_AT = 'deleted_at';
-
 	protected $guarded   = ['id'];
 	protected $sluggable = ['on_update' => true];
 	protected $orderBy;
@@ -28,11 +27,12 @@ abstract class Model extends EloquentModel implements ModelInterface
 		static::observe(new ModelObserver);
 
 		try {
-			if ($calledClass = App::identify($this)) {
+			if ($calledClass = App::identify(get_called_class())) {
 				$observer = App::build('Observer', implode('\\', $calledClass));
 				static::observe(new $observer);
 			}
-		} catch (DomainException $e) {}
+		} catch (DomainException $e) {
+		}
 	}
 
 	/**
@@ -51,16 +51,11 @@ abstract class Model extends EloquentModel implements ModelInterface
 		throw new ModelNotFoundException('Token "' . $token . '" is invalid or outdated.');
 	}
 
-	/** @Override */
+	// @Override
 	public function __construct(array $attributes = [])
 	{
 		if ($this->guarded !== ['*']) {
-			$this->guarded = array_merge($this->guarded, [
-				'slug',
-				static::CREATED_AT,
-				static::UPDATED_AT,
-				static::DELETED_AT
-			]);
+			$this->guarded = array_merge($this->guarded, ['slug', static::CREATED_AT, static::UPDATED_AT, static::DELETED_AT]);
 		}
 
 		foreach ($this->getDataTypes() as $attribute => $type) {
@@ -83,7 +78,7 @@ abstract class Model extends EloquentModel implements ModelInterface
 		parent::__construct($attributes);
 	}
 
-	/** @Override */
+	// @Override
 	public function __isset($key)
 	{
 		return parent::__isset($key) ?: parent::__isset(snake_case($key));
@@ -96,10 +91,7 @@ abstract class Model extends EloquentModel implements ModelInterface
 
 	public function clearCachedAttribute($attribute)
 	{
-		Cache::clear([
-			$this,
-			$attribute
-		]);
+		Cache::clear([$this, $attribute]);
 
 		return $this;
 	}
@@ -115,28 +107,7 @@ abstract class Model extends EloquentModel implements ModelInterface
 		return $this;
 	}
 
-	public function findRelations(Model $model)
-	{
-		$class     = new ReflectionClass($this);
-		$className = $class->getName();
-		$modelName = get_class($model);
-
-		return array_map(
-			function ($method) {
-				return $method->name;
-			},
-			array_filter(
-				$class->getMethods(\ReflectionMethod::IS_PUBLIC),
-				function ($method) use ($className, $modelName) {
-					return $method->class === $className
-					&& !preg_match('/^[gs]et\w+Attribute$/', $method->name)
-					&& strpos($method->getBody(), $modelName) !== false;
-				}
-			)
-		);
-	}
-
-	/** @Override */
+	// @Override
 	public function getAttribute($key)
 	{
 		if (ctype_lower($key) || is_int(strpos($key, '_'))) {
@@ -151,10 +122,7 @@ abstract class Model extends EloquentModel implements ModelInterface
 
 	public function getDataTypes()
 	{
-		return Cache::get([
-			get_called_class(),
-			'@dataTypes'
-		], function () {
+		return Cache::get([get_called_class(), '@dataTypes'], function () {
 			$columns = [];
 
 			foreach ($this->getConnection()->select('SHOW COLUMNS FROM ' . $this->getTable()) as $column) {
@@ -186,14 +154,10 @@ abstract class Model extends EloquentModel implements ModelInterface
 		});
 	}
 
-	/** @Override */
+	// @Override
 	public function getDates()
 	{
-		$defaults = [
-			static::CREATED_AT,
-			static::UPDATED_AT,
-			static::DELETED_AT
-		];
+		$defaults = [static::CREATED_AT, static::UPDATED_AT, static::DELETED_AT];
 
 		return array_merge($this->dates, $defaults);
 	}
@@ -207,7 +171,7 @@ abstract class Model extends EloquentModel implements ModelInterface
 		return array_values(array_diff(array_keys($this->getDataTypes()), $this->guarded));
 	}
 
-	/** @Override */
+	// @Override
 	public function getForeignKey()
 	{
 		return isset($this->table) ? str_singular($this->table) . '_id' : parent::getForeignKey();
@@ -225,36 +189,33 @@ abstract class Model extends EloquentModel implements ModelInterface
 
 	public function getTokenStringAttribute()
 	{
-		return (string)$this->token;
+		return (string) $this->token;
 	}
 
 	public function hasAttribute($key)
 	{
-		return (
-			array_key_exists($key, $this->attributes) ||
-			array_key_exists(snake_case($key), $this->attributes) ||
-			array_key_exists($key, $this->relations) ||
-			$this->hasGetMutator($key)
-		);
+		return (array_key_exists($key, $this->attributes) || array_key_exists(snake_case($key), $this->attributes) || array_key_exists($key, $this->relations) || $this->hasGetMutator($key));
 	}
 
-	/** @Override */
+	// @Override
 	public function newCollection(array $models = [])
 	{
 		try {
 			if ($calledClass = App::identify($this)) {
 				$collection = App::build('Collection', implode('\\', $calledClass));
+
 				return new $collection($models);
 			}
-		} catch (DomainException $e) {}
+		} catch (DomainException $e) {
+		}
 
 		return new Collection($models);
 	}
 
-	/** @Override */
-	public function newQuery($excludeDeleted = true)
+	// @Override
+	public function newQuery()
 	{
-		$builder = parent::newQuery($excludeDeleted);
+		$builder = parent::newQuery();
 
 		if (strlen($this->orderBy)) {
 			$builder->orderByRaw($this->orderBy);
@@ -275,7 +236,7 @@ abstract class Model extends EloquentModel implements ModelInterface
 		return $this->stringifier ?: $this->stringifier = new Stringifier($this);
 	}
 
-	/** @Override */
+	// @Override
 	public function toArray()
 	{
 		$attributes = [];
@@ -294,9 +255,6 @@ abstract class Model extends EloquentModel implements ModelInterface
 
 	protected function getCachedAttribute($attribute, callable $callback, $ttl = null)
 	{
-		return Cache::get([
-			$this,
-			$attribute
-		], $callback, $ttl);
+		return Cache::get([$this, $attribute], $callback, $ttl);
 	}
 }

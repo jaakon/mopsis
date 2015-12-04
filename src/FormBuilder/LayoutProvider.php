@@ -10,13 +10,6 @@ class LayoutProvider
 	protected $layout;
 	protected $layoutId;
 
-	public static function create($xmlData, $layoutId, $strict = false)
-	{
-		$provider = new static($xmlData, $strict);
-
-		return $provider($layoutId);
-	}
-
 	public function __construct($xmlData, $strict = false)
 	{
 		$this->xml = (new SimpleXMLElement($xmlData))->first('layouts');
@@ -28,6 +21,11 @@ class LayoutProvider
 		$this->strict = $strict;
 	}
 
+	public static function create($xmlData, $layoutId, $strict = false)
+	{
+		return (new static($xmlData, $strict))->__invoke($layoutId);
+	}
+
 	public function __invoke($layoutId)
 	{
 		if ($layoutId !== $this->layoutId) {
@@ -36,35 +34,6 @@ class LayoutProvider
 		}
 
 		return $this;
-	}
-
-	public function getHtml($type)
-	{
-		$layout = $this->layout[$type];
-
-		if (is_array($layout)) {
-			return $layout['before'] . ($layout['element'] ?: '{' . $type . '.content}') . $layout['after'];
-		}
-
-		if ($this->strict) {
-			throw new XMLProcessingException('layout for element "' . $type . '" cannot be found in xmlData');
-		}
-
-		return '<div class="' . $type . '">{' . $type . '.content}</div>';
-	}
-
-	public function getHtmlForItem($type, $part = null)
-	{
-		$layout = array_merge(
-			$this->layout['items']['default'],
-			$this->layout['items'][$type] ?: []
-		);
-
-		if ($part !== null) {
-			return $layout[$part];
-		}
-
-		return $layout['before'] . $layout['element'] . $layout['after'];
 	}
 
 	protected function load($layoutId, array $anchestors = [])
@@ -99,10 +68,7 @@ class LayoutProvider
 				continue;
 			}
 
-			$layout[$tagName] = array_merge($layout[$tagName], [
-				'before' => $node->text('before'),
-				'after'  => $node->text('after')
-			]);
+			$layout[$tagName] = array_merge($layout[$tagName], ['before' => $node->text('before'), 'after' => $node->text('after')]);
 		}
 
 		return $layout;
@@ -122,5 +88,31 @@ class LayoutProvider
 		}
 
 		return $layout;
+	}
+
+	public function getHtml($type)
+	{
+		$layout = $this->layout[$type];
+
+		if (is_array($layout)) {
+			return $layout['before'] . ($layout['element'] ?: '{' . $type . '.content}') . $layout['after'];
+		}
+
+		if ($this->strict) {
+			throw new XMLProcessingException('layout for element "' . $type . '" cannot be found in xmlData');
+		}
+
+		return '<div class="' . $type . '">{' . $type . '.content}</div>';
+	}
+
+	public function getHtmlForItem($type, $part = null)
+	{
+		$layout = array_merge($this->layout['items']['default'], $this->layout['items'][$type] ?: []);
+
+		if ($part !== null) {
+			return $layout[$part];
+		}
+
+		return $layout['before'] . $layout['element'] . $layout['after'];
 	}
 }

@@ -77,10 +77,7 @@ class Router
 				return false;
 			}
 
-			return [
-				$class,
-				$method
-			];
+			return [$class, $method];
 		}
 
 		if (preg_match('/^(\w+\\\\\w+)\.(\w+)$/', $path, $parts)) {
@@ -99,10 +96,7 @@ class Router
 				return false;
 			}
 
-			return [
-				$class,
-				$method
-			];
+			return [$class, $method];
 		}
 
 		$this->logger->debug('Cannot parse "' . $path . '"');

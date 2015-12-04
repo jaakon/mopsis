@@ -6,21 +6,19 @@ class Sql
 {
 	const REQUIRED_VALUE = 1;
 	const UNIQUE_VALUE   = 2;
-
 	private static $_configs  = [];
 	private static $_instance = [];
-
 	private $_config;
 	private $_pdo;
 
-//=== PUBLIC STATIC FUNCTIONS ==================================================
+	//=== PUBLIC STATIC FUNCTIONS ==================================================
 
 	private function __construct($key = 'default')
 	{
 		$this->_config = $key;
 	}
 
-	public static function db($key = 'default')
+	public static function db($key = 'default'): Sql
 	{
 		if (!isset(self::$_configs[$key])) {
 			throw new \Exception('configuration for connection [' . $key . '] not found');
@@ -39,16 +37,7 @@ class Sql
 			throw new \Exception('configuration for connection [' . $key . '] is already defined');
 		}
 
-		self::$_configs[$key] = [
-			'dsn'      => $driver . ':dbname=' . $database . ';host=' . $host,
-			'database' => $database,
-			'user'     => $user,
-			'password' => $password,
-			'options'  => $options ? $options : [
-				PDO::ATTR_PERSISTENT         => true,
-				PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES UTF8'
-			]
-		];
+		self::$_configs[$key] = ['dsn' => $driver . ':dbname=' . $database . ';host=' . $host, 'database' => $database, 'user' => $user, 'password' => $password, 'options' => $options ? $options : [PDO::ATTR_PERSISTENT => true, PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES UTF8']];
 	}
 
 	public static function in($field, Array $values)
@@ -63,33 +52,19 @@ class Sql
 	public static function expandQuery($query, $values)
 	{
 		if (!is_array($query)) {
-			return [
-				$query,
-				$values
-			];
+			return [$query, $values];
 		}
 
-		return [
-			'`' . implode('`=? AND `', array_keys($query)) . '`=?',
-			array_values($query)
-		];
+		return ['`' . implode('`=? AND `', array_keys($query)) . '`=?', array_values($query)];
 	}
 
-//=== PUBLIC METHODS ===========================================================
+	//=== PUBLIC METHODS ===========================================================
 
 	public static function buildQuery(array $args)
 	{
 		$args     = array_filter($args);
-		$required = [
-			'select' => 'SELECT',
-			'from'   => 'FROM'
-		];
-		$optional = [
-			'join'    => 'LEFT JOIN',
-			'where'   => 'WHERE',
-			'orderBy' => 'ORDER BY',
-			'limit'   => 'LIMIT'
-		];
+		$required = ['select' => 'SELECT', 'from' => 'FROM'];
+		$optional = ['join' => 'LEFT JOIN', 'where' => 'WHERE', 'orderBy' => 'ORDER BY', 'limit' => 'LIMIT'];
 
 		if (count(array_intersect_key($required, $args)) < count($required)) {
 			throw new \Exception('required fields not set');
@@ -229,11 +204,7 @@ class Sql
 					$values[$column['Field']] = explode("','", substr($m[1], 1, -1));
 					break;
 				case preg_match('/^text$/', $column['Type']):
-					list($subtype, $param1, $param2) = explode(':', $this->getValue('SELECT column_comment FROM information_schema.columns WHERE table_schema=? AND table_name=? AND column_name=?', [
-						self::$_configs[$this->_config]['database'],
-						$table,
-						$column['Field']
-					]));
+					list($subtype, $param1, $param2) = explode(':', $this->getValue('SELECT column_comment FROM information_schema.columns WHERE table_schema=? AND table_name=? AND column_name=?', [self::$_configs[$this->_config]['database'], $table, $column['Field']]));
 
 					switch ($subtype) {
 						case 'enum':
@@ -260,7 +231,7 @@ class Sql
 			$defaults[$column['Field']] = $column['Default'];
 
 			if ($column['Null'] === 'NO' && ($column['Type'] === 'datetime' || $column['Type'] === 'date') && $column['Default'] == null) {
-				$defaults[$column['Field']] = now();
+				$defaults[$column['Field']] = date('Y-m-d H:i:s');
 			}
 
 			if ($column['Null'] === 'NO' && $column['Extra'] !== 'auto_increment') {
@@ -276,12 +247,7 @@ class Sql
 			}
 		}
 
-		return [
-			'types'       => $types,
-			'constraints' => $constraints,
-			'defaults'    => $defaults,
-			'values'      => $values,
-		];
+		return ['types' => $types, 'constraints' => $constraints, 'defaults' => $defaults, 'values' => $values,];
 	}
 
 	public function getAll($query, $values = [])
@@ -304,10 +270,7 @@ class Sql
 				continue;
 			}
 
-			$references[$entry['column_name']] = [
-				'table'  => $entry['referenced_table_name'],
-				'column' => $entry['referenced_column_name'],
-			];
+			$references[$entry['column_name']] = ['table' => $entry['referenced_table_name'], 'column' => $entry['referenced_column_name'],];
 		}
 
 		return $references;
@@ -327,31 +290,21 @@ class Sql
 				continue;
 			}
 
-			$references[$entry['table_name']] = [
-				'reference' => $entry['column_name'],
-				'column'    => $entry['referenced_column_name'],
-			];
+			$references[$entry['table_name']] = ['reference' => $entry['column_name'], 'column' => $entry['referenced_column_name'],];
 		}
 
 		return $references;
 	}
 
-//=== PRIVATE METHODS ==========================================================
+	//=== PRIVATE METHODS ==========================================================
 
 	public function getCrossboundReferences($table)
 	{
 		$database   = self::$_configs[$this->_config]['database'];
 		$references = [];
 
-		foreach ($this->getAll("SELECT table_name, column_name, referenced_table_name, referenced_column_name FROM information_schema.key_column_usage WHERE table_schema='" . $database . "' AND referenced_table_schema='" . $database . "' AND (table_name LIKE ? OR table_name LIKE ? OR table_name LIKE ?)", [
-			$table . '_x_%',
-			'%_x_' . $table . '_x_%',
-			'%_x_' . $table
-		]) as $entry) {
-			$references[$entry['table_name']][$entry['referenced_table_name']] = [
-				'reference' => $entry['column_name'],
-				'column'    => $entry['referenced_column_name'],
-			];
+		foreach ($this->getAll("SELECT table_name, column_name, referenced_table_name, referenced_column_name FROM information_schema.key_column_usage WHERE table_schema='" . $database . "' AND referenced_table_schema='" . $database . "' AND (table_name LIKE ? OR table_name LIKE ? OR table_name LIKE ?)", [$table . '_x_%', '%_x_' . $table . '_x_%', '%_x_' . $table]) as $entry) {
+			$references[$entry['table_name']][$entry['referenced_table_name']] = ['reference' => $entry['column_name'], 'column' => $entry['referenced_column_name'],];
 		}
 
 		return $references;
