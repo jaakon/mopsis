@@ -80,7 +80,7 @@ class Auth
 		session_destroy();
 	}
 
-	public static function user()
+	public static function user(): User
 	{
 		if (static::$user === null) {
 			static::$user = static::autoload();
@@ -89,7 +89,7 @@ class Auth
 		return static::$user;
 	}
 
-	protected static function autoload()
+	protected static function autoload(): User
 	{
 		$userClass = App::get('User');
 

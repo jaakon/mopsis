@@ -146,6 +146,10 @@ abstract class Model implements ModelInterface
 			return !!$this->data['id'];
 		}
 
+		if ($key === 'ancestor' && method_exists($this, 'ancestor')) {
+			return $this->ancestor();
+		}
+
 		if (method_exists($this, 'get' . ucfirst($key) . 'Attribute')) {
 			if ($this->cache[$key] === null) {
 				$this->cache[$key] = $this->{'get' . ucfirst($key) . 'Attribute'}();
@@ -172,6 +176,10 @@ abstract class Model implements ModelInterface
 	{
 		if ($key === 'exists') {
 			return true;
+		}
+
+		if ($key === 'ancestor') {
+			return method_exists($this, 'ancestor');
 		}
 
 		if (array_key_exists($key, $this->data)) {
