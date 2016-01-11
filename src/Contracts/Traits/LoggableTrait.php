@@ -13,7 +13,10 @@ trait LoggableTrait
 
 		$eventClass = App::get('Event');
 
-		$event = new $eventClass(['message' => $message ?: $this->traceAction(), 'values' => json_encode($this->getDiff())]);
+		$event = new $eventClass([
+			'message' => $message ?: $this->traceAction(),
+			'values'  => json_encode($this->getDiff())
+		]);
 
 		$event->user()->associate(Auth::user());
 		$this->events()->save($event);
@@ -43,7 +46,12 @@ trait LoggableTrait
 			}
 		}
 
-		return array_diff_key($diff, array_fill_keys([$this->getKeyName(), static::CREATED_AT, static::UPDATED_AT, static::DELETED_AT], null));
+		return array_diff_key($diff, array_fill_keys([
+			$this->getKeyName(),
+			static::CREATED_AT,
+			static::UPDATED_AT,
+			static::DELETED_AT
+		], null));
 	}
 	/*
 			if (class_exists('\App\Models\Event')) {

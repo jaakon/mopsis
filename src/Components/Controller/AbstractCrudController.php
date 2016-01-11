@@ -49,7 +49,11 @@ abstract class AbstractCrudController extends AbstractController
 
 	private function getResponseObject($code, $entity)
 	{
-		return (object) ['status' => $code, 'instance' => $entity, 'success' => $code !== 202 && $code !== 422];
+		return (object) [
+			'status'   => $code,
+			'instance' => $entity,
+			'success'  => $code !== 202 && $code !== 422
+		];
 	}
 
 	protected function createChildModel($formId, Model $instance, Model $ancestor)

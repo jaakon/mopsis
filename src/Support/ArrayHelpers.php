@@ -30,7 +30,10 @@ class ArrayHelpers
 			} elseif (is_object($array1[$key]) && is_object($array2[$key])) {
 				$diff[$key] = static::diffValues(ObjectHelpers::toArray($array1[$key]), ObjectHelpers::toArray($array2[$key]));
 			} elseif ((string) $array1[$key] !== (string) $array2[$key]) {
-				$diff[$key] = [(string) $array1[$key], (string) $array2[$key]];
+				$diff[$key] = [
+					(string) $array1[$key],
+					(string) $array2[$key]
+				];
 			}
 		}
 

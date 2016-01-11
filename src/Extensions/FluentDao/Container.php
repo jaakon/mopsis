@@ -1,5 +1,8 @@
 <?php namespace Mopsis\Extensions\FluentDao;
 
+/**
+ * @property  properties
+ */
 abstract class Container
 {
 	protected $data  = null;

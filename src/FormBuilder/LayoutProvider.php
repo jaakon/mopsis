@@ -68,7 +68,10 @@ class LayoutProvider
 				continue;
 			}
 
-			$layout[$tagName] = array_merge($layout[$tagName], ['before' => $node->text('before'), 'after' => $node->text('after')]);
+			$layout[$tagName] = array_merge($layout[$tagName], [
+				'before' => $node->text('before'),
+				'after'  => $node->text('after')
+			]);
 		}
 
 		return $layout;

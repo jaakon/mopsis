@@ -6,10 +6,16 @@ use Aura\Web\Response;
 use Mopsis\Components\Domain\Payload\PayloadInterface;
 use Mopsis\Components\View\View;
 
+/**
+ * @property PayloadInterface $payload
+ */
 abstract class AbstractResponder
 {
 	protected $accept;
-	protected $available      = ['text/html' => '.twig', 'application/json' => '.json'];
+	protected $available      = [
+		'text/html'        => '.twig',
+		'application/json' => '.json'
+	];
 	protected $payload;
 	protected $payloadData;
 	protected $payloadMethods = [];

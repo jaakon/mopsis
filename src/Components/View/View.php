@@ -3,18 +3,20 @@
 use Aura\Web\Request;
 use Mopsis\Components\Domain\AbstractFilter as Filter;
 use Mopsis\Core\App;
+use Mopsis\Extensions\Twig\TwigException;
 use Twig_Environment as Renderer;
+use Twig_Error_Runtime;
 
 class View
 {
 	protected $renderer;
 	protected $request;
-	private $template;
-	private $data       = [];
-	private $forms      = [];
-	private $extensions = [];
-	private $functions  = [];
-	private $filters    = [];
+	private   $template;
+	private   $data       = [];
+	private   $forms      = [];
+	private   $extensions = [];
+	private   $functions  = [];
+	private   $filters    = [];
 
 	public function __construct(Renderer $renderer, Request $request, array $extensions = [])
 	{
@@ -45,7 +47,22 @@ class View
 			$this->renderer->getExtension('formbuilder')->setConfigurations($this->forms);
 		}
 
-		return trim($this->renderer->render($this->template, $this->data));
+		try {
+			return trim($this->renderer->render($this->template, $this->data));
+		} catch (Twig_Error_Runtime $exception) {
+			if (!preg_match('/An exception has been thrown during the rendering of a template \("(.+?)"\) in "(.+?)" at line (.+?)./', $exception->getMessage(), $m)) {
+				throw $exception;
+			}
+
+			$twigException = new TwigException($m[1], $exception->getCode(), $exception);
+
+			$file = APPLICATION_PATH . '/' . App::get('twigloader.config')[0] . '/' . $m[2];
+
+			$twigException->setFile($file);
+			$twigException->setLine($m[3]);
+
+			throw $twigException;
+		}
 	}
 
 	public function addExtension($extension)
@@ -147,7 +164,12 @@ class View
 		}
 
 		if (!isset($this->forms[$formId])) {
-			$this->forms[$formId] = ['errors' => [], 'options' => [], 'settings' => [], 'values' => []];
+			$this->forms[$formId] = [
+				'errors'   => [],
+				'options'  => [],
+				'settings' => [],
+				'values'   => []
+			];
 		}
 	}
 

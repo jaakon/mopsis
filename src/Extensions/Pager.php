@@ -2,9 +2,33 @@
 
 class Pager
 {
-	protected $options = ['cycle', 'delimiter', 'directoryRendering', 'directoryRenderingSelected', 'firstAvailable', 'firstNotAvailable', 'lastAvailable', 'lastNotAvailable', 'previousAvailable', 'previousNotAvailable', 'nextAvailable', 'nextNotAvailable',];
-	protected $args = ['cycle' => false];
-	protected $result = ['data', 'pos', 'pages', 'directory', 'first', 'last', 'previous', 'next',];
+	protected $options = [
+		'cycle',
+		'delimiter',
+		'directoryRendering',
+		'directoryRenderingSelected',
+		'firstAvailable',
+		'firstNotAvailable',
+		'lastAvailable',
+		'lastNotAvailable',
+		'previousAvailable',
+		'previousNotAvailable',
+		'nextAvailable',
+		'nextNotAvailable',
+	];
+	protected $args = [
+		'cycle' => false
+	];
+	protected $result = [
+		'data',
+		'pos',
+		'pages',
+		'directory',
+		'first',
+		'last',
+		'previous',
+		'next',
+	];
 
 	public function __construct(array $data, $pageSize, $currentPage, array $args)
 	{

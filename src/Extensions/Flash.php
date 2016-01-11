@@ -3,7 +3,12 @@
 class Flash
 {
 	private $key    = 'flash_messages';
-	private $levels = ['info', 'success', 'error', 'warning'];
+	private $levels = [
+		'info',
+		'success',
+		'error',
+		'warning'
+	];
 
 	public function __construct()
 	{
@@ -36,7 +41,11 @@ class Flash
 			return;
 		}
 
-		$_SESSION[$this->key][] = ['level' => $level, 'text' => $text, 'url' => $url];
+		$_SESSION[$this->key][] = [
+			'level' => $level,
+			'text'  => $text,
+			'url'   => $url
+		];
 	}
 
 	public function flush()

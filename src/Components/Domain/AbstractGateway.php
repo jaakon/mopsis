@@ -25,7 +25,7 @@ abstract class AbstractGateway
 		return $this->model->unpack($token);
 	}
 
-	public function newEntity(array $attributes = [])
+	public function newEntity(array $attributes = []) : Model
 	{
 		return $this->model->newInstance($attributes);
 	}
@@ -43,10 +43,16 @@ abstract class AbstractGateway
 	protected function expandQuery($sql, array $bindings)
 	{
 		if (!is_array($sql)) {
-			return [$sql, $bindings];
+			return [
+				$sql,
+				$bindings
+			];
 		}
 
-		return ['`' . implode('`=? AND `', array_keys($sql)) . '`=?', array_values($sql)];
+		return [
+			'`' . implode('`=? AND `', array_keys($sql)) . '`=?',
+			array_values($sql)
+		];
 	}
 
 	public function findMany($sql, array $bindings = [], $offset = 0, $length = null)

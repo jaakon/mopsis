@@ -1,12 +1,12 @@
 <?php namespace Mopsis\Core;
 
-use Interop\Container\ContainerInterface as ContainerInterface;
+use DI\Container;
 
 class App
 {
 	protected static $container;
 
-	public static function initialize(ContainerInterface $container)
+	public static function initialize(Container $container)
 	{
 		static::$container = $container;
 	}
@@ -16,7 +16,7 @@ class App
 		return static::getInstance()->make(static::build($type, $name), $parameters);
 	}
 
-	public static function getInstance(): ContainerInterface
+	public static function getInstance(): Container
 	{
 		return static::$container;
 	}
@@ -42,7 +42,11 @@ class App
 
 		list($module, $domain, $subtype) = explode('\\', $name);
 
-		$replacements = array_filter(['{{MODULE}}' => $module, '{{DOMAIN}}' => $domain, '{{SUBTYPE}}' => $subtype]);
+		$replacements = array_filter([
+			'{{MODULE}}'  => $module,
+			'{{DOMAIN}}'  => $domain,
+			'{{SUBTYPE}}' => $subtype
+		]);
 
 		$class = str_replace(array_keys($replacements), array_values($replacements), $format);
 
@@ -61,6 +65,7 @@ class App
 
 		foreach (static::getInstance()->get('classFormats') as $format) {
 			$format = preg_replace('/\{\{[A-Z]+\}\}/', '((?:[A-Z][a-z]+)+)', str_replace('\\', '\\\\', $format));
+
 			if (preg_match('/' . $format . '/', $class, $m)) {
 				return array_slice($m, 1);
 			}

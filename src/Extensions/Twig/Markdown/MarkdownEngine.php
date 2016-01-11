@@ -14,7 +14,13 @@ class MarkdownEngine implements MarkdownEngineInterface
 		$content = preg_replace('/test-(\d+)/', '[Test #$1](/search?query=$1)', $content);
 
 		// Revert double encoding of quotes
-		$content = str_replace(['&quot;', '&#039;'], ['"', '\''], $content);
+		$content = str_replace([
+			'&quot;',
+			'&#039;'
+		], [
+			'"',
+			'\''
+		], $content);
 
 		// Fixing backticks without leading return
 		$content = preg_replace('/([^\n])(```)/', "$1\n$2", $content);

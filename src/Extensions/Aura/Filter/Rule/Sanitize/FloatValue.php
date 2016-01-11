@@ -25,10 +25,14 @@ class FloatValue
 			return true;
 		}
 
-		$locales = ['de_DE', 'en_US', 'fr_FR']; //\ResourceBundle::getLocales('');
+		$locales = [
+			'de_DE',
+			'en_US',
+			'fr_FR'
+		]; //\ResourceBundle::getLocales('');
 
 		foreach ($locales as $locale) {
-			$fmt   = new \NumberFormatter($locale, \NumberFormatter::DECIMAL);
+			$fmt = new \NumberFormatter($locale, \NumberFormatter::DECIMAL);
 			$float = $fmt->parse($value);
 
 			if ($float !== false) {

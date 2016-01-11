@@ -22,20 +22,35 @@ abstract class AbstractService
 			$instance = $this->gateway->newEntity();
 
 			if ($data === null) {
-				return $this->payload->newEntity(['instance' => $instance, 'formId' => $formId]);
+				return $this->payload->newEntity([
+					'instance' => $instance,
+					'formId'   => $formId
+				]);
 			}
 
 			if (!$this->filter->forInsert($formId, $data)) {
-				return $this->payload->notValid(['instance' => $instance, 'formId' => $formId, 'errors' => $this->filter->getMessages(), 'requestData' => $data]);
+				return $this->payload->notValid([
+					'instance'    => $instance,
+					'formId'      => $formId,
+					'errors'      => $this->filter->getMessages(),
+					'requestData' => $data
+				]);
 			}
 
 			if (!$this->gateway->create($instance, $this->filter->getResult())) {
-				return new $this->payload->notCreated(['instance' => $instance, 'formId' => $formId]);
+				return new $this->payload->notCreated([
+					'instance' => $instance,
+					'formId'   => $formId
+				]);
 			}
 
 			return $this->payload->created(['instance' => $instance]);
 		} catch (Exception $e) {
-			return $this->payload->error(['exception' => $e, 'formId' => $formId, 'data' => $data]);
+			return $this->payload->error([
+				'exception' => $e,
+				'formId'    => $formId,
+				'data'      => $data
+			]);
 		}
 	}
 
@@ -56,23 +71,42 @@ abstract class AbstractService
 			}
 
 			if ($data === null) {
-				return $this->payload->newEntity(['instance' => $instance, 'formId' => $formId, 'ancestorToken' => $ancestorToken]);
+				return $this->payload->newEntity([
+					'instance'      => $instance,
+					'formId'        => $formId,
+					'ancestorToken' => $ancestorToken
+				]);
 			}
 
 			if (!$this->filter->forInsert($formId, $data)) {
-				return $this->payload->notValid(['instance' => $instance, 'formId' => $formId, 'ancestorToken' => $ancestorToken, 'errors' => $this->filter->getMessages(), 'requestData' => $data]);
+				return $this->payload->notValid([
+					'instance'      => $instance,
+					'formId'        => $formId,
+					'ancestorToken' => $ancestorToken,
+					'errors'        => $this->filter->getMessages(),
+					'requestData'   => $data
+				]);
 			}
 
 			$relation = array_pop($relations);
 			$instance->$relation()->associate($ancestor);
 
 			if (!$this->gateway->create($instance, $this->filter->getResult())) {
-				return new $this->payload->notCreated(['instance' => $instance, 'formId' => $formId, 'ancestorToken' => $ancestorToken]);
+				return new $this->payload->notCreated([
+					'instance'      => $instance,
+					'formId'        => $formId,
+					'ancestorToken' => $ancestorToken
+				]);
 			}
 
 			return $this->payload->created(['instance' => $instance]);
 		} catch (Exception $e) {
-			return $this->payload->error(['exception' => $e, 'formId' => $formId, 'ancestorToken' => $ancestorToken, 'data' => $data]);
+			return $this->payload->error([
+				'exception'     => $e,
+				'formId'        => $formId,
+				'ancestorToken' => $ancestorToken,
+				'data'          => $data
+			]);
 		}
 	}
 
@@ -91,7 +125,10 @@ abstract class AbstractService
 
 			return $this->payload->deleted(['instance' => $instance]);
 		} catch (Exception $e) {
-			return $this->payload->error(['exception' => $e, 'instance' => $instance]);
+			return $this->payload->error([
+				'exception' => $e,
+				'token'     => $token
+			]);
 		}
 	}
 
@@ -106,7 +143,10 @@ abstract class AbstractService
 
 			return $this->payload->found([$this->instanceKey => $instance]);
 		} catch (Exception $e) {
-			return $this->payload->error(['exception' => $e, 'token' => $token]);
+			return $this->payload->error([
+				'exception' => $e,
+				'token'     => $token
+			]);
 		}
 	}
 
@@ -121,7 +161,9 @@ abstract class AbstractService
 
 			return $this->payload->found([$this->collectionKey => $collection]);
 		} catch (Exception $e) {
-			return $this->payload->error(['exception' => $e]);
+			return $this->payload->error([
+				'exception' => $e
+			]);
 		}
 	}
 
@@ -141,7 +183,10 @@ abstract class AbstractService
 
 			return $this->payload->found([$this->instanceKey => $instance]);
 		} catch (Exception $e) {
-			return $this->payload->error(['exception' => $e, 'attributes' => $attributes]);
+			return $this->payload->error([
+				'exception'  => $e,
+				'attributes' => $attributes
+			]);
 		}
 	}
 
@@ -150,7 +195,9 @@ abstract class AbstractService
 		try {
 			return $this->payload->found([]);
 		} catch (Exception $e) {
-			return $this->payload->error(['exception' => $e]);
+			return $this->payload->error([
+				'exception' => $e
+			]);
 		}
 	}
 
@@ -169,7 +216,12 @@ abstract class AbstractService
 
 			return $this->payload->updated(['instance' => $instance]);
 		} catch (Exception $e) {
-			return $this->payload->error(['exception' => $e, 'token' => $token]);
+			return $this->payload->error([
+				'exception' => $e,
+				'token'     => $token,
+				'key'       => $key,
+				'value'     => $value
+			]);
 		}
 	}
 
@@ -183,20 +235,36 @@ abstract class AbstractService
 			}
 
 			if ($data === null) {
-				return $this->payload->found(['instance' => $instance, 'formId' => $formId]);
+				return $this->payload->found([
+					'instance' => $instance,
+					'formId'   => $formId
+				]);
 			}
 
 			if (!$this->filter->forUpdate($formId, $data)) {
-				return $this->payload->notValid(['instance' => $instance, 'formId' => $formId, 'errors' => $this->filter->getMessages(), 'requestData' => $data]);
+				return $this->payload->notValid([
+					'instance'    => $instance,
+					'formId'      => $formId,
+					'errors'      => $this->filter->getMessages(),
+					'requestData' => $data
+				]);
 			}
 
 			if (!$this->gateway->update($instance, $this->filter->getResult())) {
-				return $this->payload->notUpdated(['instance' => $instance, 'formId' => $formId]);
+				return $this->payload->notUpdated([
+					'instance' => $instance,
+					'formId'   => $formId
+				]);
 			}
 
 			return $this->payload->updated(['instance' => $instance]);
 		} catch (Exception $e) {
-			return $this->payload->error(['exception' => $e, 'formId' => $formId, 'token' => $token, 'data' => $data]);
+			return $this->payload->error([
+				'exception' => $e,
+				'formId'    => $formId,
+				'token'     => $token,
+				'data'      => $data
+			]);
 		}
 	}
 }

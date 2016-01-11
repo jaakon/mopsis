@@ -4,6 +4,10 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Mopsis\Contracts\Model;
 use Mopsis\Core\App;
 
+/**
+ * @property Model  $instance
+ * @property string $session
+ */
 class Token
 {
 	protected $instance;

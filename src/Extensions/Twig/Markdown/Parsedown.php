@@ -50,7 +50,10 @@ class Parsedown extends \Parsedown
 		foreach ($this->DefinitionData['Placeholder'] as $key => $value) {
 			$pattern = '/\{' . preg_quote($key, '/') . '\}/i';
 			if (preg_match($pattern, $excerpt['text'], $matches)) {
-				return ['extent' => strlen($matches[0]), 'markup' => $value];
+				return [
+					'extent' => strlen($matches[0]),
+					'markup' => $value
+				];
 			}
 		}
 

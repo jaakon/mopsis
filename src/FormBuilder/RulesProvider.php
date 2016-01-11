@@ -49,7 +49,11 @@ class RulesProvider
 			$rules = [];
 
 			foreach ($item->all('rule[@type="sanitize"]') as $rule) {
-				$rules[] = ['spec' => $rule->attr('spec'), 'args' => explode('|', $rule->attr('args')), 'blank' => $rule->attr('blankValue') ?: null];
+				$rules[] = [
+					'spec'  => $rule->attr('spec'),
+					'args'  => explode('|', $rule->attr('args')),
+					'blank' => $rule->attr('blankValue') ?: null
+				];
 			}
 
 			if (count($rules)) {
@@ -69,7 +73,11 @@ class RulesProvider
 			$rules = [];
 
 			foreach ($item->all('rule[@type="upload"]') as $rule) {
-				$rules[] = ['spec' => $rule->attr('spec'), 'args' => explode('|', $rule->attr('args')), 'message' => $rule->attr('suppressMessage') === 'true' ? false : $rule->text()];
+				$rules[] = [
+					'spec'    => $rule->attr('spec'),
+					'args'    => explode('|', $rule->attr('args')),
+					'message' => $rule->attr('suppressMessage') === 'true' ? false : $rule->text()
+				];
 			}
 
 			$results[$field] = $rules;
@@ -87,7 +95,12 @@ class RulesProvider
 			$rules = [];
 
 			foreach ($item->all('rule[@type="validate"]') as $rule) {
-				$rules[] = ['spec' => $rule->attr('spec'), 'args' => explode('|', $rule->attr('args')), 'message' => $rule->attr('suppressMessage') === 'true' ? false : $rule->text(), 'mode' => $rule->attr('failureMode') ?: 'hard'];
+				$rules[] = [
+					'spec'    => $rule->attr('spec'),
+					'args'    => explode('|', $rule->attr('args')),
+					'message' => $rule->attr('suppressMessage') === 'true' ? false : $rule->text(),
+					'mode'    => $rule->attr('failureMode') ?: 'hard'
+				];
 			}
 
 			$results[$field] = $rules;

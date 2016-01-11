@@ -16,12 +16,22 @@ class FormBuilder extends \Twig_Extension
 
 	public function getFunctions()
 	{
-		return [new \Twig_SimpleFunction('FormBuilder', [$this, 'getFormBuilder'], ['is_safe' => ['html']])];
+		return [
+			new \Twig_SimpleFunction('FormBuilder', [
+				$this,
+				'getFormBuilder'
+			], ['is_safe' => ['html']])
+		];
 	}
 
 	public function getFormBuilder($formId, $uri)
 	{
-		$defaults = ['errors' => [], 'options' => [], 'settings' => [], 'values' => []];
+		$defaults = [
+			'errors'   => [],
+			'options'  => [],
+			'settings' => [],
+			'values'   => []
+		];
 		$config   = (object) array_merge($defaults, $this->configurations[$formId] ?: []);
 
 		return app('Mopsis\FormBuilder\FormBuilder')->getForm($formId, $uri, $config);

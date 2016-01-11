@@ -7,7 +7,7 @@ abstract class ModelFactory
 	const NS_MODELS = '\\App\\Models\\';
 	protected static $models = [];
 
-	//=== PUBLIC STATIC FUNCTIONS ==================================================
+//=== PUBLIC STATIC FUNCTIONS ==================================================
 
 	public static function getConnections($class)
 	{
@@ -18,17 +18,27 @@ abstract class ModelFactory
 			// ----- OUTBOUND -----
 			foreach (Sql::db()->getOutboundReferences($table, ['id']) as $attribute => $data) {
 				$refClass                                      = class_basename(ModelFactory::findClass($data['table']));
-				$result[preg_replace('/Id$/', '', $attribute)] = ['type' => 'outbound', 'class' => $refClass, 'attribute' => $attribute,];
+				$result[preg_replace('/Id$/', '', $attribute)] = [
+					'type'      => 'outbound',
+					'class'     => $refClass,
+					'attribute' => $attribute,
+				];
 			}
 
 			// ----- INBOUND -----
 			foreach (Sql::db()->getInboundReferences($table, ['id']) as $key => $data) {
-				$result[$key] = ['type' => 'inbound', 'query' => '`' . $data['reference'] . '`=?',];
+				$result[$key] = [
+					'type'  => 'inbound',
+					'query' => '`' . $data['reference'] . '`=?',
+				];
 			}
 
 			// ----- MIXED_INBOUND -----
 			foreach (Sql::db()->getAll("SELECT table_name, column_name FROM information_schema.columns WHERE table_schema=DATABASE() AND column_type='text' AND column_comment LIKE 'model:%" . class_basename($class) . "%'") as $entry) {
-				$result[$entry['table_name']] = ['type' => 'mixed_inbound', 'query' => '`' . $entry['column_name'] . '`=?',];
+				$result[$entry['table_name']] = [
+					'type'  => 'mixed_inbound',
+					'query' => '`' . $entry['column_name'] . '`=?',
+				];
 			}
 
 			// ----- CROSSBOUND -----
@@ -40,7 +50,12 @@ abstract class ModelFactory
 				unset($data[$table]);
 
 				foreach ($data as $table => $entry) {
-					$result[$table] = ['type' => 'crossbound', 'pivot' => $pivot, 'identifier' => $entry['reference'], 'query' => '`' . $master['reference'] . '`=?',];
+					$result[$table] = [
+						'type'       => 'crossbound',
+						'pivot'      => $pivot,
+						'identifier' => $entry['reference'],
+						'query'      => '`' . $master['reference'] . '`=?',
+					];
 				}
 			}
 
@@ -50,7 +65,10 @@ abstract class ModelFactory
 
 	public static function readFromCache($class, $property, \Closure $callback, $ttl = null)
 	{
-		return Cache::get([str_replace('\\', '/', $class), $property], $callback, $ttl);
+		return Cache::get([
+			str_replace('\\', '/', $class),
+			$property
+		], $callback, $ttl);
 	}
 
 	public static function findTable($class)

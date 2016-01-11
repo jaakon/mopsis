@@ -41,7 +41,7 @@ class RoleManager
 		return static::instanceMeetsConstraint($instance, $constraint);
 	}
 
-	protected static function instanceMeetsConstraint($instance, $constraint)
+	protected static function instanceMeetsConstraint(Model $instance, $constraint)
 	{
 		if ((string) $instance === (string) $constraint) {
 			return true;

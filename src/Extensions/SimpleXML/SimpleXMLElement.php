@@ -53,20 +53,25 @@ class SimpleXMLElement
 	}
 
 	/**
+	 * @param string $path
+	 *
 	 * @return SimpleXMLElement[]
 	 */
-	public function all($path)
+	public function all(string $path)
 	{
 		return $this->xpath($path) ?: [];
 	}
 
-	public function xpath($path)
+	public function xpath(string $path)
 	{
 		if (!($elements = $this->element->xpath($path))) {
 			return false;
 		}
 
-		return array_map([$this, 'wrapSimpleXMLElement'], $elements);
+		return array_map([
+			$this,
+			'wrapSimpleXMLElement'
+		], $elements);
 	}
 
 	public function attr($name, $namespace = null)

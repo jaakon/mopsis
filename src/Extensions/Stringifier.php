@@ -104,11 +104,11 @@ class Stringifier
 
 	protected function objectGetAsStringMutator($key)
 	{
-		return $this->object->{'get' . studly_case($key) . 'AsStringAttribute'}();
+		return $this->object->{'get' . studly_case($key) . 'AsString'}();
 	}
 
 	protected function objectHasAsStringMutator($key)
 	{
-		return method_exists($this->object, 'get' . studly_case($key) . 'AsStringAttribute');
+		return method_exists($this->object, 'get' . studly_case($key) . 'AsString');
 	}
 }

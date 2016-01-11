@@ -15,12 +15,12 @@ abstract class Model extends EloquentModel implements ModelInterface
 	const CREATED_BY = 'created_by';
 	const UPDATED_BY = 'updated_by';
 	const DELETED_AT = 'deleted_at';
-	protected $guarded   = ['id'];
+	protected $guarded = ['id'];
 	protected $sluggable = ['on_update' => true];
 	protected $orderBy;
 	protected $stringifier;
 
-	/** @Override */
+	// @Override
 	public static function boot()
 	{
 		parent::boot();
@@ -55,7 +55,12 @@ abstract class Model extends EloquentModel implements ModelInterface
 	public function __construct(array $attributes = [])
 	{
 		if ($this->guarded !== ['*']) {
-			$this->guarded = array_merge($this->guarded, ['slug', static::CREATED_AT, static::UPDATED_AT, static::DELETED_AT]);
+			$this->guarded = array_merge($this->guarded, [
+				'slug',
+				static::CREATED_AT,
+				static::UPDATED_AT,
+				static::DELETED_AT
+			]);
 		}
 
 		foreach ($this->getDataTypes() as $attribute => $type) {
@@ -91,7 +96,10 @@ abstract class Model extends EloquentModel implements ModelInterface
 
 	public function clearCachedAttribute($attribute)
 	{
-		Cache::clear([$this, $attribute]);
+		Cache::clear([
+			$this,
+			$attribute
+		]);
 
 		return $this;
 	}
@@ -122,7 +130,10 @@ abstract class Model extends EloquentModel implements ModelInterface
 
 	public function getDataTypes()
 	{
-		return Cache::get([get_called_class(), '@dataTypes'], function () {
+		return Cache::get([
+			$this->getTable(),
+			'@dataTypes'
+		], function () {
 			$columns = [];
 
 			foreach ($this->getConnection()->select('SHOW COLUMNS FROM ' . $this->getTable()) as $column) {
@@ -131,18 +142,21 @@ abstract class Model extends EloquentModel implements ModelInterface
 				}
 
 				switch (true) {
-					case preg_match('/^tinyint\(1\)$/', $column->Type):
-						$columns[$column->Field] = 'boolean';
+					case preg_match('/^varchar\(\d+\)$/', $column->Type):
+						$columns[$column->Field] = 'string';
 						continue;
 					case preg_match('/^int\(10\)( unsigned)?$/', $column->Type):
 						$columns[$column->Field] = 'integer';
 						continue;
+					case preg_match('/^timestamp|date(time)?$/', $column->Type):
+						$columns[$column->Field] = 'datetime';
+						continue;
+					case preg_match('/^tinyint\(1\)$/', $column->Type):
+						$columns[$column->Field] = 'boolean';
+						continue;
 					case preg_match('/^float( unsigned)?$/', $column->Type):
 					case preg_match('/^decimal\(\d+,\d+\)( unsigned)?$/', $column->Type):
 						$columns[$column->Field] = 'float';
-						continue;
-					case preg_match('/^timestamp|date(time)?$/', $column->Type):
-						$columns[$column->Field] = 'datetime';
 						continue;
 					default:
 						$columns[$column->Field] = null;
@@ -157,7 +171,11 @@ abstract class Model extends EloquentModel implements ModelInterface
 	// @Override
 	public function getDates()
 	{
-		$defaults = [static::CREATED_AT, static::UPDATED_AT, static::DELETED_AT];
+		$defaults = [
+			static::CREATED_AT,
+			static::UPDATED_AT,
+			static::DELETED_AT
+		];
 
 		return array_merge($this->dates, $defaults);
 	}
@@ -253,8 +271,21 @@ abstract class Model extends EloquentModel implements ModelInterface
 		return $this->stringify()->toArray();
 	}
 
+	// @Override
+	protected function castAttribute($key, $value)
+	{
+		if ($this->getCastType($key) === 'json') {
+			return App::make('Json', ['body' => $value]);
+		}
+
+		return parent::castAttribute($key, $value);
+	}
+
 	protected function getCachedAttribute($attribute, callable $callback, $ttl = null)
 	{
-		return Cache::get([$this, $attribute], $callback, $ttl);
+		return Cache::get([
+			$this,
+			$attribute
+		], $callback, $ttl);
 	}
 }

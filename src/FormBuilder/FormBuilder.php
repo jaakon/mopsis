@@ -6,15 +6,19 @@ use Mopsis\FormBuilder\Contracts\Resizable;
 use Mopsis\Security\Csrf;
 use stdClass;
 
+/**
+ * @property LayoutProvider $layout
+ */
 class FormBuilder
 {
 	const NO_GROUPS = '@@no-groups@@';
+
 	protected $xml;
 	protected $config;
 	protected $layout;
 	protected $strict;
 
-	public function __construct($xmlData, $strict = false)
+	public function __construct($xmlData, boolean $strict = false)
 	{
 		$this->xml    = (new SimpleXMLElement($xmlData))->first('/formbuilder');
 		$this->strict = $strict;
@@ -31,7 +35,10 @@ class FormBuilder
 		$this->config = $config;
 		$this->layout = LayoutProvider::create($this->xml, $xml->attr('layout'), $this->strict);
 
-		$data = array_merge($this->loadDefaults($xml), $config->settings['@global'] ?: [], ['form.url' => $url, 'form.csrf' => $this->addCsrfToken()]);
+		$data = array_merge($this->loadDefaults($xml), $config->settings['@global'] ?: [], [
+			'form.url'  => $url,
+			'form.csrf' => $this->addCsrfToken()
+		]);
 
 		return $this->fillFormValues($this->buildNode($xml, $data));
 	}
@@ -109,7 +116,11 @@ class FormBuilder
 		$layout = $this->layout->getHtmlForItem($baseData['item.type'], 'options');
 
 		foreach ($options as $i => $xml) {
-			$data = $this->addValues($baseData, 'option', $xml->attributes(), ['no' => $i, 'id' => $baseData['item.id'] . '-' . $i, 'text' => htmlentities($xml->text() ?: $xml->attr('value'))]);
+			$data = $this->addValues($baseData, 'option', $xml->attributes(), [
+				'no'   => $i,
+				'id'   => $baseData['item.id'] . '-' . $i,
+				'text' => htmlentities($xml->text() ?: $xml->attr('value'))
+			]);
 
 			$html .= $this->fillPlaceholder($layout, $data);
 		}
@@ -131,7 +142,10 @@ class FormBuilder
 				}
 
 				foreach ($options as $value => $text) {
-					$data                = $this->addValues($baseData, 'option', ['no' => ++$no, 'value' => $value]);
+					$data                = $this->addValues($baseData, 'option', [
+						'no'    => ++$no,
+						'value' => $value
+					]);
 					$data['option.id']   = $data['item.id'] . '-' . $no;
 					$data['option.text'] = htmlentities($text ?: $value);
 					$html .= $this->fillPlaceholder($layout, $data);

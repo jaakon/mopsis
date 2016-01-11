@@ -88,7 +88,10 @@ abstract class Model implements ModelInterface
 		list($query, $values) = Sql::expandQuery($query, $values);
 		$result = [];
 
-		foreach (Sql::db()->getAll(Sql::buildQuery(static::_getDefaultQuery([$attribute, $key], $query, $orderBy)), $values) as $entry) {
+		foreach (Sql::db()->getAll(Sql::buildQuery(static::_getDefaultQuery([
+			$attribute,
+			$key
+		], $query, $orderBy)), $values) as $entry) {
 			$result[$entry[$key]] = $entry[$attribute];
 		}
 
@@ -276,7 +279,11 @@ abstract class Model implements ModelInterface
 				break;
 			case 'crossbound':
 				$collection = str_replace('Models', 'Collections', ModelFactory::findClass($key));
-				$result     = $collection::load(Sql::db()->getCol(Sql::buildQuery(['select' => $connection['identifier'], 'from' => $connection['pivot'], 'where' => $connection['query'],]), $this->id));
+				$result     = $collection::load(Sql::db()->getCol(Sql::buildQuery([
+					'select' => $connection['identifier'],
+					'from'   => $connection['pivot'],
+					'where'  => $connection['query'],
+				]), $this->id));
 				break;
 			default:
 				throw new \Exception('connection type [' . $connection['type'] . '] is invalid');
@@ -538,7 +545,12 @@ abstract class Model implements ModelInterface
 	{
 		$class = get_called_class();
 
-		return ['select' => implode(', ', array_wrap($attribute)), 'from' => ModelFactory::findTable($class), 'where' => $query, 'orderBy' => $orderBy ?: (new $class)->getSortOrder()];
+		return [
+			'select'  => implode(', ', array_wrap($attribute)),
+			'from'    => ModelFactory::findTable($class),
+			'where'   => $query,
+			'orderBy' => $orderBy ?: (new $class)->getSortOrder()
+		];
 	}
 
 	protected static function _stringToClass($value, $class)
@@ -557,6 +569,9 @@ abstract class Model implements ModelInterface
 
 	protected function _getCachedAttribute($attribute, callable $callback, $ttl = null)
 	{
-		return Cache::get([(string) $this, $attribute], $callback, $ttl);
+		return Cache::get([
+			(string) $this,
+			$attribute
+		], $callback, $ttl);
 	}
 }
