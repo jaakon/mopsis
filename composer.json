@@ -37,7 +37,7 @@
 		"swiftmailer/swiftmailer":     "^5.4.0",
 		"tedivm/stash":                "^0.13.0",
 		"twig/twig":                   "^1.20.0",
-		"yadakhov/json":               "^1.0.1"
+		"jaakon/json":                 "^1.0.1"
 	},
 	"autoload": {
 		"psr-4": {
