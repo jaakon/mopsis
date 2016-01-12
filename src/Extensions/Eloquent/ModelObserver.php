@@ -2,7 +2,6 @@
 
 use Cviebrock\EloquentSluggable\SluggableInterface;
 use Mopsis\Contracts\Loggable;
-use Mopsis\Contracts\Model;
 use Mopsis\Contracts\Traceable;
 
 class ModelObserver

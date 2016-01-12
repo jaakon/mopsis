@@ -22,6 +22,7 @@ return [
 		'Domain'     => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}{{SUBTYPE}}',
 		'Gateway'    => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}Gateway',
 		'Model'      => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}Model',
+		'Observer'   => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}Observer',
 		'Responder'  => 'App\\{{MODULE}}\\Responder\\{{DOMAIN}}{{SUBTYPE}}Responder',
 		'View'       => '{{MODULE}}\\{{SUBTYPE}}'
 	],
@@ -230,7 +231,7 @@ return [
 
 	Twig_Environment::class => object()->constructor(get(Twig_LoaderInterface::class), get('twig.config')),
 
-	Whoops\Handler\JsonResponseHandler::class => object()->method('addTraceToOutput', true)->method('onlyForAjaxRequests', true),
+	Whoops\Handler\JsonResponseHandler::class => object()->method('addTraceToOutput', true),
 
 	Whoops\Handler\PlainTextHandler::class => object()->constructor(get('Logger')),
 
@@ -264,9 +265,16 @@ return [
 		$whoops = new Whoops\Run;
 
 		$whoops->pushHandler($c->get(Whoops\Handler\PrettyPageHandler::class));
-		$whoops->pushHandler($c->get(Whoops\Handler\PlainTextHandler::class));
-		$whoops->pushHandler($c->get(Whoops\Handler\JsonResponseHandler::class));
-		$whoops->pushHandler(function (Exception $exception) use ($c) {
+
+		if (Whoops\Util\Misc::isCommandLine()) {
+			$whoops->pushHandler($c->get(Whoops\Handler\PlainTextHandler::class));
+		}
+
+		if (Whoops\Util\Misc::isAjaxRequest()) {
+			$whoops->pushHandler($c->get(Whoops\Handler\JsonResponseHandler::class));
+		}
+
+		$whoops->pushHandler(function (Throwable $exception) use ($c) {
 			$c->get(Logger::class)->error($exception->getMessage());
 		});
 

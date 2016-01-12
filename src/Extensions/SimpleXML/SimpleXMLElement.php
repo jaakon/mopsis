@@ -130,12 +130,12 @@ class SimpleXMLElement
 		return $this->wrapSimpleXMLElement($this->element->{$tagName});
 	}
 
-	public function has($path)
+	public function has($path): bool
 	{
 		return !!$this->first($path);
 	}
 
-	public function first($path): SimpleXMLElement
+	public function first($path)
 	{
 		$elements = $this->xpath($path);
 

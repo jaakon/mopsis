@@ -18,7 +18,7 @@ class FormBuilder
 	protected $layout;
 	protected $strict;
 
-	public function __construct($xmlData, boolean $strict = false)
+	public function __construct($xmlData, bool $strict = false)
 	{
 		$this->xml    = (new SimpleXMLElement($xmlData))->first('/formbuilder');
 		$this->strict = $strict;
