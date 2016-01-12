@@ -14,6 +14,7 @@ class Cache
 
 	public static function get($key, callable $callback = null, $ttl = null)
 	{
+		/** @var \Stash\Item $item */
 		$item  = App::get('Cache')->getItem($key);
 		$value = $item->get();
 

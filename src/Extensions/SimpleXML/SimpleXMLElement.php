@@ -1,8 +1,12 @@
 <?php namespace Mopsis\Extensions\SimpleXML;
 
+/**
+ * @property \SimpleXMLElement $element
+ */
 class SimpleXMLElement
 {
 	use XMLInternalErrorsHelper;
+
 	protected $element;
 
 	public function __construct($xmlData)

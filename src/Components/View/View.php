@@ -101,6 +101,7 @@ class View
 			return $this;
 		}
 
+		/** @var \League\Flysystem\Filesystem $filesystem  */
 		$filesystem = App::make('Filesystem');
 
 		$filesystem->getAdapter()->setPathPrefix(dirname($cachePath));

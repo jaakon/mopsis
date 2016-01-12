@@ -3,6 +3,7 @@
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Mopsis\Contracts\User;
+use Mopsis\Contracts\PrivilegedUser;
 
 class Auth
 {
@@ -50,6 +51,10 @@ class Auth
 			}
 
 			throw new Exception('user has no access');
+		}
+
+		if (!(static::user() instanceof PrivilegedUser)) {
+			throw new Exception('user has no privileges');
 		}
 
 		if (static::user()->may($permission, $model)) {

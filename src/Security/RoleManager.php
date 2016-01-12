@@ -38,17 +38,17 @@ class RoleManager
 			return false;
 		}
 
-		return static::instanceMeetsConstraint($instance, $constraint);
+		return static::instanceCompliesWithConstraint($instance, $constraint);
 	}
 
-	protected static function instanceMeetsConstraint(Model $instance, $constraint)
+	protected static function instanceCompliesWithConstraint(Model $instance, $constraint)
 	{
 		if ((string) $instance === (string) $constraint) {
 			return true;
 		}
 
 		if ($instance instanceof Hierarchical) {
-			return static::instanceMeetsConstraint($instance->ancestor, $constraint);
+			return static::instanceCompliesWithConstraint($instance->ancestor, $constraint);
 		}
 
 		return false;

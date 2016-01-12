@@ -57,6 +57,7 @@ class LayoutProvider
 		}
 
 		foreach ($xml->children() as $node) {
+			/** @var SimpleXMLElement $node */
 			$tagName = $node->getName();
 
 			if (!isset($layout[$tagName])) {
@@ -82,6 +83,7 @@ class LayoutProvider
 		$layout = [];
 
 		foreach ($xml->children() as $node) {
+			/** @var SimpleXMLElement $node */
 			$tagName          = $node->getName();
 			$layout[$tagName] = [];
 

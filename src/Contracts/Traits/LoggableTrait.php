@@ -46,6 +46,9 @@ trait LoggableTrait
 			}
 		}
 
+		/** @noinspection PhpUndefinedClassConstantInspection */
+		/** @noinspection PhpUndefinedClassConstantInspection */
+		/** @noinspection PhpUndefinedClassConstantInspection */
 		return array_diff_key($diff, array_fill_keys([
 			$this->getKeyName(),
 			static::CREATED_AT,

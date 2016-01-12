@@ -15,6 +15,7 @@ abstract class Model extends EloquentModel implements ModelInterface
 	const CREATED_BY = 'created_by';
 	const UPDATED_BY = 'updated_by';
 	const DELETED_AT = 'deleted_at';
+
 	protected $guarded = ['id'];
 	protected $sluggable = ['on_update' => true];
 	protected $orderBy;
@@ -89,6 +90,7 @@ abstract class Model extends EloquentModel implements ModelInterface
 		return parent::__isset($key) ?: parent::__isset(snake_case($key));
 	}
 
+	// @Override
 	public function __toString()
 	{
 		return class_basename($this) . ':' . ($this->id ?: 0);

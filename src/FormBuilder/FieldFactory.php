@@ -1,8 +1,10 @@
 <?php namespace Mopsis\FormBuilder;
 
+use FluentDOM\Element;
+
 class FieldFactory
 {
-	public static function create($node)
+	public static function create(Element $node)
 	{
 		switch ($node->tagName) {
 			case 'input':
@@ -18,7 +20,7 @@ class FieldFactory
 		return new Fields\GenericElement($node);
 	}
 
-	protected static function createInput($node)
+	protected static function createInput(Element $node)
 	{
 		switch ($node->getAttribute('type')) {
 			case 'checkbox':
@@ -30,7 +32,7 @@ class FieldFactory
 		return new Fields\Input($node);
 	}
 
-	protected static function createSelect($node)
+	protected static function createSelect(Element $node)
 	{
 		if ($node->hasAttribute('multiple')) {
 			return new Fields\MultiSelect($node);

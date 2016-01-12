@@ -27,6 +27,7 @@ trait TraceableTrait
 
 	public function setCreatedBy($value)
 	{
+		/** @noinspection PhpUndefinedClassConstantInspection */
 		$this->{static::CREATED_BY} = $value;
 	}
 
@@ -45,6 +46,7 @@ trait TraceableTrait
 
 	public function setUpdatedBy($value)
 	{
+		/** @noinspection PhpUndefinedClassConstantInspection */
 		$this->{static::UPDATED_BY} = $value;
 	}
 }

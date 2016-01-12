@@ -2,6 +2,9 @@
 
 use DI\Container;
 
+/**
+ * @method static make($name, array $parameters = [])
+ */
 class App
 {
 	protected static $container;

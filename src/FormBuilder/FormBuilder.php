@@ -116,6 +116,7 @@ class FormBuilder
 		$layout = $this->layout->getHtmlForItem($baseData['item.type'], 'options');
 
 		foreach ($options as $i => $xml) {
+			/** @var SimpleXMLElement $xml */
 			$data = $this->addValues($baseData, 'option', $xml->attributes(), [
 				'no'   => $i,
 				'id'   => $baseData['item.id'] . '-' . $i,
@@ -247,6 +248,7 @@ class FormBuilder
 		$defaults = [];
 
 		foreach ($xml->xpath('defaults/default') ?: [] as $default) {
+			/** @var SimpleXMLElement $default */
 			$defaults[$default->attr('name')] = $default->attr('value');
 		}
 
