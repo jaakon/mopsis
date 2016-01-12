@@ -8,7 +8,7 @@
 	"repositories": [
 		{
 			"type": "vcs",
-			"url":  "https://github.com/jaakon/upit"
+			"url":  "https://github.com/jaakon/json"
 		}
 	],
 	"require": {
@@ -28,7 +28,6 @@
 		"illuminate/database":         "^5.2.0",
 		"illuminate/events":           "^5.2.0",
 		"illuminate/translation":      "^5.2.0",
-		"illuminate/support":          "5.2.7 as 5.1.28",
 		"jschaedl/iban":               "^1.1.0",
 		"league/flysystem":            "^1.0.0",
 		"monolog/monolog":             "^1.16.0",
