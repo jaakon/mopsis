@@ -2,7 +2,6 @@
 
 use DateTime;
 use Exception;
-use Yadakhov\Json;
 
 class Stringifier
 {
