@@ -50,16 +50,28 @@ class View
 		try {
 			return trim($this->renderer->render($this->template, $this->data));
 		} catch (Twig_Error_Runtime $exception) {
-			if (!preg_match('/An exception has been thrown during the rendering of a template \("(.+?)"\) in "(.+?)" at line (.+?)./', $exception->getMessage(), $m)) {
+			if (!preg_match('/(.+?) in "(.+?)" at line (\d+)/', $exception->getMessage(), $m)) {
 				throw $exception;
 			}
 
-			$twigException = new TwigException($m[1], $exception->getCode(), $exception);
+			$message  = $m[1];
+			$template = $m[2];
+			$line     = $m[3];
 
-			$file = APPLICATION_PATH . '/' . App::get('twigloader.config')[0] . '/' . $m[2];
+			if (preg_match('/An exception has been thrown during the rendering of a template \("(.+?)"\)/', $message, $m)) {
+				$message = $m[1];
+			}
 
-			$twigException->setFile($file);
-			$twigException->setLine($m[3]);
+			$twigException = new TwigException(ucfirst($message) . '.', $exception->getCode(), $exception);
+
+			foreach (App::get('twigloader.config') as $path) {
+				$file = APPLICATION_PATH . '/' . $path . '/' . $template;
+				if (file_exists($file)) {
+					$twigException->setFile($file);
+					$twigException->setLine($line);
+					break;
+				}
+			}
 
 			throw $twigException;
 		}

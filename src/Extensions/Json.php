@@ -4,43 +4,12 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use JsonSerializable;
 
-/**
- * Class Json.  A wrapper class for json.
- * Provide a simple api and dot notation to work with json.
- *
- * @package Yadakhov
- */
 class Json implements JsonSerializable
 {
-	/**
-	 * The main data structure for the json object.  Can be array or stdClass.
-	 *
-	 * @var null
-	 */
-	protected $body = null;
-
-	/**
-	 * The type for the body variable.  Can be array|stdClass.
-	 *
-	 * @var string
-	 */
-	protected $bodyType = 'array';
-
-	/**
-	 *  Whether or not to use pretty print.
-	 *
-	 * @var bool
-	 */
+	protected $body        = null;
+	protected $bodyType    = 'array';
 	protected $prettyPrint = false;
 
-	/**
-	 * Constructor.
-	 *
-	 * @param null $body
-	 * @param bool $prettyPrint
-	 *
-	 * @throws \Exception
-	 */
 	public function __construct($body = null, $prettyPrint = false)
 	{
 		if (is_array($body) || is_null($body) || is_bool($body) || is_numeric($body)) {
@@ -58,25 +27,15 @@ class Json implements JsonSerializable
 		} else {
 			throw new \Exception('Unable to construct Json object');
 		}
+
 		$this->prettyPrint = $prettyPrint;
 	}
 
-	/**
-	 * The factory method.
-	 * Returns a new Jason object.
-	 *
-	 * @return Json
-	 */
-	public static function create()
+	public static function create($body = null, $prettyPrint = false)
 	{
-		return new Json;
+		return new Json($body, $prettyPrint);
 	}
 
-	/**
-	 * Parse the string json representation
-	 *
-	 * @param $body
-	 */
 	private function parseStringJson($body)
 	{
 		$body = trim($body);
@@ -98,24 +57,12 @@ class Json implements JsonSerializable
 		}
 	}
 
-	/**
-	 * Return true if prettyPrint is set
-	 *
-	 * @return bool
-	 */
 	public function isPrettyPrint()
 	{
-		return $this->prettyPrint;
+		return !!$this->prettyPrint;
 	}
 
-	/**
-	 * Set pretty print.
-	 *
-	 * @param $prettyPrint
-	 *
-	 * @return $this
-	 */
-	public function setPrettyPrint($prettyPrint)
+	public function setPrettyPrint(bool $prettyPrint)
 	{
 		$this->prettyPrint = $prettyPrint;
 
@@ -209,6 +156,21 @@ class Json implements JsonSerializable
 		} else {
 			return $this->toString();
 		}
+	}
+
+	/**
+	 * PHP isset magic function.
+	 *
+	 * @param $name
+	 * @return mixed
+	 * @throws Exception
+	 */
+	public function __isset($name)
+	{
+		return
+			($this->bodyType === 'array' && Arr::has($this->body, $name)) ||
+			($this->bodyType === 'stdClass' && isset($this->body->{$name}))
+		;
 	}
 
 	/**
