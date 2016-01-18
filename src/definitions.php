@@ -151,6 +151,9 @@ return [
 			return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\ZipCode::class);
 		}
 	])->constructorParameter('sanitize_factories', [
+		'array' => function () {
+			return app(Mopsis\Extensions\Aura\Filter\Rule\Sanitize\ArrayValue::class);
+		},
 		'float' => function () {
 			return app(Mopsis\Extensions\Aura\Filter\Rule\Sanitize\FloatValue::class);
 		}

@@ -32,6 +32,8 @@ class Stringifier
 
 	public function toArray()
 	{
+		debug(object_to_array($this->object));
+die();
 		return $this->castArrayValuesToString(object_to_array($this->object));
 	}
 
@@ -108,6 +110,7 @@ class Stringifier
 
 	protected function objectHasAsStringMutator($key)
 	{
+		debug('get' . studly_case($key) . 'AsString');
 		return method_exists($this->object, 'get' . studly_case($key) . 'AsString');
 	}
 }
