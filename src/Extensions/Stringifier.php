@@ -16,13 +16,7 @@ class Stringifier
 			return $this->objectGetAsStringMutator($key);
 		}
 
-		$value = $this->object->$key;
-
-		if (is_string($value)) {
-			return $value;
-		}
-
-		return $this->castValueToString($value);
+		return $this->castValueToString($this->object->$key);
 	}
 
 	public function __isset($key)
@@ -32,20 +26,19 @@ class Stringifier
 
 	public function toArray()
 	{
-		debug(object_to_array($this->object));
-die();
-		return $this->castArrayValuesToString(object_to_array($this->object));
+		$data = [];
+
+		foreach (object_to_array($this->object) as $key => $value) {
+			$data[$key] = $this->$key;
+		}
+
+		return $this->castArrayValuesToString($data);
 	}
 
 	protected function castArrayValuesToString(array $array)
 	{
 		foreach ($array as $key => $value) {
-			if (is_array($value)) {
-				$array[$key] = $this->castArrayValuesToString($value);
-				continue;
-			}
-
-			$array[$key] = $this->$key ?: $this->castValueToString($value);
+			$array[$key] = is_array($value) ? $this->castArrayValuesToString($value) : $this->castValueToString($value);
 		}
 
 		return $array;
@@ -110,7 +103,6 @@ die();
 
 	protected function objectHasAsStringMutator($key)
 	{
-		debug('get' . studly_case($key) . 'AsString');
 		return method_exists($this->object, 'get' . studly_case($key) . 'AsString');
 	}
 }
