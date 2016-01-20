@@ -59,7 +59,7 @@ class Stringifier
 		}
 
 		if ($object instanceof Json) {
-			return $object;
+			return $object->toArray();
 		}
 
 		if (method_exists($object, '__toString')) {
@@ -86,7 +86,7 @@ class Stringifier
 			case 'object':
 				return $this->castObjectToString($value);
 			case 'array':
-				return json_encode($this->castArrayValuesToString($value));
+				return array_dot($this->castArrayValuesToString($value));
 		}
 
 		if (is_callable($value)) {
