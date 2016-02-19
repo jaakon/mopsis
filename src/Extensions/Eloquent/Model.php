@@ -98,7 +98,7 @@ abstract class Model extends EloquentModel implements ModelInterface
 
 	public function clearCachedAttribute($attribute)
 	{
-		Cache::clear([
+		Cache::delete([
 			$this,
 			$attribute
 		]);

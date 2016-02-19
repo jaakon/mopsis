@@ -51,7 +51,7 @@ class Bootstrap
 	protected function updateCache($flushMode)
 	{
 		if ($flushMode === 'all') {
-			Cache::flush();
+			Cache::clear();
 		}
 
 		if ($flushMode === 'all' || $flushMode === 'app') {
@@ -59,8 +59,8 @@ class Bootstrap
 		}
 
 		if ($flushMode === 'all' || $flushMode === 'assets') {
-			Cache::clear('css.version');
-			Cache::clear('javascript.version');
+			Cache::delete('css.version');
+			Cache::delete('javascript.version');
 		}
 
 		if ($flushMode === 'all' || $flushMode === 'views') {

@@ -2,12 +2,12 @@
 
 class Cache
 {
-	public static function clear($key)
+	public static function delete($key)
 	{
 		return App::get('Cache')->deleteItem(static::groupKeyFragments($key));
 	}
 
-	public static function flush()
+	public static function clear()
 	{
 		return App::get('Cache')->clear();
 	}
