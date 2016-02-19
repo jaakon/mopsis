@@ -32,7 +32,7 @@
 		"league/flysystem":            "^1.0",
 		"monolog/monolog":             "^1.16",
 		"patchwork/utf8":              "^1.2",
-		"php-di/php-di":               "dev-master as 5.2.2",
+		"php-di/php-di":               "dev-dot-helper as 5.2.2",
 		"raulfraile/ladybug":          "^1.0",
 		"swiftmailer/swiftmailer":     "^5.4",
 		"tedivm/stash":                "^0.14",
