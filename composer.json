@@ -5,6 +5,12 @@
 	"keywords": ["framework", "mopsis"],
 	"homepage": "https://github.com/jaakon/mopsis",
 	"license": "MIT",
+	"repositories": [
+		{
+			"type": "git",
+			"url": "https://github.com/jaakon/PHP-DI"
+		}
+	],
 	"require": {
 		"php":                         ">=7.0",
 		"aptoma/twig-markdown":        "^2.0",
@@ -26,7 +32,7 @@
 		"league/flysystem":            "^1.0",
 		"monolog/monolog":             "^1.16",
 		"patchwork/utf8":              "^1.2",
-		"php-di/php-di":               "^5.2",
+		"php-di/php-di":               "dev-master as 5.2.2",
 		"raulfraile/ladybug":          "^1.0",
 		"swiftmailer/swiftmailer":     "^5.4",
 		"tedivm/stash":                "^0.14",
