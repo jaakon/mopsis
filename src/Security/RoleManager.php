@@ -47,7 +47,7 @@ class RoleManager
 			return true;
 		}
 
-		if ($instance instanceof Hierarchical) {
+		if ($instance instanceof Hierarchical && $instance->ancestor instanceof Model) {
 			return static::instanceCompliesWithConstraint($instance->ancestor, $constraint);
 		}
 

@@ -56,7 +56,7 @@ class Collection extends \Illuminate\Database\Eloquent\Collection
 		});
 	}
 
-	public function whereIn($property, array $values)
+	public function whereIn($property, array $values, $strict = true)
 	{
 		return $this->filter(function ($item) use ($property, $values) {
 			return in_array($item->{$property}, $values);

@@ -44,7 +44,9 @@ return [
 			'ttl'       => 3600,
 			'namespace' => md5($_SERVER['HTTP_HOST'])
 		],
-		'filesystem' => ['path' => APPLICATION_PATH . '/storage/cache/stash/'],
+		'filesystem' => [
+			'path' => APPLICATION_PATH . '/storage/cache/stash/'
+		],
 		'redis'      => [
 			'servers' => [
 				[
@@ -110,54 +112,56 @@ return [
 
 	Asm89\Twig\CacheExtension\CacheStrategy\KeyGeneratorInterface::class => object(Mopsis\Extensions\Twig\Cache\KeyGenerator::class),
 
-	Aura\Filter\FilterFactory::class => object()->constructorParameter('validate_factories', [
-		'after'       => function () {
-			return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\DateTime\After::class);
-		},
-		'before'      => function () {
-			return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\DateTime\Before::class);
-		},
-		'concurrent'  => function () {
-			return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\DateTime\Concurrent::class);
-		},
-		'duration'    => function () {
-			return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\DateTime\Duration::class);
-		},
-		'notAfter'    => function () {
-			return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\DateTime\NotAfter::class);
-		},
-		'notBefore'   => function () {
-			return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\DateTime\NotBefore::class);
-		},
-		'bic'         => function () {
-			return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\Finance\Bic::class);
-		},
-		'iban'        => function () {
-			return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\Finance\Iban::class);
-		},
-		'money'       => function () {
-			return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\Finance\Money::class);
-		},
-		'conditional' => function () {
-			return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\Conditional::class);
-		},
-		'decimal'     => function () {
-			return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\Decimal::class);
-		},
-		'optional'    => function () {
-			return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\Optional::class);
-		},
-		'zipcode'     => function () {
-			return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\ZipCode::class);
-		}
-	])->constructorParameter('sanitize_factories', [
-		'array' => function () {
-			return app(Mopsis\Extensions\Aura\Filter\Rule\Sanitize\ArrayValue::class);
-		},
-		'float' => function () {
-			return app(Mopsis\Extensions\Aura\Filter\Rule\Sanitize\FloatValue::class);
-		}
-	]),
+	Aura\Filter\FilterFactory::class => object()
+		->constructorParameter('validate_factories', [
+			'after'       => function () {
+				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\DateTime\After::class);
+			},
+			'before'      => function () {
+				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\DateTime\Before::class);
+			},
+			'concurrent'  => function () {
+				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\DateTime\Concurrent::class);
+			},
+			'duration'    => function () {
+				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\DateTime\Duration::class);
+			},
+			'notAfter'    => function () {
+				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\DateTime\NotAfter::class);
+			},
+			'notBefore'   => function () {
+				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\DateTime\NotBefore::class);
+			},
+			'bic'         => function () {
+				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\Finance\Bic::class);
+			},
+			'iban'        => function () {
+				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\Finance\Iban::class);
+			},
+			'money'       => function () {
+				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\Finance\Money::class);
+			},
+			'conditional' => function () {
+				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\Conditional::class);
+			},
+			'decimal'     => function () {
+				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\Decimal::class);
+			},
+			'optional'    => function () {
+				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\Optional::class);
+			},
+			'zipcode'     => function () {
+				return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\ZipCode::class);
+			}
+		])
+		->constructorParameter('sanitize_factories', [
+			'array' => function () {
+				return app(Mopsis\Extensions\Aura\Filter\Rule\Sanitize\ArrayValue::class);
+			},
+			'float' => function () {
+				return app(Mopsis\Extensions\Aura\Filter\Rule\Sanitize\FloatValue::class);
+			}
+		]),
 
 	Aura\Filter\SubjectFilter::class => function (ContainerInterface $c) {
 		return $c->get(Aura\Filter\FilterFactory::class)->newSubjectFilter();
@@ -181,10 +185,7 @@ return [
 			foreach (explode('&', file_get_contents('php://input')) as $entry) {
 				list($key,) = array_map('urldecode', explode('=', $entry));
 				$key         = preg_replace('/\[(.*)\]$/', '', $key);
-				$_POST[$key] = $_REQUEST[str_replace([
-					'.',
-					' '
-				], '_', $key)];
+				$_POST[$key] = $_REQUEST[str_replace(['.', ' '], '_', $key)];
 
 				if (!is_array($_POST[$key])) {
 					$_POST[$key] = trim($_POST[$key]);
@@ -202,45 +203,67 @@ return [
 		]);
 	},
 
-	Illuminate\Translation\LoaderInterface::class => object(Illuminate\Translation\FileLoader::class)->constructorParameter('path', dot('translator.path')),
+	Illuminate\Translation\LoaderInterface::class => object(Illuminate\Translation\FileLoader::class)
+		->constructorParameter('path', dot('translator.path')),
 
-	League\Flysystem\AdapterInterface::class => object(League\Flysystem\Adapter\Local::class)->constructor(get('flysystem.local.config')),
+	League\Flysystem\AdapterInterface::class => object(League\Flysystem\Adapter\Local::class)
+		->constructor(get('flysystem.local.config')),
 
-	Monolog\Formatter\LineFormatter::class => object()->constructorParameter('format', get('monolog.lineformat'))->constructorParameter('allowInlineLineBreaks', true),
+	Monolog\Formatter\LineFormatter::class => object()
+		->constructorParameter('format', get('monolog.lineformat'))
+		->constructorParameter('allowInlineLineBreaks', true),
 
 	Mopsis\Contracts\User::class => function () {
 		return Mopsis\Core\Auth::user();
 	},
 
-	Mopsis\Components\View\View::class => object()->constructorParameter('extensions', get('twig.extensions')),
+	Mopsis\Components\View\View::class => object()
+		->constructorParameter('extensions', get('twig.extensions')),
 
-	Mopsis\FormBuilder\FormBuilder::class => object()->constructorParameter('xmlData', dot('app.forms')),
+	Mopsis\FormBuilder\FormBuilder::class => object()
+		->constructorParameter('xmlData', dot('app.forms')),
 
-	Mopsis\FormBuilder\RulesProvider::class => object()->constructorParameter('xmlData', dot('app.forms')),
+	Mopsis\FormBuilder\RulesProvider::class => object()
+		->constructorParameter('xmlData', dot('app.forms')),
 
 	Psr\Log\LoggerInterface::class => get('Logger'),
 
 	Stash\Interfaces\PoolInterface::class => get('Cache'),
 
-	Stash\Driver\Apc::class => object()->method('setOptions', dot('stash.apc')),
+	Stash\Driver\Apc::class => object()
+		->method('setOptions', dot('stash.apc')),
 
-	Stash\Driver\FileSystem::class => object()->method('setOptions', dot('stash.filesystem')),
+	Stash\Driver\FileSystem::class => object()
+		->method('setOptions', dot('stash.filesystem')),
 
-	Stash\Driver\Redis::class => object()->method('setOptions', dot('stash.redis')),
+	Stash\Driver\Redis::class => object()
+		->method('setOptions', dot('stash.redis')),
 
-	Stash\Driver\Sqlite::class => object()->method('setOptions', dot('stash.sqlite')),
+	Stash\Driver\Sqlite::class => object()
+		->method('setOptions', dot('stash.sqlite')),
 
-	Twig_LoaderInterface::class => object(Twig_Loader_Filesystem::class)->constructor(get('twigloader.config')),
+	Twig_Environment::class => object()
+		->constructor(get(Twig_LoaderInterface::class), get('twig.config'))
+		->method('addTokenParser', get(Twig_TokenParser_Include::class)),
 
-	Twig_Environment::class => object()->constructor(get(Twig_LoaderInterface::class), get('twig.config')),
+	Twig_LoaderInterface::class => object(Twig_Loader_Filesystem::class)
+		->constructor(get('twigloader.config')),
 
-	Whoops\Handler\JsonResponseHandler::class => object()->method('addTraceToOutput', true),
+	Twig_TokenParser_Include::class => object(Mopsis\Extensions\Twig\TokenParser\IncludeToken::class),
 
-	Whoops\Handler\PlainTextHandler::class => object()->constructor(get('Logger')),
+	Whoops\Handler\JsonResponseHandler::class => object()
+		->method('addTraceToOutput', true),
 
-	Whoops\Handler\PrettyPageHandler::class => object()->method('setEditor', 'sublime'),
+	Whoops\Handler\PlainTextHandler::class => object()
+		->constructor(get('Logger')),
 
-	Cache::class => object(Stash\Pool::class)->constructor(get('StashDriver'))->method('setNamespace', md5($_SERVER['HTTP_HOST']))->method('setLogger', get('Logger')),
+	Whoops\Handler\PrettyPageHandler::class => object()
+		->method('setEditor', 'sublime'),
+
+	Cache::class => object(Stash\Pool::class)
+		->constructor(get('StashDriver'))
+		->method('setNamespace', md5($_SERVER['HTTP_HOST']))
+		->method('setLogger', get('Logger')),
 
 	CacheTool::class => function () {
 		$adapter = new CacheTool\Adapter\FastCGI('127.0.0.1:9000');
@@ -303,9 +326,13 @@ return [
 		return $logger;
 	},
 
-	MonologErrorHandler::class => object(Monolog\Handler\StreamHandler::class)->constructor(dot('app.error_log'), Monolog\Logger::ERROR, false)->method('setFormatter', get(Monolog\Formatter\LineFormatter::class)),
+	MonologErrorHandler::class => object(Monolog\Handler\StreamHandler::class)
+		->constructor(dot('app.error_log'), Monolog\Logger::ERROR, false)
+		->method('setFormatter', get(Monolog\Formatter\LineFormatter::class)),
 
-	MonologNoticeHandler::class => object(Monolog\Handler\StreamHandler::class)->constructor(dot('app.application_log'), Monolog\Logger::NOTICE, false)->method('setFormatter', get(Monolog\Formatter\LineFormatter::class)),
+	MonologNoticeHandler::class => object(Monolog\Handler\StreamHandler::class)
+		->constructor(dot('app.application_log'), Monolog\Logger::NOTICE, false)
+		->method('setFormatter', get(Monolog\Formatter\LineFormatter::class)),
 
 	Renderer::class => object(Twig_Environment::class),
 
@@ -318,5 +345,6 @@ return [
 		return extension_loaded($name);
 	}, ARRAY_FILTER_USE_KEY)[0]),
 
-	Translator::class => object(Illuminate\Translation\Translator::class)->constructorParameter('locale', dot('translator.locale'))
+	Translator::class => object(Illuminate\Translation\Translator::class)
+		->constructorParameter('locale', dot('translator.locale'))
 ];
