@@ -1,4 +1,5 @@
-<?php namespace Mopsis\Components\Responder;
+<?php
+namespace Mopsis\Components\Responder;
 
 use Aura\Accept\Accept;
 use Aura\Web\Request;
@@ -11,114 +12,122 @@ use Mopsis\Components\View\View;
  */
 abstract class AbstractResponder
 {
-	protected $accept;
-	protected $available      = [
-		'text/html'        => '.twig',
-		'application/json' => '.json'
-	];
-	protected $payload;
-	protected $payloadData;
-	protected $payloadMethods = [];
-	protected $request;
-	protected $response;
-	protected $template;
-	protected $view;
+    protected $accept;
 
-	public function __construct(Accept $accept, Request $request, Response $response, View $view)
-	{
-		$this->accept   = $accept;
-		$this->request  = $request;
-		$this->response = $response;
-		$this->view     = $view;
+    protected $available = [
+        'text/html'        => '.twig',
+        'application/json' => '.json'
+    ];
 
-		$this->init();
-	}
+    protected $payload;
 
-	public function __invoke()
-	{
-		if ($this->payload === null) {
-			return $this->notFound();
-		}
+    protected $payloadData;
 
-		$method = $this->payloadMethods[$this->payload->getName()] ?: 'notRecognized';
+    protected $payloadMethods = [];
 
-		$this->$method();
+    protected $request;
 
-		return $this->response;
-	}
+    protected $response;
 
-	public function setPayload(PayloadInterface $payload)
-	{
-		$this->payload = $this->payloadData ? $this->addPayloadData($payload) : $payload;
+    protected $template;
 
-		return $this;
-	}
+    protected $view;
 
-	public function setTemplate($template)
-	{
-		$this->template = $template;
+    public function __construct(Accept $accept, Request $request, Response $response, View $view)
+    {
+        $this->accept   = $accept;
+        $this->request  = $request;
+        $this->response = $response;
+        $this->view     = $view;
 
-		return $this;
-	}
+        $this->init();
+    }
 
-	protected function addPayloadData(PayloadInterface $payload)
-	{
-		$class = get_class($payload);
+    public function __invoke()
+    {
+        if ($this->payload === null) {
+            return $this->notFound();
+        }
 
-		return new $class(array_merge($this->payloadData, $payload->get()));
-	}
+        $method = $this->payloadMethods[$this->payload->getName()] ?: 'notRecognized';
 
-	protected function getViewPath()
-	{
-		return preg_replace('/^\w+\\\(\w+)\\\.+$/', '$1/', get_called_class());
-	}
+        $this->$method();
 
-	protected function init()
-	{
-		if (!isset($this->payloadMethods['Payload\Error'])) {
-			$this->payloadMethods['Payload\Error'] = 'error';
-		}
+        return $this->response;
+    }
 
-		$this->response->headers->set('X-Frame-Options', 'SAMEORIGIN');
-	}
+    public function setPayload(PayloadInterface $payload)
+    {
+        $this->payload = $this->payloadData ? $this->addPayloadData($payload) : $payload;
 
-	protected function negotiateMediaType()
-	{
-		if (!$this->available || !$this->accept) {
-			return true;
-		}
+        return $this;
+    }
 
-		$available = array_keys($this->available);
-		$media     = $this->accept->negotiateMedia($available);
+    public function setTemplate($template)
+    {
+        $this->template = $template;
 
-		if (!$media) {
-			$this->response->status->set(406);
-			$this->response->content->setType('text/plain');
-			$this->response->content->set(implode(',', $available));
+        return $this;
+    }
 
-			return false;
-		}
+    protected function addPayloadData(PayloadInterface $payload)
+    {
+        $class = get_class($payload);
 
-		$this->response->content->setType($media->getValue());
+        return new $class(array_merge($this->payloadData, $payload->get()));
+    }
 
-		return true;
-	}
+    protected function getViewPath()
+    {
+        return preg_replace('/^\w+\\\(\w+)\\\.+$/', '$1/', get_called_class());
+    }
 
-	protected function notRecognized()
-	{
-		$this->response->status->set(500);
-		$this->response->content->set('Unknown domain payload status: "' . get_class($this->payload) . '"');
+    protected function init()
+    {
+        if (!isset($this->payloadMethods['Payload\Error'])) {
+            $this->payloadMethods['Payload\Error'] = 'error';
+        }
 
-		return $this->response;
-	}
+        $this->response->headers->set('X-Frame-Options', 'SAMEORIGIN');
+    }
 
-	protected function renderView($template = null)
-	{
-		$contentType = $this->response->content->getType();
-		$extension   = $contentType ? $this->available[$contentType] : '.twig';
+    protected function negotiateMediaType()
+    {
+        if (!$this->available || !$this->accept) {
+            return true;
+        }
 
-		$this->view->setTemplate($this->getViewPath() . ($template ?: $this->template) . $extension)->assign($this->payload->get());
+        $available = array_keys($this->available);
+        $media     = $this->accept->negotiateMedia($available);
 
-		$this->response->content->set($this->view->__invoke());
-	}
+        if (!$media) {
+            $this->response->status->set(406);
+            $this->response->content->setType('text/plain');
+            $this->response->content->set(implode(',', $available));
+
+            return false;
+        }
+
+        $this->response->content->setType($media->getValue());
+
+        return true;
+    }
+
+    protected function notRecognized()
+    {
+        $this->response->status->set(500);
+        $this->response->content->set('Unknown domain payload status: "' . get_class($this->payload) . '"');
+
+        return $this->response;
+    }
+
+    protected function renderView($template = null)
+    {
+        $contentType = $this->response->content->getType();
+        $extension   = $contentType ? $this->available[$contentType] : '.twig';
+
+        $this->view->setTemplate($this->getViewPath() . ($template ?: $this->template) . $extension)->assign($this->payload->get());
+
+        $this->response->content->set($this->view->__invoke());
+    }
 }

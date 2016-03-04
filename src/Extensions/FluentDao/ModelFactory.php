@@ -1,156 +1,158 @@
-<?php namespace Mopsis\Extensions\FluentDao;
+<?php
+namespace Mopsis\Extensions\FluentDao;
 
 use Mopsis\Core\Cache;
 
 abstract class ModelFactory
 {
-	const NS_MODELS = '\\App\\Models\\';
-	protected static $models = [];
+    const NS_MODELS = '\\App\\Models\\';
 
-//=== PUBLIC STATIC FUNCTIONS ==================================================
+    protected static $models = [];
 
-	public static function getConnections($class)
-	{
-		return self::readFromCache($class, 'references', function () use ($class) {
-			$table  = self::findTable($class);
-			$result = [];
+    public static function findClass($table)
+    {
+        return array_search($table, self::getMapping());
+    }
 
-			// ----- OUTBOUND -----
-			foreach (Sql::db()->getOutboundReferences($table, ['id']) as $attribute => $data) {
-				$refClass                                      = class_basename(ModelFactory::findClass($data['table']));
-				$result[preg_replace('/Id$/', '', $attribute)] = [
-					'type'      => 'outbound',
-					'class'     => $refClass,
-					'attribute' => $attribute,
-				];
-			}
+    public static function findTable($class)
+    {
+        return self::getMapping($class) ?: false;
+    }
 
-			// ----- INBOUND -----
-			foreach (Sql::db()->getInboundReferences($table, ['id']) as $key => $data) {
-				$result[$key] = [
-					'type'  => 'inbound',
-					'query' => '`' . $data['reference'] . '`=?',
-				];
-			}
+    public static function getConfig($class)
+    {
+        if (!($table = self::findTable($class))) {
+            throw new \Exception('table configuration for class "' . $class . '" is missing');
+        }
 
-			// ----- MIXED_INBOUND -----
-			foreach (Sql::db()->getAll("SELECT table_name, column_name FROM information_schema.columns WHERE table_schema=DATABASE() AND column_type='text' AND column_comment LIKE 'model:%" . class_basename($class) . "%'") as $entry) {
-				$result[$entry['table_name']] = [
-					'type'  => 'mixed_inbound',
-					'query' => '`' . $entry['column_name'] . '`=?',
-				];
-			}
+        return self::readFromCache($class, 'config', function () use ($table) {
+            $config = array_merge(['table' => $table], Sql::db()->getDefaults($table));
 
-			// ----- CROSSBOUND -----
-			foreach (Sql::db()->getCrossboundReferences($table) as $pivot => $data) {
-				if (!($master = $data[$table])) {
-					throw new \Exception('invalid crossbound table "' . $pivot . '"');
-				}
+            foreach ($config['defaults'] as $key => $value) {
+                $config['defaults'][$key] = TypeFactory::cast($value, $config['types'][$key]);
+            }
 
-				unset($data[$table]);
+            return $config;
+        });
+    }
 
-				foreach ($data as $table => $entry) {
-					$result[$table] = [
-						'type'       => 'crossbound',
-						'pivot'      => $pivot,
-						'identifier' => $entry['reference'],
-						'query'      => '`' . $master['reference'] . '`=?',
-					];
-				}
-			}
+    //=== PUBLIC STATIC FUNCTIONS ==================================================
 
-			return $result;
-		});
-	}
+    public static function getConnections($class)
+    {
+        return self::readFromCache($class, 'references', function () use ($class) {
+            $table  = self::findTable($class);
+            $result = [];
 
-	public static function readFromCache($class, $property, \Closure $callback, $ttl = null)
-	{
-		return Cache::get([
-			str_replace('\\', '/', $class),
-			$property
-		], $callback, $ttl);
-	}
+// ----- OUTBOUND -----
+            foreach (Sql::db()->getOutboundReferences($table, ['id']) as $attribute => $data) {
+                $refClass                                      = class_basename(ModelFactory::findClass($data['table']));
+                $result[preg_replace('/Id$/', '', $attribute)] = [
+                    'type'      => 'outbound',
+                    'class'     => $refClass,
+                    'attribute' => $attribute
+                ];
+            }
 
-	public static function findTable($class)
-	{
-		return self::getMapping($class) ?: false;
-	}
+// ----- INBOUND -----
+            foreach (Sql::db()->getInboundReferences($table, ['id']) as $key => $data) {
+                $result[$key] = [
+                    'type'  => 'inbound',
+                    'query' => '`' . $data['reference'] . '`=?'
+                ];
+            }
 
-	protected static function getMapping($class = null)
-	{
-		$mapping = self::readFromCache('Models/@', 'classes', function () {
-			$index = [];
+// ----- MIXED_INBOUND -----
+            foreach (Sql::db()->getAll("SELECT table_name, column_name FROM information_schema.columns WHERE table_schema=DATABASE() AND column_type='text' AND column_comment LIKE 'model:%" . class_basename($class) . "%'") as $entry) {
+                $result[$entry['table_name']] = [
+                    'type'  => 'mixed_inbound',
+                    'query' => '`' . $entry['column_name'] . '`=?'
+                ];
+            }
 
-			foreach (Sql::db()->getAll("SELECT c.table_name, c.column_name, t.table_comment FROM information_schema.columns c LEFT JOIN information_schema.tables t ON t.table_schema=c.table_schema AND t.table_name=c.table_name WHERE c.table_schema=DATABASE() AND c.column_name='id' AND c.column_key='PRI' AND t.table_comment<>''") as $table) {
-				if (!preg_match('/^(\w+)(;.*)?$/', $table['table_comment'], $m)) {
-					continue;
-				}
+// ----- CROSSBOUND -----
+            foreach (Sql::db()->getCrossboundReferences($table) as $pivot => $data) {
+                if (!($master = $data[$table])) {
+                    throw new \Exception('invalid crossbound table "' . $pivot . '"');
+                }
 
-				if (empty($table['column_name'])) {
-					throw new \Exception('identifier could not be set (table [' . $table['table_name'] . '] has no primary key)');
-				}
+                unset($data[$table]);
 
-				$index[ltrim(self::NS_MODELS, '\\') . $m[1]] = $table['table_name'];
-			}
+                foreach ($data as $table => $entry) {
+                    $result[$table] = [
+                        'type'       => 'crossbound',
+                        'pivot'      => $pivot,
+                        'identifier' => $entry['reference'],
+                        'query'      => '`' . $master['reference'] . '`=?'
+                    ];
+                }
+            }
 
-			if (!count($index)) {
-				throw new \Exception('no class definitions found in database');
-			}
+            return $result;
+        });
+    }
 
-			return $index;
-		});
+    public static function load($class, $id, $useCache = true)
+    {
+        $model = class_basename($class);
+        $class = self::NS_MODELS . $model;
 
-		return is_null($class) ? $mapping : $mapping[$class];
-	}
+        if (!is_array(self::$models[$model])) {
+            self::$models[$model] = [];
+        }
 
-	public static function findClass($table)
-	{
-		return array_search($table, self::getMapping());
-	}
+        if ($useCache && self::$models[$model][$id]) {
+            return self::$models[$model][$id];
+        }
 
-	public static function getConfig($class)
-	{
-		if (!($table = self::findTable($class))) {
-			throw new \Exception('table configuration for class "' . $class . '" is missing');
-		}
+        $object = new $class($id);
 
-		return self::readFromCache($class, 'config', function () use ($table) {
-			$config = array_merge(['table' => $table], Sql::db()->getDefaults($table));
+        return $object->exists ? (self::$models[$model][$id] = $object) : null;
+    }
 
-			foreach ($config['defaults'] as $key => $value) {
-				$config['defaults'][$key] = TypeFactory::cast($value, $config['types'][$key]);
-			}
+    public static function put($object)
+    {
+        $model = class_basename(get_class($object));
 
-			return $config;
-		});
-	}
+        if (!is_array(self::$models[$model])) {
+            self::$models[$model] = [];
+        }
 
-	public static function load($class, $id, $useCache = true)
-	{
-		$model = class_basename($class);
-		$class = self::NS_MODELS . $model;
+        self::$models[$model][$object->id] = $object;
+    }
 
-		if (!is_array(self::$models[$model])) {
-			self::$models[$model] = [];
-		}
+    public static function readFromCache($class, $property, \Closure $callback, $ttl = null)
+    {
+        return Cache::get([
+            str_replace('\\', '/', $class),
+            $property
+        ], $callback, $ttl);
+    }
 
-		if ($useCache && self::$models[$model][$id]) {
-			return self::$models[$model][$id];
-		}
+    protected static function getMapping($class = null)
+    {
+        $mapping = self::readFromCache('Models/@', 'classes', function () {
+            $index = [];
 
-		$object = new $class($id);
+            foreach (Sql::db()->getAll("SELECT c.table_name, c.column_name, t.table_comment FROM information_schema.columns c LEFT JOIN information_schema.tables t ON t.table_schema=c.table_schema AND t.table_name=c.table_name WHERE c.table_schema=DATABASE() AND c.column_name='id' AND c.column_key='PRI' AND t.table_comment<>''") as $table) {
+                if (!preg_match('/^(\w+)(;.*)?$/', $table['table_comment'], $m)) {
+                    continue;
+                }
 
-		return $object->exists ? (self::$models[$model][$id] = $object) : null;
-	}
+                if (empty($table['column_name'])) {
+                    throw new \Exception('identifier could not be set (table [' . $table['table_name'] . '] has no primary key)');
+                }
 
-	public static function put($object)
-	{
-		$model = class_basename(get_class($object));
+                $index[ltrim(self::NS_MODELS, '\\') . $m[1]] = $table['table_name'];
+            }
 
-		if (!is_array(self::$models[$model])) {
-			self::$models[$model] = [];
-		}
+            if (!count($index)) {
+                throw new \Exception('no class definitions found in database');
+            }
 
-		self::$models[$model][$object->id] = $object;
-	}
+            return $index;
+        });
+
+        return null === $class ? $mapping : $mapping[$class];
+    }
 }

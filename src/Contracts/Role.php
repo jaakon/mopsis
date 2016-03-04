@@ -1,8 +1,9 @@
-<?php namespace Mopsis\Contracts;
+<?php
+namespace Mopsis\Contracts;
 
 interface Role
 {
-	public function getConstraint();
+    public function getConstraint();
 
-	public function getKey();
+    public function getKey();
 }

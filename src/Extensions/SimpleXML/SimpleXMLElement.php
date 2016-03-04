@@ -1,167 +1,167 @@
-<?php namespace Mopsis\Extensions\SimpleXML;
+<?php
+namespace Mopsis\Extensions\SimpleXML;
 
 /**
  * @property \SimpleXMLElement $element
  */
 class SimpleXMLElement
 {
-	use XMLInternalErrorsHelper;
+    use XMLInternalErrorsHelper;
 
-	protected $element;
+    protected $element;
 
-	public function __construct($xmlData)
-	{
-		if (gettype($xmlData) === 'string') {
-			if (is_file($xmlData)) {
-				$xmlData = file_get_contents($xmlData);
-			}
+    public function __call($name, $arguments)
+    {
+        return $this->element->{$name}
+        (...$arguments);
+    }
 
-			try {
-				$this->useXMLInternalErrors();
-				$this->element = new \SimpleXMLElement($xmlData);
-				$this->resetXMLInternalErrorsSetting();
-			} catch (\Exception $exception) {
-				$this->resetXMLInternalErrorsSetting();
-				throw new XMLProcessingException($this->getLastXMLErrorMessage());
-			}
+    public function __construct($xmlData)
+    {
+        if (gettype($xmlData) === 'string') {
+            if (is_file($xmlData)) {
+                $xmlData = file_get_contents($xmlData);
+            }
 
-			return $this->element;
-		}
+            try {
+                $this->useXMLInternalErrors();
+                $this->element = new \SimpleXMLElement($xmlData);
+                $this->resetXMLInternalErrorsSetting();
+            } catch (\Exception $exception) {
+                $this->resetXMLInternalErrorsSetting();
+                throw new XMLProcessingException($this->getLastXMLErrorMessage());
+            }
 
-		if (gettype($xmlData) === 'object') {
-			if ($xmlData instanceof \SimpleXMLElement) {
-				$this->element = $xmlData;
-			} elseif ($xmlData instanceof SimpleXMLElement) {
-				$this->element = $xmlData->getWrappedElement();
-			}
+            return $this->element;
+        }
 
-			return $this->element;
-		}
+        if (gettype($xmlData) === 'object') {
+            if ($xmlData instanceof \SimpleXMLElement) {
+                $this->element = $xmlData;
+            } elseif ($xmlData instanceof self) {
+                $this->element = $xmlData->getWrappedElement();
+            }
 
-		throw new XMLProcessingException('Unknown xmlData given to Mopsis\SimpleXMLElement. Expected a XML String or a SimpleXMLElement object.');
-	}
+            return $this->element;
+        }
 
-	public function getWrappedElement()
-	{
-		return $this->element;
-	}
+        throw new XMLProcessingException('Unknown xmlData given to Mopsis\SimpleXMLElement. Expected a XML String or a SimpleXMLElement object.');
+    }
 
-	public function __call($name, $arguments)
-	{
-		return $this->element->{$name}(...$arguments);
-	}
+    public function __toString()
+    {
+        return strval($this->element);
+    }
 
-	public function __toString()
-	{
-		return strval($this->element);
-	}
+    /**
+     * @param  string               $path
+     * @return SimpleXMLElement[]
+     */
+    public function all(string $path)
+    {
+        return $this->xpath($path) ?: [];
+    }
 
-	/**
-	 * @param string $path
-	 *
-	 * @return SimpleXMLElement[]
-	 */
-	public function all(string $path)
-	{
-		return $this->xpath($path) ?: [];
-	}
+    public function attr($name, $namespace = null)
+    {
+        $isPrefix       = ($namespace !== null);
+        $attributes     = $this->element->attributes($namespace, $isPrefix);
+        $attributeValue = $attributes->{$name}
+        return ($attributeValue !== null) ? (string) $attributeValue : null;
+    }
 
-	public function xpath(string $path)
-	{
-		if (!($elements = $this->element->xpath($path))) {
-			return false;
-		}
+    public function attributes($namespace = null)
+    {
+        $isPrefix   = ($namespace !== null);
+        $attributes = [];
 
-		return array_map([
-			$this,
-			'wrapSimpleXMLElement'
-		], $elements);
-	}
+        foreach ($this->element->attributes($namespace, $isPrefix) as $key => $value) {
+            $attributes[(string) $key] = (string) $value;
+        }
 
-	public function attr($name, $namespace = null)
-	{
-		$isPrefix       = ($namespace !== null);
-		$attributes     = $this->element->attributes($namespace, $isPrefix);
-		$attributeValue = $attributes->{$name};
+        return $attributes;
+    }
 
-		return ($attributeValue !== null) ? (string) $attributeValue : null;
-	}
+    public function children()
+    {
+        $children = [];
 
-	public function attributes($namespace = null)
-	{
-		$isPrefix   = ($namespace !== null);
-		$attributes = [];
+        foreach ($this->element->children() as $child) {
+            $children[] = $this->wrapSimpleXMLElement($child);
+        }
 
-		foreach ($this->element->attributes($namespace, $isPrefix) as $key => $value) {
-			$attributes[(string) $key] = (string) $value;
-		}
+        return $children;
+    }
 
-		return $attributes;
-	}
+    public function first($path)
+    {
+        $elements = $this->xpath($path);
 
-	public function children()
-	{
-		$children = [];
+        return $elements && count($elements) ? $elements[0] : false;
+    }
 
-		foreach ($this->element->children() as $child) {
-			$children[] = $this->wrapSimpleXMLElement($child);
-		}
+    public function getFirstChildByTagName($tagName)
+    {
+        if (!isset($this->element->{$tagName})) {
+            return;
+        }
 
-		return $children;
-	}
+        return $this->wrapSimpleXMLElement($this->element->{$tagName});
+    }
 
-	protected function wrapSimpleXMLElement(\SimpleXMLElement $element)
-	{
-		$elementAsXML = $element->asXML();
+    public function getWrappedElement()
+    {
+        return $this->element;
+    }
 
-		if ($elementAsXML === false) {
-			return null;
-		}
+    public function has($path): bool
+    {
+        return !!$this->first($path);
+    }
 
-		return new self($elementAsXML);
-	}
+    public function registerXPathNamespace($prefix, $namespace)
+    {
+        return $this->element->registerXPathNamespace($prefix, $namespace);
+    }
 
-	public function getFirstChildByTagName($tagName)
-	{
-		if (!isset($this->element->{$tagName})) {
-			return null;
-		}
+    public function removeNodesMatchingXPath($path)
+    {
+        $nodesToRemove = $this->element->xpath($path);
 
-		return $this->wrapSimpleXMLElement($this->element->{$tagName});
-	}
+        foreach ($nodesToRemove as $nodeToRemove) {
+            unset($nodeToRemove[0]);
+        }
+    }
 
-	public function has($path): bool
-	{
-		return !!$this->first($path);
-	}
+    public function text($path = '.')
+    {
+        if (!($element = $this->first($path))) {
+            return false;
+        }
 
-	public function first($path)
-	{
-		$elements = $this->xpath($path);
+        return trim((string) $element) ?: null;
+    }
 
-		return $elements && count($elements) ? $elements[0] : false;
-	}
+    public function xpath(string $path)
+    {
+        if (!($elements = $this->element->xpath($path))) {
+            return false;
+        }
 
-	public function registerXPathNamespace($prefix, $namespace)
-	{
-		return $this->element->registerXPathNamespace($prefix, $namespace);
-	}
+        return array_map([
+            $this,
+            'wrapSimpleXMLElement'
+        ], $elements);
+    }
 
-	public function removeNodesMatchingXPath($path)
-	{
-		$nodesToRemove = $this->element->xpath($path);
+    protected function wrapSimpleXMLElement(\SimpleXMLElement $element)
+    {
+        $elementAsXML = $element->asXML();
 
-		foreach ($nodesToRemove as $nodeToRemove) {
-			unset($nodeToRemove[0]);
-		}
-	}
+        if ($elementAsXML === false) {
+            return;
+        }
 
-	public function text($path = '.')
-	{
-		if (!($element = $this->first($path))) {
-			return false;
-		}
-
-		return trim((string) $element) ?: null;
-	}
+        return new self($elementAsXML);
+    }
 }

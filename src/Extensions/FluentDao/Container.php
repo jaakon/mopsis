@@ -1,93 +1,101 @@
-<?php namespace Mopsis\Extensions\FluentDao;
+<?php
+namespace Mopsis\Extensions\FluentDao;
 
 /**
  * @property  properties
  */
 abstract class Container
 {
-	protected $data  = null;
-	protected $cache = [];
+    protected $cache = [];
 
-	//=== PUBLIC METHODS ===========================================================
+    protected $data = null;
 
-	public function __construct($criteria = null)
-	{
-		$this->data = array_fill_keys($this->properties, null);
+    //=== PUBLIC METHODS ===========================================================
 
-		if (is_array($criteria)) {
-			foreach ($criteria as $key => $value) {
-				$this->$key = $value;
-			}
-		}
-	}
+    public function __construct($criteria = null)
+    {
+        $this->data = array_fill_keys($this->properties, null);
 
-	public function __isset($key)
-	{
-		if (isset($this->data[$key])) {
-			return true;
-		}
+        if (is_array($criteria)) {
+            foreach ($criteria as $key => $value) {
+                $this->$key = $value;
+            }
+        }
+    }
 
-		if (method_exists($this, 'get' . ucfirst($key) . 'Attribute')) {
-			$value = $this->{'get' . ucfirst($key) . 'Attribute'}();
+    public function __get($key)
+    {
+        if (method_exists($this, 'get' . ucfirst($key) . 'Attribute')) {
+            if ($this->cache[$key] === null) {
+                $this->cache[$key] = $this->{'get' . ucfirst($key) . 'Attribute'}
 
-			return isset($value);
-		}
+                ();
+            }
 
-		return false;
-	}
+            return $this->cache[$key];
+        }
 
-	public function __get($key)
-	{
-		if (method_exists($this, 'get' . ucfirst($key) . 'Attribute')) {
-			if ($this->cache[$key] === null) {
-				$this->cache[$key] = $this->{'get' . ucfirst($key) . 'Attribute'}();
-			}
+        return $this->_get($key);
+    }
 
-			return $this->cache[$key];
-		}
+    public function __isset($key)
+    {
+        if (isset($this->data[$key])) {
+            return true;
+        }
 
-		return $this->_get($key);
-	}
+        if (method_exists($this, 'get' . ucfirst($key) . 'Attribute')) {
+            $value = $this->{'get' . ucfirst($key) . 'Attribute'}
 
-	public function __set($key, $value)
-	{
-		unset($this->cache[$key]);
+            ();
 
-		if (method_exists($this, 'set' . ucfirst($key) . 'Attribute')) {
-			return $this->{'set' . ucfirst($key) . 'Attribute'}($value);
-		}
+            return isset($value);
+        }
 
-		return $this->_set($key, $value);
-	}
+        return false;
+    }
 
-	protected function _get($key)
-	{
-		$key = ltrim($key, '_');
+    public function __set($key, $value)
+    {
+        unset($this->cache[$key]);
 
-		if (array_key_exists($key, $this->data)) {
-			return $this->data[$key];
-		}
+        if (method_exists($this, 'set' . ucfirst($key) . 'Attribute')) {
+            return $this->{'set' . ucfirst($key) . 'Attribute'}
 
-		throw new \Exception('property [' . $key . '] is undefined');
-	}
+            ($value);
+        }
 
-	//=== PROTECTED METHODS ========================================================
+        return $this->_set($key, $value);
+    }
 
-	protected function _set($key, $value)
-	{
-		if (array_key_exists($key, $this->data)) {
-			$this->data[$key] = $value;
+    public function set($key, $value)
+    {
+        $this->$key = $value;
 
-			return true;
-		}
+        return $this;
+    }
 
-		throw new \Exception('property [' . $key . '] is undefined');
-	}
+    protected function _get($key)
+    {
+        $key = ltrim($key, '_');
 
-	public function set($key, $value)
-	{
-		$this->$key = $value;
+        if (array_key_exists($key, $this->data)) {
+            return $this->data[$key];
+        }
 
-		return $this;
-	}
+        throw new \Exception('property [' . $key . '] is undefined');
+    }
+
+    //=== PROTECTED METHODS ========================================================
+
+    protected function _set($key, $value)
+    {
+        if (array_key_exists($key, $this->data)) {
+            $this->data[$key] = $value;
+
+            return true;
+        }
+
+        throw new \Exception('property [' . $key . '] is undefined');
+    }
 }

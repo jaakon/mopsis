@@ -1,9 +1,13 @@
-<?php namespace Mopsis\Extensions;
+<?php
+namespace Mopsis\Extensions;
 
 abstract class TagRenderMode
 {
-	const NORMAL       = 0;
-	const START_TAG    = 1;
-	const END_TAG      = 2;
-	const SELF_CLOSING = 3;
+    const END_TAG = 2;
+
+    const NORMAL = 0;
+
+    const SELF_CLOSING = 3;
+
+    const START_TAG = 1;
 }

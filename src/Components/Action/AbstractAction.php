@@ -1,40 +1,45 @@
-<?php namespace Mopsis\Components\Action;
+<?php
+namespace Mopsis\Components\Action;
 
 use Mopsis\Core\Auth;
 
 abstract class AbstractAction
 {
-	const ACCESS_PRIVATE = 'private';
-	const ACCESS_PUBLIC  = 'public';
+    const ACCESS_PRIVATE = 'private';
 
-	protected $access = self::ACCESS_PRIVATE;
-	protected $request;
-	protected $responder;
-	protected $service;
+    const ACCESS_PUBLIC = 'public';
 
-	public function init()
-	{
-		$this->checkAccess();
-	}
+    protected $access = self::ACCESS_PRIVATE;
 
-	public function checkAccess()
-	{
-		$loginMandatory = is_bool($this->loginMandatory) ? $this->loginMandatory : config('app.login.mandatory');
+    protected $request;
 
-		if (!$loginMandatory || Auth::check()) {
-			return true;
-		}
+    protected $responder;
 
-		$loginPage = config('app.login.page');
+    protected $service;
 
-		if ($loginPage === $this->request->url->get(PHP_URL_PATH)) {
-			return true;
-		}
+    public function checkAccess()
+    {
+        $loginMandatory = is_bool($this->loginMandatory) ? $this->loginMandatory : config('app.login.mandatory');
 
-		if (!$this->request->method->isGet()) {
-			return redirect($loginPage);
-		}
+        if (!$loginMandatory || Auth::check()) {
+            return true;
+        }
 
-		return redirect($loginPage . '&redirect=' . urlencode($this->request->url->get(PHP_URL_PATH)));
-	}
+        $loginPage = config('app.login.page');
+
+        if ($loginPage === $this->request->url->get(PHP_URL_PATH)) {
+            return true;
+        }
+
+        if (!$this->request->method->isGet()) {
+            return redirect($loginPage);
+        }
+
+        return redirect($loginPage . '&redirect=' . urlencode($this->request->url->get(PHP_URL_PATH)));
+    }
+
+    public function init()
+    {
+        $this->checkAccess();
+    }
 }

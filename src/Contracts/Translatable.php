@@ -1,6 +1,7 @@
-<?php namespace Mopsis\Contracts;
+<?php
+namespace Mopsis\Contracts;
 
 interface Translatable
 {
-	public function __($key, array $replace = []);
+    public function __($key, array $replace = []);
 }

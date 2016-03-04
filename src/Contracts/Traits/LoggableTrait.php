@@ -1,83 +1,91 @@
-<?php namespace Mopsis\Contracts\Traits;
+<?php
+namespace Mopsis\Contracts\Traits;
 
 use Mopsis\Core\App;
 use Mopsis\Core\Auth;
 
 trait LoggableTrait
 {
-	public function logChanges($message = null)
-	{
-		if ($this->exists && !count($this->getDirty())) {
-			return $this;
-		}
+    /*
+    if (class_exists('\App\Models\Event')) {
+    Event::add($instance, Auth::user(), $this->findRoute(), array_diff_values($oldData, $newData));
+    }
 
-		$eventClass = App::get('Event');
+    if (class_exists('\App\Models\Event')) {
+    Event::add($instance, Auth::user(), $this->findRoute());
+    }
 
-		$event = new $eventClass([
-			'message' => $message ?: $this->traceAction(),
-			'values'  => json_encode($this->getDiff())
-		]);
+    if (class_exists('\App\Models\Event')) {
+    Event::add($instance, Auth::user(), $this->findRoute(), [$key => $value]);
+    }
 
-		$event->user()->associate(Auth::user());
-		$this->events()->save($event);
+    protected function findRoute()
+    {
+    return class_basename($this) . '.' . debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)[2]['function'];
+    }
 
-		return $this;
-	}
+    if ($instance->hasProperty('uri')) {
+    $instance->set('uri', null)->uri;
+    }
 
-	protected function traceAction()
-	{
-		foreach (debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS) as $frame) {
-			if (preg_match('/^Controllers\\\\(\w+)/', $frame['class'], $m)) {
-				return $m[1] . '.' . $frame['function'];
-			}
-		}
+     */
 
-		return null;
-	}
+    public function logChanges($message = null)
+    {
+        if ($this->exists && !count($this->getDirty())) {
+            return $this;
+        }
 
-	protected function getDiff()
-	{
-		$diff = [];
+        $eventClass = App::get('Event');
 
-		foreach ($this->getDirty() as $field => $newValue) {
-			$oldValue = $this->getOriginal($field);
-			if ($oldValue !== $newValue) {
-				$diff[$field] = $newValue;
-			}
-		}
+        $event = new $eventClass([
+            'message' => $message ?: $this->traceAction(),
+            'values'  => json_encode($this->getDiff())
+        ]);
 
-		/** @noinspection PhpUndefinedClassConstantInspection */
-		/** @noinspection PhpUndefinedClassConstantInspection */
-		/** @noinspection PhpUndefinedClassConstantInspection */
-		return array_diff_key($diff, array_fill_keys([
-			$this->getKeyName(),
-			static::CREATED_AT,
-			static::UPDATED_AT,
-			static::DELETED_AT
-		], null));
-	}
-	/*
-			if (class_exists('\App\Models\Event')) {
-				Event::add($instance, Auth::user(), $this->findRoute(), array_diff_values($oldData, $newData));
-			}
+        $event->user()->associate(Auth::user());
+        $this->events()->save($event);
 
-			if (class_exists('\App\Models\Event')) {
-				Event::add($instance, Auth::user(), $this->findRoute());
-			}
+        return $this;
+    }
 
-			if (class_exists('\App\Models\Event')) {
-				Event::add($instance, Auth::user(), $this->findRoute(), [$key => $value]);
-			}
+    protected function getDiff()
+    {
+        $diff = [];
 
-			protected function findRoute()
-			{
-				return class_basename($this) . '.' . debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)[2]['function'];
-			}
+        foreach ($this->getDirty() as $field => $newValue) {
+            $oldValue = $this->getOriginal($field);
 
-			if ($instance->hasProperty('uri')) {
-				$instance->set('uri', null)->uri;
-			}
+            if ($oldValue !== $newValue) {
+                $diff[$field] = $newValue;
+            }
+        }
 
-	*/
+        /**
+         * @noinspection PhpUndefinedClassConstantInspection
+         */
+        /**
+         * @noinspection PhpUndefinedClassConstantInspection
+         */
+        /**
+         * @noinspection PhpUndefinedClassConstantInspection
+         */
+        return array_diff_key($diff, array_fill_keys([
+            $this->getKeyName(),
+            static::CREATED_AT,
+            static::UPDATED_AT,
+            static::DELETED_AT
+        ], null));
+    }
 
+    protected function traceAction()
+    {
+        foreach (debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS) as $frame) {
+            if (preg_match('/^Controllers\\\\(\w+)/', $frame['class'], $m)) {
+                return $m[1] . '.' . $frame['function'];
+            }
+        }
+
+        return;
+    }
 }

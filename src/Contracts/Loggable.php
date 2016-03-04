@@ -1,6 +1,7 @@
-<?php namespace Mopsis\Contracts;
+<?php
+namespace Mopsis\Contracts;
 
 interface Loggable
 {
-	public function logChanges($event);
+    public function logChanges($event);
 }

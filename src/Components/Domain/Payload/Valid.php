@@ -1,4 +1,5 @@
-<?php namespace Mopsis\Components\Domain\Payload;
+<?php
+namespace Mopsis\Components\Domain\Payload;
 
 class Valid extends AbstractPayload
 {

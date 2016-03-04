@@ -1,51 +1,52 @@
-<?php namespace Mopsis\Extensions\Twig\Markdown;
+<?php
+namespace Mopsis\Extensions\Twig\Markdown;
 
 use Aptoma\Twig\Extension\MarkdownEngineInterface;
 
 class MarkdownEngine implements MarkdownEngineInterface
 {
-	public function transform($content)
-	{
-		if (!strlen(trim($content))) {
-			return $content;
-		}
+    public function getName()
+    {
+        return 'erusev\parsedown';
+    }
 
-		// Quick link for tests
-		$content = preg_replace('/test-(\d+)/', '[Test #$1](/search?query=$1)', $content);
+    public function transform($content)
+    {
+        if (!strlen(trim($content))) {
+            return $content;
+        }
 
-		// Revert double encoding of quotes
-		$content = str_replace([
-			'&quot;',
-			'&#039;'
-		], [
-			'"',
-			'\''
-		], $content);
+        // Quick link for tests
+        $content = preg_replace('/test-(\d+)/', '[Test #$1](/search?query=$1)', $content);
 
-		// Fixing backticks without leading return
-		$content = preg_replace('/([^\n])(```)/', "$1\n$2", $content);
+        // Revert double encoding of quotes
+        $content = str_replace([
+            '&quot;',
+            '&#039;'
+        ], [
+            '"',
+            '\''
+        ], $content);
 
-		// Setup ParseDown
-		Parsedown::instance('bootstrap')->setAttributes('table', ['class' => 'table table-bordered table-condensed']);
+        // Fixing backticks without leading return
+        $content = preg_replace('/([^\n])(```)/', "$1\n$2", $content);
 
-		// Convert markdown to html
-		$content = Parsedown::instance('bootstrap')->text(trim($content));
+        // Setup ParseDown
+        Parsedown::instance('bootstrap')->setAttributes('table', ['class' => 'table table-bordered table-condensed']);
 
-		// Revert encoding of code blocks
-		$content = preg_replace_callback('/(<code>)(.+?)(<\/code>)/s', function ($m) {
-			return $m[1] . html_entity_decode($m[2]) . $m[3];
-		}, $content);
+        // Convert markdown to html
+        $content = Parsedown::instance('bootstrap')->text(trim($content));
 
-		// Revert encoding of ampersands in links
-		$content = preg_replace_callback('/(href=")([^"]+&amp;[^"]+)(")/', function ($m) {
-			return $m[1] . html_entity_decode($m[2]) . $m[3];
-		}, $content);
+        // Revert encoding of code blocks
+        $content = preg_replace_callback('/(<code>)(.+?)(<\/code>)/s', function ($m) {
+            return $m[1] . html_entity_decode($m[2]) . $m[3];
+        }, $content);
 
-		return $content;
-	}
+        // Revert encoding of ampersands in links
+        $content = preg_replace_callback('/(href=")([^"]+&amp;[^"]+)(")/', function ($m) {
+            return $m[1] . html_entity_decode($m[2]) . $m[3];
+        }, $content);
 
-	public function getName()
-	{
-		return 'erusev\parsedown';
-	}
+        return $content;
+    }
 }

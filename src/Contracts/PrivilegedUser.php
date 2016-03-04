@@ -1,6 +1,7 @@
-<?php namespace Mopsis\Contracts;
+<?php
+namespace Mopsis\Contracts;
 
 interface PrivilegedUser
 {
-	public function may($actionOnObject, $objectToAccess = null);
+    public function may($actionOnObject, $objectToAccess = null);
 }

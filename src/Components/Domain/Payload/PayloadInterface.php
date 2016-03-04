@@ -1,10 +1,11 @@
-<?php namespace Mopsis\Components\Domain\Payload;
+<?php
+namespace Mopsis\Components\Domain\Payload;
 
 interface PayloadInterface
 {
-	public function add(array $data);
+    public function add(array $data);
 
-	public function get($key = null);
+    public function get($key = null);
 
-	public function getName();
+    public function getName();
 }

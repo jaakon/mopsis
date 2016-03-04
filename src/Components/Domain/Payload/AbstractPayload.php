@@ -1,42 +1,43 @@
-<?php namespace Mopsis\Components\Domain\Payload;
+<?php
+namespace Mopsis\Components\Domain\Payload;
 
 use Mopsis\Contracts\Model;
 
 abstract class AbstractPayload implements PayloadInterface
 {
-	protected $payload = [];
+    protected $payload = [];
 
-	public function __construct(array $payload)
-	{
-		$this->payload = $payload;
-	}
+    public function __construct(array $payload)
+    {
+        $this->payload = $payload;
+    }
 
-	public function add(array $data)
-	{
-		$this->payload = array_merge($this->payload, $data);
+    public function add(array $data)
+    {
+        $this->payload = array_merge($this->payload, $data);
 
-		return $this;
-	}
+        return $this;
+    }
 
-	public function get($key = null)
-	{
-		if ($key === null) {
-			return $this->payload;
-		}
+    public function get($key = null)
+    {
+        if ($key === null) {
+            return $this->payload;
+        }
 
-		if (isset($this->payload[$key])) {
-			return $this->payload[$key];
-		}
+        if (isset($this->payload[$key])) {
+            return $this->payload[$key];
+        }
 
-		if ($key === 'redirect' && isset($this->payload['instance']) && $this->payload['instance'] instanceof Model) {
-			return $this->payload['instance']->getUriRecursive();
-		}
+        if ($key === 'redirect' && isset($this->payload['instance']) && $this->payload['instance'] instanceof Model) {
+            return $this->payload['instance']->getUriRecursive();
+        }
 
-		return null;
-	}
+        return;
+    }
 
-	public function getName()
-	{
-		return implode('\\', array_slice(explode('\\', get_class($this)), -2));
-	}
+    public function getName()
+    {
+        return implode('\\', array_slice(explode('\\', get_class($this)), -2));
+    }
 }

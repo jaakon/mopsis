@@ -1,4 +1,5 @@
-<?php namespace Mopsis\Components\Controller;
+<?php
+namespace Mopsis\Components\Controller;
 
 use Aura\Web\Request;
 use Aura\Web\Response;
@@ -9,87 +10,90 @@ use Mopsis\Core\Auth;
 
 abstract class AbstractController
 {
-	protected $request;
-	protected $filter;
-	protected $view;
-	protected $loginMandatory;
+    protected $filter;
 
-	public function __construct(Request $request, Filter $filter, View $view)
-	{
-		$this->request = $request;
-		$this->filter  = $filter;
-		$this->view    = $view;
+    protected $loginMandatory;
 
-		$this->init();
-	}
+    protected $request;
 
-	public function __call($method, $funcArgs)
-	{
-		$this->setTemplate($method);
+    protected $view;
 
-		if (!method_exists($this, $method)) {
-			throw new \Exception('invalid method "' . $method . '" for class "' . get_called_class() . '"');
-		}
+    public function __call($method, $funcArgs)
+    {
+        $this->setTemplate($method);
 
-		try {
-			$result = $this->$method(...$funcArgs) ?: 200;
-		} catch (ModelNotFoundException $e) {
-			return 'The session token is no longer valid.';
-		}
+        if (!method_exists($this, $method)) {
+            throw new \Exception('invalid method "' . $method . '" for class "' . get_called_class() . '"');
+        }
 
-		if ($result instanceof Response) {
-			return $result;
-		}
+        try {
+            $result = $this->$method(...$funcArgs) ?: 200;
+        } catch (ModelNotFoundException $e) {
+            return 'The session token is no longer valid.';
+        }
 
-		$response = App::get('Aura\Web\Response');
+        if ($result instanceof Response) {
+            return $result;
+        }
 
-		switch (gettype($result)) {
-			case 'integer':
-				$response->status->setCode($result);
-				$response->content->set($this->view->__invoke());
-				break;
-			case 'array':
-				$response->status->setCode($result[0]);
-				$response->content->set($result[1]);
-				break;
-			default:
-				throw new \Exception('invalid return type "' . gettype($result) . '"');
-		}
+        $response = App::get('Aura\Web\Response');
 
-		return $response;
-	}
+        switch (gettype($result)) {
+            case 'integer':
+                $response->status->setCode($result);
+                $response->content->set($this->view->__invoke());
+                break;
+            case 'array':
+                $response->status->setCode($result[0]);
+                $response->content->set($result[1]);
+                break;
+            default:
+                throw new \Exception('invalid return type "' . gettype($result) . '"');
+        }
 
-	public function init()
-	{
-		$this->checkAccess();
-	}
+        return $response;
+    }
 
-	protected function checkAccess()
-	{
-		$loginMandatory = is_bool($this->loginMandatory) ? $this->loginMandatory : config('app.login.mandatory');
+    public function __construct(Request $request, Filter $filter, View $view)
+    {
+        $this->request = $request;
+        $this->filter  = $filter;
+        $this->view    = $view;
 
-		if (!$loginMandatory || Auth::check()) {
-			return true;
-		}
+        $this->init();
+    }
 
-		$loginPage = config('app.login.page');
+    public function init()
+    {
+        $this->checkAccess();
+    }
 
-		if ($loginPage === $this->request->url->get(PHP_URL_PATH)) {
-			return true;
-		}
+    protected function checkAccess()
+    {
+        $loginMandatory = is_bool($this->loginMandatory) ? $this->loginMandatory : config('app.login.mandatory');
 
-		if (!$this->request->method->isGet()) {
-			return redirect($loginPage);
-		}
+        if (!$loginMandatory || Auth::check()) {
+            return true;
+        }
 
-		return redirect($loginPage . '?redirect=' . urlencode($this->request->url->get(PHP_URL_PATH)));
-	}
+        $loginPage = config('app.login.page');
 
-	protected function setTemplate($page)
-	{
-		$class    = App::identify($this);
-		$template = App::getFullyQualifiedName('View', $class[0] . '\\' . $class[1] . '\\' . $page);
+        if ($loginPage === $this->request->url->get(PHP_URL_PATH)) {
+            return true;
+        }
 
-		$this->view->setTemplate($template);
-	}
+        if (!$this->request->method->isGet()) {
+            return redirect($loginPage);
+        }
+
+        return redirect($loginPage . '?redirect=' . urlencode($this->request->url->get(PHP_URL_PATH)));
+    }
+
+    protected function setTemplate($page)
+    {
+        $class    = App::identify($this);
+        $template = App::getFullyQualifiedName('View', $class[0] . '\\' . $class[1] . '\\' . $page);
+
+        $this->view->setTemplate($template);
+    }
 }

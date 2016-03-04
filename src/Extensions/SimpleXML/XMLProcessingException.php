@@ -1,4 +1,5 @@
-<?php namespace Mopsis\Extensions\SimpleXML;
+<?php
+namespace Mopsis\Extensions\SimpleXML;
 
 /**
  * Class XMLProcessingException

@@ -1,4 +1,5 @@
-<?php namespace Mopsis\Components\Domain;
+<?php
+namespace Mopsis\Components\Domain;
 
 use Illuminate\Database\Query\Builder;
 use Mopsis\Extensions\Eloquent\Model;
@@ -8,121 +9,121 @@ use Mopsis\Extensions\Eloquent\Model;
  */
 abstract class AbstractGateway
 {
-	protected $model;
+    protected $model;
 
-	public function fetchAll()
-	{
-		return $this->model->all();
-	}
+    public function create(Model $instance, $data)
+    {
+        return $instance->fill($this->getAcceptedData($instance, $this->getRestructuredData($data)))->save() ? $instance : false;
+    }
 
-	public function fetchById($id)
-	{
-		return $this->model->find($id);
-	}
+    public function delete(Model $instance)
+    {
+        return $instance->delete();
+    }
 
-	public function fetchByToken($token)
-	{
-		return $this->model->unpack($token);
-	}
+    public function fetchAll()
+    {
+        return $this->model->all();
+    }
 
-	public function newEntity(array $attributes = []) : Model
-	{
-		return $this->model->newInstance($attributes);
-	}
+    public function fetchById($id)
+    {
+        return $this->model->find($id);
+    }
 
-	public function findOne($sql, array $bindings = [])
-	{
-		return $this->find(...$this->expandQuery($sql, $bindings))->first();
-	}
+    public function fetchByToken($token)
+    {
+        return $this->model->unpack($token);
+    }
 
-	public function find($sql, array $bindings): Builder
-	{
-		return $this->model->whereRaw($sql, $bindings);
-	}
+    public function find($sql, array $bindings): Builder
+    {
+        return $this->model->whereRaw($sql, $bindings);
+    }
 
-	protected function expandQuery($sql, array $bindings)
-	{
-		if (!is_array($sql)) {
-			return [
-				$sql,
-				$bindings
-			];
-		}
+    public function findMany($sql, array $bindings = [], $offset = 0, $length = null)
+    {
+        $query = $this->find(...$this->expandQuery($sql, $bindings));
 
-		return [
-			'`' . implode('`=? AND `', array_keys($sql)) . '`=?',
-			array_values($sql)
-		];
-	}
+        if ($offset > 0) {
+            $query = $query->skip($offset);
+        }
 
-	public function findMany($sql, array $bindings = [], $offset = 0, $length = null)
-	{
-		$query = $this->find(...$this->expandQuery($sql, $bindings));
+        if ($length > 0) {
+            $query = $query->take($length);
+        }
 
-		if ($offset > 0) {
-			$query = $query->skip($offset);
-		}
+        return $query->get();
+    }
 
-		if ($length > 0) {
-			$query = $query->take($length);
-		}
+    public function findOne($sql, array $bindings = [])
+    {
+        return $this->find(...$this->expandQuery($sql, $bindings))->first();
+    }
 
-		return $query->get();
-	}
+    public function newEntity(array $attributes = []): Model
+    {
+        return $this->model->newInstance($attributes);
+    }
 
-	public function create(Model $instance, $data)
-	{
-		return $instance->fill($this->getAcceptedData($instance, $this->getRestructuredData($data)))->save() ? $instance : false;
-	}
+    public function set(Model $instance, $key, $value)
+    {
+        $instance->setAttribute($key, $value);
+        $instance->save();
 
-	protected function getAcceptedData(Model $instance, $data)
-	{
-		foreach ($data as $key => $value) {
-			unset($data[$key]);
-			$data[snake_case($key)] = $value;
-		}
+        return $instance;
+    }
 
-		return array_intersect_key($data, array_flip($instance->getFillableAttributes()));
-	}
+    public function update(Model $instance, $data)
+    {
+        return $instance->update($this->getAcceptedData($instance, $this->getRestructuredData($data))) ? $instance : false;
+    }
 
-	protected function getRestructuredData($data)
-	{
-		foreach ($data as $key => $value) {
-			if (!preg_match('/^(\w+)\.(\w+)$/', $key, $match)) {
-				continue;
-			}
+    protected function expandQuery($sql, array $bindings)
+    {
+        if (!is_array($sql)) {
+            return [
+                $sql,
+                $bindings
+            ];
+        }
 
-			unset($data[$key]);
+        return [
+            '`' . implode('`=? AND `', array_keys($sql)) . '`=?',
+            array_values($sql)
+        ];
+    }
 
-			if (isset($data[$match[1]]) && !is_array($data[$match[1]])) {
-				die('CARCRASH!!');
-			}
+    protected function getAcceptedData(Model $instance, $data)
+    {
+        foreach ($data as $key => $value) {
+            unset($data[$key]);
+            $data[snake_case($key)] = $value;
+        }
 
-			if (!is_array($data[$match[1]])) {
-				$data[$match[1]] = [];
-			}
+        return array_intersect_key($data, array_flip($instance->getFillableAttributes()));
+    }
 
-			$data[$match[1]][$match[2]] = $value;
-		}
+    protected function getRestructuredData($data)
+    {
+        foreach ($data as $key => $value) {
+            if (!preg_match('/^(\w+)\.(\w+)$/', $key, $match)) {
+                continue;
+            }
 
-		return $data;
-	}
+            unset($data[$key]);
 
-	public function update(Model $instance, $data)
-	{
-		return $instance->update($this->getAcceptedData($instance, $this->getRestructuredData($data))) ? $instance : false;
-	}
+            if (isset($data[$match[1]]) && !is_array($data[$match[1]])) {
+                exit('CARCRASH!!');
+            }
 
-	public function delete(Model $instance)
-	{
-		return $instance->delete();
-	}
+            if (!is_array($data[$match[1]])) {
+                $data[$match[1]] = [];
+            }
 
-	public function set(Model $instance, $key, $value)
-	{
-		$instance->setAttribute($key, $value);
-		$instance->save();
+            $data[$match[1]][$match[2]] = $value;
+        }
 
-		return $instance;
-	}
+        return $data;
+    }
 }

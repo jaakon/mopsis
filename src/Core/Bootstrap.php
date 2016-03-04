@@ -1,4 +1,5 @@
-<?php namespace Mopsis\Core;
+<?php
+namespace Mopsis\Core;
 
 use Aura\Web\Response;
 use DI\ContainerBuilder;
@@ -6,104 +7,106 @@ use Mopsis\Extensions\Aura\Web\ResponseSender;
 
 class Bootstrap
 {
-	public function kickstart($flushMode = null)
-	{
-		if (parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) === '/@info') {
-			return phpinfo();
-		}
+    public function initialize()
+    {
+        setlocale(LC_ALL, [
+            'de_DE.UTF8',
+            'de-DE'
+        ]);
+        session_start();
 
-		$this->initialize();
-		$this->updateCache($flushMode);
+        if (!defined('APPLICATION_PATH')) {
+            define('APPLICATION_PATH', realpath($_SERVER['DOCUMENT_ROOT'] . '/..'));
+        }
 
-		/** @noinspection PhpIncludeInspection */
-		include APPLICATION_PATH . '/app/initialize.php';
+        $builder = new ContainerBuilder();
+        $builder->addDefinitions(__DIR__ . '/../definitions.php');
+        $builder->addDefinitions(APPLICATION_PATH . '/config/definitions.php');
 
-		$response = $this->executeRoute();
-		(new ResponseSender($response))->__invoke();
+        App::initialize($builder->build());
 
-		return true;
-	}
+        App::get('config')->load(APPLICATION_PATH . '/config/config.php', APPLICATION_PATH . '/config/credentials.php');
 
-	public function initialize()
-	{
-		setlocale(LC_ALL, [
-			'de_DE.UTF8',
-			'de-DE'
-		]);
-		session_start();
+        App::get('Database');
+        App::get('ErrorHandler');
+    }
 
-		if (!defined('APPLICATION_PATH')) {
-			define('APPLICATION_PATH', realpath($_SERVER['DOCUMENT_ROOT'] . '/..'));
-		}
+    public function kickstart($flushMode = null)
+    {
+        if (parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) === '/@info') {
+            return phpinfo();
+        }
 
-		$builder = new ContainerBuilder;
-		$builder->addDefinitions(__DIR__ . '/../definitions.php');
-		$builder->addDefinitions(APPLICATION_PATH . '/config/definitions.php');
+        $this->initialize();
+        $this->updateCache($flushMode);
 
-		App::initialize($builder->build());
+        /**
+         * @noinspection PhpIncludeInspection
+         */
+        include APPLICATION_PATH . '/app/initialize.php';
 
-		App::get('config')->load(APPLICATION_PATH . '/config/config.php', APPLICATION_PATH . '/config/credentials.php');
+        $response = $this->executeRoute();
+        (new ResponseSender($response))->__invoke();
 
-		App::get('Database');
-		App::get('ErrorHandler');
-	}
+        return true;
+    }
 
-	protected function updateCache($flushMode)
-	{
-		if ($flushMode === 'all') {
-			Cache::clear();
-		}
+    protected function executeRoute()
+    {
+        $response = App::get('Mopsis\Core\Router')->get();
 
-		if ($flushMode === 'all' || $flushMode === 'app') {
-			App::get('CacheTool')->opcache_reset();
-		}
+        if ($response instanceof Response) {
+            return $response;
+        }
 
-		if ($flushMode === 'all' || $flushMode === 'assets') {
-			Cache::delete('css.version');
-			Cache::delete('javascript.version');
-		}
+        if ($response === null) {
+            return $this->buildResponse(502, static_page(502));
+        }
 
-		if ($flushMode === 'all' || $flushMode === 'views') {
-			App::get('Mopsis\Components\View\View')->clearCache();
-		}
+        if ($response !== false) {
+            return $this->buildResponse(203, $response);
+        }
 
-		Cache::get('css.version', function () {
-			return filemtime(APPLICATION_PATH . '/public/css') ?: time();
-		});
+        App::get('Logger')->error('file not found: ' . $_SERVER['REQUEST_METHOD'] . ' ' . $_SERVER['REQUEST_URI'] . ' [' . $_SERVER['HTTP_USER_AGENT'] . ']');
 
-		Cache::get('javascript.version', function () {
-			return filemtime(APPLICATION_PATH . '/public/js') ?: time();
-		});
-	}
+        return $this->buildResponse(404, static_page(404));
+    }
 
-	protected function executeRoute()
-	{
-		$response = App::get('Mopsis\Core\Router')->get();
+    protected function updateCache($flushMode)
+    {
+        if ($flushMode === 'all') {
+            Cache::clear();
+        }
 
-		if ($response instanceof Response) {
-			return $response;
-		}
+        if ($flushMode === 'all' || $flushMode === 'app') {
+            App::get('CacheTool')->opcache_reset();
+        }
 
-		if ($response === null) {
-			return $this->buildResponse(502, static_page(502));
-		}
+        if ($flushMode === 'all' || $flushMode === 'assets') {
+            Cache::delete('css.version');
+            Cache::delete('javascript.version');
+        }
 
-		if ($response !== false) {
-			return $this->buildResponse(203, $response);
-		}
+        if ($flushMode === 'all' || $flushMode === 'views') {
+            App::get('Mopsis\Components\View\View')->clearCache();
+        }
 
-		App::get('Logger')->error('file not found: ' . $_SERVER['REQUEST_METHOD'] . ' ' . $_SERVER['REQUEST_URI'] . ' [' . $_SERVER['HTTP_USER_AGENT'] . ']');
+        Cache::get('css.version', function () {
+            return filemtime(APPLICATION_PATH . '/public/css') ?: time();
+        });
 
-		return $this->buildResponse(404, static_page(404));
-	}
+        Cache::get('javascript.version', function () {
+            return filemtime(APPLICATION_PATH . '/public/js') ?: time();
+        });
+    }
 
-	private function buildResponse($code, $content)
-	{
-		$response = App::get('Aura\Web\Response');
+    private function buildResponse($code, $content)
+    {
+        $response = App::get('Aura\Web\Response');
 
-		$response->status->setCode($code);
-		$response->content->set($content);
+        $response->status->setCode($code);
+        $response->content->set($content);
 
-		return $response;
-	}
+        return $response;
+    }
 }

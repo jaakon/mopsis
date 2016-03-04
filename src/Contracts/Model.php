@@ -1,4 +1,5 @@
-<?php namespace Mopsis\Contracts;
+<?php
+namespace Mopsis\Contracts;
 
 /**
  * @property int                    $id
@@ -13,5 +14,5 @@
  */
 interface Model
 {
-	public function __toString();
+    public function __toString();
 }

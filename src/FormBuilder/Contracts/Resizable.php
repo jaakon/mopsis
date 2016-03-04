@@ -1,6 +1,7 @@
-<?php namespace Mopsis\FormBuilder\Contracts;
+<?php
+namespace Mopsis\FormBuilder\Contracts;
 
 interface Resizable
 {
-	public function updateSize();
+    public function updateSize();
 }

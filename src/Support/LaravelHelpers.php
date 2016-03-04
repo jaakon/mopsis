@@ -1,62 +1,63 @@
-<?php namespace Mopsis\Support;
+<?php
+namespace Mopsis\Support;
 
 use Mopsis\Core\App;
 
 class LaravelHelpers
 {
-	public static function app($name = null, array $parameters = null)
-	{
-		if ($name === null) {
-			return App::getInstance();
-		}
+    public static function app($name = null, array $parameters = null)
+    {
+        if ($name === null) {
+            return App::getInstance();
+        }
 
-		if (preg_match('/^(\w+):(\w+\\\\\w+)$/', $name, $m)) {
-			$name = App::build($m[1], $m[2]);
-		}
+        if (preg_match('/^(\w+):(\w+\\\\\w+)$/', $name, $m)) {
+            $name = App::build($m[1], $m[2]);
+        }
 
-		if ($parameters === null) {
-			return App::get($name);
-		}
+        if ($parameters === null) {
+            return App::get($name);
+        }
 
-		return App::make($name, $parameters);
-	}
+        return App::make($name, $parameters);
+    }
 
-	public static function config($key = null, $default = null)
-	{
-		if ($key === null) {
-			return App::get('config');
-		}
+    public static function config($key = null, $default = null)
+    {
+        if ($key === null) {
+            return App::get('config');
+        }
 
-		if (is_array($key)) {
-			return App::get('config')->set($key);
-		}
+        if (is_array($key)) {
+            return App::get('config')->set($key);
+        }
 
-		return App::get('config')->get($key, $default);
-	}
+        return App::get('config')->get($key, $default);
+    }
 
-	public static function env($key, $default = null)
-	{
-		$value = getenv($key);
+    public static function env($key, $default = null)
+    {
+        $value = getenv($key);
 
-		if ($value === false) {
-			return value($default);
-		}
+        if ($value === false) {
+            return value($default);
+        }
 
-		switch (strtolower(trim($value, '()'))) {
-			case 'true':
-				return true;
-			case 'false':
-				return false;
-			case 'empty':
-				return '';
-			case 'null':
-				return null;
-		}
+        switch (strtolower(trim($value, '()'))) {
+            case 'true':
+                return true;
+            case 'false':
+                return false;
+            case 'empty':
+                return '';
+            case 'null':
+                return;
+        }
 
-		if (preg_match('/^"(.+)"$/', $value, $m)) {
-			return $m[1];
-		}
+        if (preg_match('/^"(.+)"$/', $value, $m)) {
+            return $m[1];
+        }
 
-		return $value;
-	}
+        return $value;
+    }
 }

@@ -1,58 +1,60 @@
-<?php namespace Mopsis\Extensions;
+<?php
+namespace Mopsis\Extensions;
 
 class Flash
 {
-	private $key    = 'flash_messages';
-	private $levels = [
-		'info',
-		'success',
-		'error',
-		'warning'
-	];
+    private $key = 'flash_messages';
 
-	public function __construct()
-	{
-		if (!is_array($_SESSION[$this->key])) {
-			$_SESSION[$this->key] = [];
-		}
-	}
+    private $levels = [
+        'info',
+        'success',
+        'error',
+        'warning'
+    ];
 
-	public function __call($name, $arguments)
-	{
-		$this->message($name, ...$arguments);
+    public function __call($name, $arguments)
+    {
+        $this->message($name, ...$arguments);
 
-		return $this;
-	}
+        return $this;
+    }
 
-	public function message($level, $message, $url = null)
-	{
-		if (!in_array($level, $this->levels)) {
-			throw new \InvalidArgumentException('unknown level: ' . $level);
-		}
+    public function __construct()
+    {
+        if (!is_array($_SESSION[$this->key])) {
+            $_SESSION[$this->key] = [];
+        }
+    }
 
-		$this->addMessage($level, $message, $url);
+    public function flush()
+    {
+        $messages             = $_SESSION[$this->key];
+        $_SESSION[$this->key] = [];
 
-		return $this;
-	}
+        return $messages;
+    }
 
-	protected function addMessage($level, $text, $url = null)
-	{
-		if (empty($text)) {
-			return;
-		}
+    public function message($level, $message, $url = null)
+    {
+        if (!in_array($level, $this->levels)) {
+            throw new \InvalidArgumentException('unknown level: ' . $level);
+        }
 
-		$_SESSION[$this->key][] = [
-			'level' => $level,
-			'text'  => $text,
-			'url'   => $url
-		];
-	}
+        $this->addMessage($level, $message, $url);
 
-	public function flush()
-	{
-		$messages             = $_SESSION[$this->key];
-		$_SESSION[$this->key] = [];
+        return $this;
+    }
 
-		return $messages;
-	}
+    protected function addMessage($level, $text, $url = null)
+    {
+        if (empty($text)) {
+            return;
+        }
+
+        $_SESSION[$this->key][] = [
+            'level' => $level,
+            'text'  => $text,
+            'url'   => $url
+        ];
+    }
 }

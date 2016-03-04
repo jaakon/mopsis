@@ -1,4 +1,5 @@
-<?php namespace Mopsis\FormBuilder;
+<?php
+namespace Mopsis\FormBuilder;
 
 use Mopsis\Extensions\SimpleXML\SimpleXMLElement;
 use Mopsis\Extensions\SimpleXML\XMLProcessingException;
@@ -11,247 +12,254 @@ use stdClass;
  */
 class FormBuilder
 {
-	const NO_GROUPS = '@@no-groups@@';
+    const NO_GROUPS = '@@no-groups@@';
 
-	protected $xml;
-	protected $config;
-	protected $layout;
-	protected $strict;
+    protected $config;
 
-	public function __construct($xmlData, bool $strict = false)
-	{
-		$this->xml    = (new SimpleXMLElement($xmlData))->first('/formbuilder');
-		$this->strict = $strict;
-	}
+    protected $layout;
 
-	public function getForm($id, $url, stdClass $config)
-	{
-		$xml = $this->xml->first('forms/form[@id="' . $id . '"]');
+    protected $strict;
 
-		if (!$xml) {
-			throw new XMLProcessingException('form "' . $id . '" cannot be found in xmlData');
-		}
+    protected $xml;
 
-		$this->config = $config;
-		$this->layout = LayoutProvider::create($this->xml, $xml->attr('layout'), $this->strict);
+    public function __construct($xmlData, bool $strict = false)
+    {
+        $this->xml    = (new SimpleXMLElement($xmlData))->first('/formbuilder');
+        $this->strict = $strict;
+    }
 
-		$data = array_merge($this->loadDefaults($xml), $config->settings['@global'] ?: [], [
-			'form.url'  => $url,
-			'form.csrf' => $this->addCsrfToken()
-		]);
+    public function getForm($id, $url, stdClass $config)
+    {
+        $xml = $this->xml->first('forms/form[@id="' . $id . '"]');
 
-		return $this->fillFormValues($this->buildNode($xml, $data));
-	}
+        if (!$xml) {
+            throw new XMLProcessingException('form "' . $id . '" cannot be found in xmlData');
+        }
 
-	protected function addCsrfToken()
-	{
-		$token = Csrf::generateToken();
+        $this->config = $config;
+        $this->layout = LayoutProvider::create($this->xml, $xml->attr('layout'), $this->strict);
 
-		return '<input type="hidden" name="' . $token->key . '" value="' . $token->value . '">';
-	}
+        $data = array_merge($this->loadDefaults($xml), $config->settings['@global'] ?: [], [
+            'form.url'  => $url,
+            'form.csrf' => $this->addCsrfToken()
+        ]);
 
-	protected function addValues(array $data, $prefix, array ...$values)
-	{
-		$values = array_merge(...$values);
+        return $this->fillFormValues($this->buildNode($xml, $data));
+    }
 
-		if (!count($values)) {
-			return $data;
-		}
+    protected function addCsrfToken()
+    {
+        $token = Csrf::generateToken();
 
-		foreach ($values as $key => $value) {
-			$data[$prefix . '.' . $key] = is_object($value) ? (string) $value : $value;
-		}
+        return '<input type="hidden" name="' . $token->key . '" value="' . $token->value . '">';
+    }
 
-		return $data;
-	}
+    protected function addValues(array $data, $prefix, array...$values)
+    {
+        $values = array_merge(...$values);
 
-	protected function buildItem(SimpleXMLElement $xml, array $data)
-	{
-		$data['item.id'] = $data['form.id'] . '-' . $data['item.name'];
+        if (!count($values)) {
+            return $data;
+        }
 
-		if (is_array($this->config->settings[$data['item.name']])) {
-			$data = array_merge($data, $this->config->settings[$data['item.name']]);
-		}
+        foreach ($values as $key => $value) {
+            $data[$prefix . '.' . $key] = is_object($value) ? (string) $value : $value;
+        }
 
-		if ($xml->has('rule[@spec="required"]')) {
-			$data['item.required'] = 'required';
-		}
+        return $data;
+    }
 
-		if ($xml->has('option')) {
-			$data['item.options'] = $this->buildOptions($xml->xpath('option'), $data);
-		}
+    protected function buildAddedOptions(array $options, array $baseData)
+    {
+        $layout    = $this->layout->getHtmlForItem($baseData['item.type'], 'options');
+        $optGroups = $this->prepareOptionGroups($options);
+        $html      = '';
+        $no        = 0;
 
-		$addedOptions = $this->config->options[$data['item.name']];
+        if (count($optGroups, \COUNT_RECURSIVE) > 1) {
+            foreach ($optGroups as $group => $options) {
+                if ($group !== static::NO_GROUPS) {
+                    $html .= '<optgroup label="' . htmlentities($group) . '">';
+                }
 
-		if (is_array($addedOptions) && count($addedOptions)) {
-			$data['item.options'] .= $this->buildAddedOptions($addedOptions, $data);
-		}
+                foreach ($options as $value => $text) {
+                    $data = $this->addValues($baseData, 'option', [
+                        'no'    => ++$no,
+                        'value' => $value
+                    ]);
+                    $data['option.id']   = $data['item.id'] . '-' . $no;
+                    $data['option.text'] = htmlentities($text ?: $value);
+                    $html .= $this->fillPlaceholder($layout, $data);
+                }
 
-		if ($xml->has('help')) {
-			$data['item.help'] = $this->buildNode($xml->first('help'), $data);
-		}
+                if ($group !== static::NO_GROUPS) {
+                    $html .= '</optgroup>';
+                }
+            }
+        }
 
-		return $this->fillPlaceholder($this->layout->getHtmlForItem($data['item.type']), $data);
-	}
+        return $html;
+    }
 
-	protected function buildNode(SimpleXMLElement $xml, array $baseData)
-	{
-		$tagName = $xml->getName();
-		$data    = $this->addValues($baseData, $tagName, $xml->attributes(), ['text' => $xml->text()]);
+    protected function buildItem(SimpleXMLElement $xml, array $data)
+    {
+        $data['item.id'] = $data['form.id'] . '-' . $data['item.name'];
 
-		if ($tagName === 'item') {
-			return $this->buildItem($xml, $data);
-		}
+        if (is_array($this->config->settings[$data['item.name']])) {
+            $data = array_merge($data, $this->config->settings[$data['item.name']]);
+        }
 
-		foreach ($xml->all('*[not(self::defaults)]') as $i => $node) {
-			$data[$tagName . '.content'] .= $this->buildNode($node, $this->addValues($data, $tagName, ['no' => $i]));
-		}
+        if ($xml->has('rule[@spec="required"]')) {
+            $data['item.required'] = 'required';
+        }
 
-		return $this->fillPlaceholder($this->layout->getHtml($tagName), $data);
-	}
+        if ($xml->has('option')) {
+            $data['item.options'] = $this->buildOptions($xml->xpath('option'), $data);
+        }
 
-	protected function buildOptions(array $options, array $baseData)
-	{
-		$html   = '';
-		$layout = $this->layout->getHtmlForItem($baseData['item.type'], 'options');
+        $addedOptions = $this->config->options[$data['item.name']];
 
-		foreach ($options as $i => $xml) {
-			/** @var SimpleXMLElement $xml */
-			$data = $this->addValues($baseData, 'option', $xml->attributes(), [
-				'no'   => $i,
-				'id'   => $baseData['item.id'] . '-' . $i,
-				'text' => htmlentities($xml->text() ?: $xml->attr('value'))
-			]);
+        if (is_array($addedOptions) && count($addedOptions)) {
+            $data['item.options'] .= $this->buildAddedOptions($addedOptions, $data);
+        }
 
-			$html .= $this->fillPlaceholder($layout, $data);
-		}
+        if ($xml->has('help')) {
+            $data['item.help'] = $this->buildNode($xml->first('help'), $data);
+        }
 
-		return $html;
-	}
+        return $this->fillPlaceholder($this->layout->getHtmlForItem($data['item.type']), $data);
+    }
 
-	protected function buildAddedOptions(array $options, array $baseData)
-	{
-		$layout    = $this->layout->getHtmlForItem($baseData['item.type'], 'options');
-		$optGroups = $this->prepareOptionGroups($options);
-		$html      = '';
-		$no        = 0;
+    protected function buildNode(SimpleXMLElement $xml, array $baseData)
+    {
+        $tagName = $xml->getName();
+        $data    = $this->addValues($baseData, $tagName, $xml->attributes(), ['text' => $xml->text()]);
 
-		if (count($optGroups, \COUNT_RECURSIVE) > 1) {
-			foreach ($optGroups as $group => $options) {
-				if ($group !== static::NO_GROUPS) {
-					$html .= '<optgroup label="' . htmlentities($group) . '">';
-				}
+        if ($tagName === 'item') {
+            return $this->buildItem($xml, $data);
+        }
 
-				foreach ($options as $value => $text) {
-					$data                = $this->addValues($baseData, 'option', [
-						'no'    => ++$no,
-						'value' => $value
-					]);
-					$data['option.id']   = $data['item.id'] . '-' . $no;
-					$data['option.text'] = htmlentities($text ?: $value);
-					$html .= $this->fillPlaceholder($layout, $data);
-				}
+        foreach ($xml->all('*[not(self::defaults)]') as $i => $node) {
+            $data[$tagName . '.content'] .= $this->buildNode($node, $this->addValues($data, $tagName, ['no' => $i]));
+        }
 
-				if ($group !== static::NO_GROUPS) {
-					$html .= '</optgroup>';
-				}
-			}
-		}
+        return $this->fillPlaceholder($this->layout->getHtml($tagName), $data);
+    }
 
-		return $html;
-	}
+    protected function buildOptions(array $options, array $baseData)
+    {
+        $html   = '';
+        $layout = $this->layout->getHtmlForItem($baseData['item.type'], 'options');
 
-	protected function prepareOptionGroups(array $options)
-	{
-		if (!isset($options['data'])) {
-			return [static::NO_GROUPS => $options];
-		}
+        foreach ($options as $i => $xml) {
+            /**
+             * @var SimpleXMLElement $xml
+             */
+            $data = $this->addValues($baseData, 'option', $xml->attributes(), [
+                'no'   => $i,
+                'id'   => $baseData['item.id'] . '-' . $i,
+                'text' => htmlentities($xml->text() ?: $xml->attr('value'))
+            ]);
 
-		$results = [];
+            $html .= $this->fillPlaceholder($layout, $data);
+        }
 
-		foreach ($options['data'] as $entry) {
-			$group = $options['group'] ? $entry[$options['group']] : static::NO_GROUPS;
-			$key   = $entry[$options['key']];
-			$value = $entry[$options['value']];
+        return $html;
+    }
 
-			if (!is_array($results[$group])) {
-				$results[$group] = [];
-			}
+    protected function fillFormValues($html)
+    {
+        $values = $this->config->values;
+        $errors = $this->config->errors;
 
-			$results[$group][$key] = $value;
-		}
+        if (!count($values) && !count($errors)) {
+            return $html;
+        }
 
-		return $results;
-	}
+        $dom = \FluentDOM::QueryCss(utf8_decode($html), 'text/html');
 
-	protected function fillFormValues($html)
-	{
-		$values = $this->config->values;
-		$errors = $this->config->errors;
+        foreach ($dom->find('input,select,textarea')->filter('[name]') as $node) {
+            $field = FieldFactory::create($node);
+            $name  = preg_match('/(.+)\[(.*)\]$/', $field->attr('name'), $m) ? $m[1] : $field->attr('name');
+            $value = $values[$name];
 
-		if (!count($values) && !count($errors)) {
-			return $html;
-		}
+            if (preg_match('/(.+?)\.(.+)/', $name, $n) && isset($values[$n[1]])) {
+                switch (gettype($values[$n[1]])) {
+                    case 'array':
+                        $value = $values[$n[1]][$n[2]];
+                        break;
+                    case 'object':
+                        $value = $values[$n[1]]->$n[2];
+                        break;
+                    case 'null':
+                        $value = null;
+                        break;
+                    default:
+                        $value = $values[$n[1]];
+                }
+            }
 
-		$dom = \FluentDOM::QueryCss(utf8_decode($html), 'text/html');
+            if (!empty($m[2]) && is_array($value)) {
+                $value = $value[$m[2]];
+            }
 
-		foreach ($dom->find('input,select,textarea')->filter('[name]') as $node) {
-			$field = FieldFactory::create($node);
-			$name  = preg_match('/(.+)\[(.*)\]$/', $field->attr('name'), $m) ? $m[1] : $field->attr('name');
-			$value = $values[$name];
+            if (in_array($name, $errors)) {
+                $field->addClass('validation-error');
+            }
 
-			if (preg_match('/(.+?)\.(.+)/', $name, $n) && isset($values[$n[1]])) {
-				switch (gettype($values[$n[1]])) {
-					case 'array':
-						$value = $values[$n[1]][$n[2]];
-						break;
-					case 'object':
-						$value = $values[$n[1]]->$n[2];
-						break;
-					case 'null':
-						$value = null;
-						break;
-					default:
-						$value = $values[$n[1]];
-				}
-			}
+            $field->val($value);
 
-			if (!empty($m[2]) && is_array($value)) {
-				$value = $value[$m[2]];
-			}
+            if ($field instanceof Resizable) {
+                $field->updateSize();
+            }
+        }
 
-			if (in_array($name, $errors)) {
-				$field->addClass('validation-error');
-			}
+        return $dom;
+    }
 
-			$field->val($value);
+    protected function fillPlaceholder($html, array $data)
+    {
+        foreach ($data as $key => $value) {
+            $html = str_replace('{' . $key . '}', $value, $html);
+        }
 
-			if ($field instanceof Resizable) {
-				$field->updateSize();
-			}
-		}
+        return preg_replace('/\s*\{\w+\.\w+\}/', '', $html);
+    }
 
-		return $dom;
-	}
+    protected function loadDefaults(SimpleXMLElement $xml)
+    {
+        $defaults = [];
 
-	protected function fillPlaceholder($html, array $data)
-	{
-		foreach ($data as $key => $value) {
-			$html = str_replace('{' . $key . '}', $value, $html);
-		}
+        foreach ($xml->xpath('defaults/default') ?: [] as $default) {
+            /**
+             * @var SimpleXMLElement $default
+             */
+            $defaults[$default->attr('name')] = $default->attr('value');
+        }
 
-		return preg_replace('/\s*\{\w+\.\w+\}/', '', $html);
-	}
+        return $defaults;
+    }
 
-	protected function loadDefaults(SimpleXMLElement $xml)
-	{
-		$defaults = [];
+    protected function prepareOptionGroups(array $options)
+    {
+        if (!isset($options['data'])) {
+            return [static::NO_GROUPS => $options];
+        }
 
-		foreach ($xml->xpath('defaults/default') ?: [] as $default) {
-			/** @var SimpleXMLElement $default */
-			$defaults[$default->attr('name')] = $default->attr('value');
-		}
+        $results = [];
 
-		return $defaults;
-	}
+        foreach ($options['data'] as $entry) {
+            $group = $options['group'] ? $entry[$options['group']] : static::NO_GROUPS;
+            $key   = $entry[$options['key']];
+            $value = $entry[$options['value']];
+
+            if (!is_array($results[$group])) {
+                $results[$group] = [];
+            }
+
+            $results[$group][$key] = $value;
+        }
+
+        return $results;
+    }
 }

@@ -1,4 +1,5 @@
-<?php namespace Mopsis\Extensions\Eloquent;
+<?php
+namespace Mopsis\Extensions\Eloquent;
 
 use DomainException;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
@@ -12,282 +13,287 @@ use Mopsis\Security\Token;
 
 abstract class Model extends EloquentModel implements ModelInterface
 {
-	const CREATED_BY = 'created_by';
-	const UPDATED_BY = 'updated_by';
-	const DELETED_AT = 'deleted_at';
+    const CREATED_BY = 'created_by';
 
-	protected $guarded = ['id'];
-	protected $sluggable = ['on_update' => true];
-	protected $orderBy;
-	protected $stringifier;
+    const DELETED_AT = 'deleted_at';
 
-	// @Override
-	public static function boot()
-	{
-		parent::boot();
-		static::observe(new ModelObserver);
+    const UPDATED_BY = 'updated_by';
 
-		try {
-			if ($calledClass = App::identify(get_called_class())) {
-				$observer = App::build('Observer', implode('\\', $calledClass));
-				static::observe(new $observer);
-			}
-		} catch (DomainException $e) {
-		}
-	}
+    protected $guarded = ['id'];
 
-	/**
-	 * @param string $token
-	 *
-	 * @return \Mopsis\Extensions\Eloquent\Model
-	 */
-	public static function unpack($token)
-	{
-		$instance = Token::extract($token);
+    protected $orderBy;
 
-		if (is_a($instance, get_called_class())) {
-			return $instance;
-		}
+    protected $sluggable = ['on_update' => true];
 
-		throw new ModelNotFoundException('Token "' . $token . '" is invalid or outdated.');
-	}
+    protected $stringifier;
 
-	// @Override
-	public function __construct(array $attributes = [])
-	{
-		if ($this->guarded !== ['*']) {
-			$this->guarded = array_merge($this->guarded, [
-				'slug',
-				static::CREATED_AT,
-				static::UPDATED_AT,
-				static::DELETED_AT
-			]);
-		}
+    // @Override
+    public function __construct(array $attributes = [])
+    {
+        if ($this->guarded !== ['*']) {
+            $this->guarded = array_merge($this->guarded, [
+                'slug',
+                static::CREATED_AT,
+                static::UPDATED_AT,
+                static::DELETED_AT
+            ]);
+        }
 
-		foreach ($this->getDataTypes() as $attribute => $type) {
-			$this->fillable[] = $attribute;
+        foreach ($this->getDataTypes() as $attribute => $type) {
+            $this->fillable[] = $attribute;
 
-			if ($type === null) {
-				continue;
-			}
+            if ($type === null) {
+                continue;
+            }
 
-			if ($type === 'datetime') {
-				$this->dates[] = $attribute;
-				continue;
-			}
+            if ($type === 'datetime') {
+                $this->dates[] = $attribute;
+                continue;
+            }
 
-			if (!isset($this->casts[$attribute])) {
-				$this->casts[$attribute] = $type;
-			}
-		}
+            if (!isset($this->casts[$attribute])) {
+                $this->casts[$attribute] = $type;
+            }
+        }
 
-		parent::__construct($attributes);
-	}
+        parent::__construct($attributes);
+    }
 
-	// @Override
-	public function __isset($key)
-	{
-		return parent::__isset($key) ?: parent::__isset(snake_case($key));
-	}
+    // @Override
+    public function __isset($key)
+    {
+        return parent::__isset($key) ?: parent::__isset(snake_case($key));
+    }
 
-	// @Override
-	public function __toString()
-	{
-		return class_basename($this) . ':' . ($this->id ?: 0);
-	}
+    // @Override
+    public function __toString()
+    {
+        return class_basename($this) . ':' . ($this->id ?: 0);
+    }
 
-	public function clearCachedAttribute($attribute)
-	{
-		Cache::delete([
-			$this,
-			$attribute
-		]);
+    // @Override
+    public static function boot()
+    {
+        parent::boot();
+        static::observe(new ModelObserver());
 
-		return $this;
-	}
+        try {
+            if ($calledClass = App::identify(get_called_class())) {
+                $observer = App::build('Observer', implode('\\', $calledClass));
+                static::observe(new $observer());
+            }
+        } catch (DomainException $e) {
+        }
+    }
 
-	public function clearCachedAttributeRecursive($attribute)
-	{
-		$this->clearCachedAttribute($attribute);
+    public function clearCachedAttribute($attribute)
+    {
+        Cache::delete([
+            $this,
+            $attribute
+        ]);
 
-		if ($this instanceof Hierarchical) {
-			$this->ancestor->clearCachedAttributeRecursive($attribute);
-		}
+        return $this;
+    }
 
-		return $this;
-	}
+    public function clearCachedAttributeRecursive($attribute)
+    {
+        $this->clearCachedAttribute($attribute);
 
-	// @Override
-	public function getAttribute($key)
-	{
-		if (ctype_lower($key) || is_int(strpos($key, '_'))) {
-			return parent::getAttribute($key);
-		}
+        if ($this instanceof Hierarchical) {
+            $this->ancestor->clearCachedAttributeRecursive($attribute);
+        }
 
-		$snakeCaseKey = snake_case($key);
-		$inAttributes = array_key_exists($snakeCaseKey, $this->attributes);
+        return $this;
+    }
 
-		return parent::getAttribute($inAttributes ? $snakeCaseKey : $key);
-	}
+    // @Override
+    public function getAttribute($key)
+    {
+        if (ctype_lower($key) || is_int(strpos($key, '_'))) {
+            return parent::getAttribute($key);
+        }
 
-	public function getDataTypes()
-	{
-		return Cache::get([
-			$this->getTable(),
-			'@dataTypes'
-		], function () {
-			$columns = [];
+        $snakeCaseKey = snake_case($key);
+        $inAttributes = array_key_exists($snakeCaseKey, $this->attributes);
 
-			foreach ($this->getConnection()->select('SHOW COLUMNS FROM ' . $this->getTable()) as $column) {
-				if (!$this->isFillable($column->Field)) {
-					continue;
-				}
+        return parent::getAttribute($inAttributes ? $snakeCaseKey : $key);
+    }
 
-				switch (true) {
-					case preg_match('/^varchar\(\d+\)$/', $column->Type):
-						$columns[$column->Field] = 'string';
-						continue;
-					case preg_match('/^int\(10\)( unsigned)?$/', $column->Type):
-						$columns[$column->Field] = 'integer';
-						continue;
-					case preg_match('/^timestamp|date(time)?$/', $column->Type):
-						$columns[$column->Field] = 'datetime';
-						continue;
-					case preg_match('/^tinyint\(1\)$/', $column->Type):
-						$columns[$column->Field] = 'boolean';
-						continue;
-					case preg_match('/^float( unsigned)?$/', $column->Type):
-					case preg_match('/^decimal\(\d+,\d+\)( unsigned)?$/', $column->Type):
-						$columns[$column->Field] = 'float';
-						continue;
-					default:
-						$columns[$column->Field] = null;
-						continue;
-				}
-			}
+    public function getDataTypes()
+    {
+        return Cache::get([
+            $this->getTable(),
+            '@dataTypes'
+        ], function () {
+            $columns = [];
 
-			return $columns;
-		});
-	}
+            foreach ($this->getConnection()->select('SHOW COLUMNS FROM ' . $this->getTable()) as $column) {
+                if (!$this->isFillable($column->Field)) {
+                    continue;
+                }
 
-	// @Override
-	public function getDates()
-	{
-		$defaults = [
-			static::CREATED_AT,
-			static::UPDATED_AT,
-			static::DELETED_AT
-		];
+                switch (true) {
+                    case preg_match('/^varchar\(\d+\)$/', $column->Type):
+                        $columns[$column->Field] = 'string';
+                        continue;
+                    case preg_match('/^int\(10\)( unsigned)?$/', $column->Type):
+                        $columns[$column->Field] = 'integer';
+                        continue;
+                    case preg_match('/^timestamp|date(time)?$/', $column->Type):
+                        $columns[$column->Field] = 'datetime';
+                        continue;
+                    case preg_match('/^tinyint\(1\)$/', $column->Type):
+                        $columns[$column->Field] = 'boolean';
+                        continue;
+                    case preg_match('/^float( unsigned)?$/', $column->Type):
+                    case preg_match('/^decimal\(\d+,\d+\)( unsigned)?$/', $column->Type):
+                        $columns[$column->Field] = 'float';
+                        continue;
+                    default:
+                        $columns[$column->Field] = null;
+                        continue;
+                }
+            }
 
-		return array_merge($this->dates, $defaults);
-	}
+            return $columns;
+        });
+    }
 
-	public function getFillableAttributes()
-	{
-		if ($this->guarded == ['*']) {
-			return [];
-		}
+    // @Override
+    public function getDates()
+    {
+        $defaults = [
+            static::CREATED_AT,
+            static::UPDATED_AT,
+            static::DELETED_AT
+        ];
 
-		return array_values(array_diff(array_keys($this->getDataTypes()), $this->guarded));
-	}
+        return array_merge($this->dates, $defaults);
+    }
 
-	// @Override
-	public function getForeignKey()
-	{
-		return isset($this->table) ? str_singular($this->table) . '_id' : parent::getForeignKey();
-	}
+    public function getFillableAttributes()
+    {
+        if ($this->guarded == ['*']) {
+            return [];
+        }
 
-	public function getHashAttribute()
-	{
-		return new Token($this);
-	}
+        return array_values(array_diff(array_keys($this->getDataTypes()), $this->guarded));
+    }
 
-	public function getTokenAttribute()
-	{
-		return new Token($this, session_id());
-	}
+    // @Override
+    public function getForeignKey()
+    {
+        return isset($this->table) ? str_singular($this->table) . '_id' : parent::getForeignKey();
+    }
 
-	public function getTokenStringAttribute()
-	{
-		return (string) $this->token;
-	}
+    public function getHashAttribute()
+    {
+        return new Token($this);
+    }
 
-	public function hasAttribute($key)
-	{
-		return (array_key_exists($key, $this->attributes) || array_key_exists(snake_case($key), $this->attributes) || array_key_exists($key, $this->relations) || $this->hasGetMutator($key));
-	}
+    public function getTokenAttribute()
+    {
+        return new Token($this, session_id());
+    }
 
-	// @Override
-	public function newCollection(array $models = [])
-	{
-		try {
-			if ($calledClass = App::identify($this)) {
-				$collection = App::build('Collection', implode('\\', $calledClass));
+    public function getTokenStringAttribute()
+    {
+        return (string) $this->token;
+    }
 
-				return new $collection($models);
-			}
-		} catch (DomainException $e) {
-		}
+    public function hasAttribute($key)
+    {
+        return (array_key_exists($key, $this->attributes) || array_key_exists(snake_case($key), $this->attributes) || array_key_exists($key, $this->relations) || $this->hasGetMutator($key));
+    }
 
-		return new Collection($models);
-	}
+    // @Override
+    public function newCollection(array $models = [])
+    {
+        try {
+            if ($calledClass = App::identify($this)) {
+                $collection = App::build('Collection', implode('\\', $calledClass));
 
-	// @Override
-	public function newQuery()
-	{
-		$builder = parent::newQuery();
+                return new $collection($models);
+            }
+        } catch (DomainException $e) {
+        }
 
-		if (strlen($this->orderBy)) {
-			$builder->orderByRaw($this->orderBy);
-		}
+        return new Collection($models);
+    }
 
-		return $builder;
-	}
+    // @Override
+    public function newQuery()
+    {
+        $builder = parent::newQuery();
 
-	public function set($key, $value)
-	{
-		$this->{$key} = $value;
+        if (strlen($this->orderBy)) {
+            $builder->orderByRaw($this->orderBy);
+        }
 
-		return $this;
-	}
+        return $builder;
+    }
 
-	public function stringify()
-	{
-		return $this->stringifier ?: $this->stringifier = new Stringifier($this);
-	}
+    public function set($key, $value)
+    {
+        $this->{$key}
+        = $value;
 
-	// @Override
-	public function toArray()
-	{
-		$attributes = [];
+        return $this;
+    }
 
-		foreach (parent::toArray() as $key => $value) {
-			$attributes[camel_case($key)] = $value;
-		}
+    public function stringify()
+    {
+        return $this->stringifier ?: $this->stringifier = new Stringifier($this);
+    }
 
-		return $attributes;
-	}
+    // @Override
+    public function toArray()
+    {
+        $attributes = [];
 
-	public function toFormData()
-	{
-		return $this->stringify()->toArray();
-	}
+        foreach (parent::toArray() as $key => $value) {
+            $attributes[camel_case($key)] = $value;
+        }
 
-	// @Override
-	protected function castAttribute($key, $value)
-	{
-		if ($this->getCastType($key) === 'json') {
-			return App::make('Json', ['body' => $value]);
-		}
+        return $attributes;
+    }
 
-		return parent::castAttribute($key, $value);
-	}
+    public function toFormData()
+    {
+        return $this->stringify()->toArray();
+    }
 
-	protected function getCachedAttribute($attribute, callable $callback, $ttl = null)
-	{
-		return Cache::get([
-			$this,
-			$attribute
-		], $callback, $ttl);
-	}
+    /**
+     * @param  string                              $token
+     * @return \Mopsis\Extensions\Eloquent\Model
+     */
+    public static function unpack($token)
+    {
+        $instance = Token::extract($token);
+
+        if (is_a($instance, get_called_class())) {
+            return $instance;
+        }
+
+        throw new ModelNotFoundException('Token "' . $token . '" is invalid or outdated.');
+    }
+
+    // @Override
+    protected function castAttribute($key, $value)
+    {
+        if ($this->getCastType($key) === 'json') {
+            return App::make('Json', ['body' => $value]);
+        }
+
+        return parent::castAttribute($key, $value);
+    }
+
+    protected function getCachedAttribute($attribute, callable $callback, $ttl = null)
+    {
+        return Cache::get([
+            $this,
+            $attribute
+        ], $callback, $ttl);
+    }
 }

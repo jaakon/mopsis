@@ -1,4 +1,5 @@
-<?php namespace Mopsis\Security;
+<?php
+namespace Mopsis\Security;
 
 use Mopsis\Contracts\Hierarchical;
 use Mopsis\Contracts\Model;
@@ -7,77 +8,77 @@ use Mopsis\Core\Cache;
 
 class RoleManager
 {
-	protected static $roles;
+    protected static $roles;
 
-	public static function init()
-	{
-		if (!isset(static::$roles)) {
-			static::loadRoles();
-		}
-	}
+    public static function init()
+    {
+        if (!isset(static::$roles)) {
+            static::loadRoles();
+        }
+    }
 
-	public static function isAllowedTo(Role $role, $action, $object, $instance)
-	{
-		static::init();
+    public static function isAllowedTo(Role $role, $action, $object, $instance)
+    {
+        static::init();
 
-		if (!static::$roles[$role->getKey()][$action][$object]) {
-			return false;
-		}
+        if (!static::$roles[$role->getKey()][$action][$object]) {
+            return false;
+        }
 
-		$constraint = $role->getConstraint();
+        $constraint = $role->getConstraint();
 
-		if (!$constraint) {
-			return true;
-		}
+        if (!$constraint) {
+            return true;
+        }
 
-		if ($instance === null) {
-			return true;
-		}
+        if ($instance === null) {
+            return true;
+        }
 
-		if (!($instance instanceof Model)) {
-			return false;
-		}
+        if (!($instance instanceof Model)) {
+            return false;
+        }
 
-		return static::instanceCompliesWithConstraint($instance, $constraint);
-	}
+        return static::instanceCompliesWithConstraint($instance, $constraint);
+    }
 
-	protected static function instanceCompliesWithConstraint(Model $instance, $constraint)
-	{
-		if ((string) $instance === (string) $constraint) {
-			return true;
-		}
+    protected static function instanceCompliesWithConstraint(Model $instance, $constraint)
+    {
+        if ((string) $instance === (string) $constraint) {
+            return true;
+        }
 
-		if ($instance instanceof Hierarchical && $instance->ancestor instanceof Model) {
-			return static::instanceCompliesWithConstraint($instance->ancestor, $constraint);
-		}
+        if ($instance instanceof Hierarchical && $instance->ancestor instanceof Model) {
+            return static::instanceCompliesWithConstraint($instance->ancestor, $constraint);
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	protected static function loadRoles()
-	{
-		static::$roles = Cache::get('user_roles', function () {
-			$roles = config('roles');
+    protected static function loadRoles()
+    {
+        static::$roles = Cache::get('user_roles', function () {
+            $roles = config('roles');
 
-			if (!count($roles)) {
-				throw new \Exception('configuration for roles is missing');
-			}
+            if (!count($roles)) {
+                throw new \Exception('configuration for roles is missing');
+            }
 
-			foreach ($roles as $role => $privileges) {
-				$roles[$role] = [];
+            foreach ($roles as $role => $privileges) {
+                $roles[$role] = [];
 
-				foreach ($privileges as $actions => $objects) {
-					foreach (explode(',', $actions) as $action) {
-						$roles[$role][$action] = $roles[$role][$action] ?: [];
+                foreach ($privileges as $actions => $objects) {
+                    foreach (explode(',', $actions) as $action) {
+                        $roles[$role][$action] = $roles[$role][$action] ?: [];
 
-						foreach (explode(',', $objects) as $object) {
-							$roles[$role][$action][$object] = true;
-						}
-					}
-				}
-			}
+                        foreach (explode(',', $objects) as $object) {
+                            $roles[$role][$action][$object] = true;
+                        }
+                    }
+                }
+            }
 
-			return $roles;
-		});
-	}
+            return $roles;
+        });
+    }
 }

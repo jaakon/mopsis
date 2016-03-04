@@ -1,4 +1,5 @@
-<?php namespace Mopsis\FormBuilder;
+<?php
+namespace Mopsis\FormBuilder;
 
 use Mopsis\Extensions\SimpleXML\SimpleXMLElement;
 use Mopsis\Extensions\SimpleXML\XMLProcessingException;
@@ -9,103 +10,105 @@ use Mopsis\Extensions\SimpleXML\XMLProcessingException;
  */
 class RulesProvider
 {
-	protected $xml;
-	protected $formId;
-	protected $items;
+    protected $formId;
 
-	public function __construct($xmlData)
-	{
-		$this->xml = (new SimpleXMLElement($xmlData))->first('/formbuilder/forms');
+    protected $items;
 
-		if (!$this->xml) {
-			throw new XMLProcessingException('forms cannot be found in xmlData');
-		}
-	}
+    protected $xml;
 
-	public function load($formId)
-	{
-		if ($formId === $this->formId) {
-			return $this;
-		}
+    public function __construct($xmlData)
+    {
+        $this->xml = (new SimpleXMLElement($xmlData))->first('/formbuilder/forms');
 
-		$xml = $this->xml->first('form[@id="' . $formId . '"]');
+        if (!$this->xml) {
+            throw new XMLProcessingException('forms cannot be found in xmlData');
+        }
+    }
 
-		if (!$xml) {
-			throw new XMLProcessingException('form "' . $formId . '" cannot be found in xmlData');
-		}
+    public function forSanitizer()
+    {
+        $results = [];
 
-		$this->items  = $xml->all('//item[@name]');
-		$this->formId = $formId;
+        foreach ($this->items as $item) {
+            $field = $item->attr('name');
+            $rules = [];
 
-		return $this;
-	}
+            foreach ($item->all('rule[@type="sanitize"]') as $rule) {
+                $rules[] = [
+                    'spec'  => $rule->attr('spec'),
+                    'args'  => explode('|', $rule->attr('args')),
+                    'blank' => $rule->attr('blankValue') ?: null
+                ];
+            }
 
-	public function forSanitizer()
-	{
-		$results = [];
+            if (count($rules)) {
+                $results[$field] = $rules;
+            }
+        }
 
-		foreach ($this->items as $item) {
-			$field = $item->attr('name');
-			$rules = [];
+        return $results;
+    }
 
-			foreach ($item->all('rule[@type="sanitize"]') as $rule) {
-				$rules[] = [
-					'spec'  => $rule->attr('spec'),
-					'args'  => explode('|', $rule->attr('args')),
-					'blank' => $rule->attr('blankValue') ?: null
-				];
-			}
+    public function forUploader()
+    {
+        $results = [];
 
-			if (count($rules)) {
-				$results[$field] = $rules;
-			}
-		}
+        foreach ($this->items as $item) {
+            $field = $item->attr('name');
+            $rules = [];
 
-		return $results;
-	}
+            foreach ($item->all('rule[@type="upload"]') as $rule) {
+                $rules[] = [
+                    'spec'    => $rule->attr('spec'),
+                    'args'    => explode('|', $rule->attr('args')),
+                    'message' => $rule->attr('suppressMessage') === 'true' ? false : $rule->text()
+                ];
+            }
 
-	public function forUploader()
-	{
-		$results = [];
+            $results[$field] = $rules;
+        }
 
-		foreach ($this->items as $item) {
-			$field = $item->attr('name');
-			$rules = [];
+        return $results;
+    }
 
-			foreach ($item->all('rule[@type="upload"]') as $rule) {
-				$rules[] = [
-					'spec'    => $rule->attr('spec'),
-					'args'    => explode('|', $rule->attr('args')),
-					'message' => $rule->attr('suppressMessage') === 'true' ? false : $rule->text()
-				];
-			}
+    public function forValidator()
+    {
+        $results = [];
 
-			$results[$field] = $rules;
-		}
+        foreach ($this->items as $item) {
+            $field = $item->attr('name');
+            $rules = [];
 
-		return $results;
-	}
+            foreach ($item->all('rule[@type="validate"]') as $rule) {
+                $rules[] = [
+                    'spec'    => $rule->attr('spec'),
+                    'args'    => explode('|', $rule->attr('args')),
+                    'message' => $rule->attr('suppressMessage') === 'true' ? false : $rule->text(),
+                    'mode'    => $rule->attr('failureMode') ?: 'hard'
+                ];
+            }
 
-	public function forValidator()
-	{
-		$results = [];
+            $results[$field] = $rules;
+        }
 
-		foreach ($this->items as $item) {
-			$field = $item->attr('name');
-			$rules = [];
+        return $results;
+    }
 
-			foreach ($item->all('rule[@type="validate"]') as $rule) {
-				$rules[] = [
-					'spec'    => $rule->attr('spec'),
-					'args'    => explode('|', $rule->attr('args')),
-					'message' => $rule->attr('suppressMessage') === 'true' ? false : $rule->text(),
-					'mode'    => $rule->attr('failureMode') ?: 'hard'
-				];
-			}
+    public function load($formId)
+    {
+        if ($formId === $this->formId) {
+            return $this;
+        }
 
-			$results[$field] = $rules;
-		}
+        $xml = $this->xml->first('form[@id="' . $formId . '"]');
 
-		return $results;
-	}
+        if (!$xml) {
+            throw new XMLProcessingException('form "' . $formId . '" cannot be found in xmlData');
+        }
+
+        $this->items  = $xml->all('//item[@name]');
+        $this->formId = $formId;
+
+        return $this;
+    }
 }

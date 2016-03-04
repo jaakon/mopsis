@@ -1,4 +1,5 @@
-<?php namespace Mopsis\Contracts;
+<?php
+namespace Mopsis\Contracts;
 
 /**
  * @property Hierarchical $ancestor

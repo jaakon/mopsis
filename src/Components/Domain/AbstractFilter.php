@@ -1,4 +1,5 @@
-<?php namespace Mopsis\Components\Domain;
+<?php
+namespace Mopsis\Components\Domain;
 
 use Aura\Filter\SubjectFilter as Filter;
 use Mopsis\Core\App;
@@ -6,217 +7,226 @@ use Mopsis\FormBuilder\RulesProvider;
 
 abstract class AbstractFilter
 {
-	const EMPTY_MESSAGE = '_NULL_';
-	protected $facade;
-	protected $rules;
-	protected $uploader;
-	protected $result;
-	protected $messages;
-	protected $sanitizerRulesLoaded = false;
-	protected $uploaderRulesLoaded  = false;
-	protected $validatorRulesLoaded = false;
+    const EMPTY_MESSAGE = '_NULL_';
 
-	//	public function __construct(Filter $facade, RulesProvider $rules, FileUploadAggregator $uploader)
+    protected $facade;
 
-	public function __construct(Filter $facade, RulesProvider $rules, $uploader = null)
-	{
-		$this->facade   = $facade;
-		$this->rules    = $rules;
-		$this->uploader = $uploader;
-	}
+    protected $messages;
 
-	public function addRule($field, array $rule, $isRequired = true)
-	{
-		$filter       = $this->facade->validate($field);
-		$rule['args'] = array_wrap($rule['args']);
+    protected $result;
 
-		if ($rule['spec'] === 'required') {
-			$filter->isNot('blank');
-		} elseif ($isRequired) {
-			$filter->is($rule['spec'], ...$rule['args']);
-		} else {
-			$filter->isBlankOr($rule['spec'], ...$rule['args']);
-		}
+    protected $rules;
 
-		if ($rule['message'] === false) {
-			$rule['message'] = static::EMPTY_MESSAGE;
-		}
+    protected $sanitizerRulesLoaded = false;
 
-		switch (strtolower($rule['mode']) ?: 'hard') {
-			case 'soft':
-				$filter->asSoftRule($rule['message']);
-				break;
-			case 'hard':
-				$filter->asHardRule($rule['message']);
-				break;
-			case 'stop':
-				$filter->asStopRule($rule['message']);
-				break;
-			default:
-				throw new \Exception('Invalid Failure Mode: "' . $rule['mode'] . '"');
-		}
-	}
+    protected $uploader;
 
-	public function forInsert($formId, $data)
-	{
-		$this->loadValidatorRules($formId);
-		$this->loadSanitizerRules($formId);
+    protected $uploaderRulesLoaded = false;
 
-		return $this->isDataValid($data);
-	}
+    protected $validatorRulesLoaded = false;
 
-	public function forUpdate($formId, $data)
-	{
-		$this->loadValidatorRules($formId);
-		$this->loadSanitizerRules($formId);
+    //    public function __construct(Filter $facade, RulesProvider $rules, FileUploadAggregator $uploader)
 
-		return $this->isDataValid($data);
-	}
+    public function __construct(Filter $facade, RulesProvider $rules, $uploader = null)
+    {
+        $this->facade   = $facade;
+        $this->rules    = $rules;
+        $this->uploader = $uploader;
+    }
 
-	public function forUpload($formId, $files, array $prefixes = [])
-	{
-		$this->loadUploaderRules($formId, $prefixes);
+    public function addRule($field, array $rule, $isRequired = true)
+    {
+        $filter       = $this->facade->validate($field);
+        $rule['args'] = array_wrap($rule['args']);
 
-		return $this->isUploadValid($files);
-	}
+        if ($rule['spec'] === 'required') {
+            $filter->isNot('blank');
+        } elseif ($isRequired) {
+            $filter->is($rule['spec'], ...$rule['args']);
+        } else {
+            $filter->isBlankOr($rule['spec'], ...$rule['args']);
+        }
 
-	public function getMessages()
-	{
-		return $this->messages;
-	}
+        if ($rule['message'] === false) {
+            $rule['message'] = static::EMPTY_MESSAGE;
+        }
 
-	public function getResult()
-	{
-		return $this->result;
-	}
+        switch (strtolower($rule['mode']) ?: 'hard') {
+            case 'soft':
+                $filter->asSoftRule($rule['message']);
+                break;
+            case 'hard':
+                $filter->asHardRule($rule['message']);
+                break;
+            case 'stop':
+                $filter->asStopRule($rule['message']);
+                break;
+            default:
+                throw new \Exception('Invalid Failure Mode: "' . $rule['mode'] . '"');
+        }
+    }
 
-	protected function isDataValid($data)
-	{
-		$this->result   = [];
-		$this->messages = [];
+    public function forInsert($formId, $data)
+    {
+        $this->loadValidatorRules($formId);
+        $this->loadSanitizerRules($formId);
 
-		if ($this->facade->apply($data)) {
-			foreach ($data as $key => $value) {
-				array_set($this->result, $key, $value);
-			}
+        return $this->isDataValid($data);
+    }
 
-			foreach (array_keys($this->rules->forValidator()) as $key) { // checkboxes are otherwise missing
-				if (!array_has($this->result, $key)) {
-					array_set($this->result, $key, null);
-				}
-			}
+    public function forUpdate($formId, $data)
+    {
+        $this->loadValidatorRules($formId);
+        $this->loadSanitizerRules($formId);
 
-			unset($this->result[$_SESSION['csrf']['key']]);
+        return $this->isDataValid($data);
+    }
 
-			return true;
-		}
+    public function forUpload($formId, $files, array $prefixes = [])
+    {
+        $this->loadUploaderRules($formId, $prefixes);
 
-		$this->messages = $this->removeEmptyMessages($this->facade->getFailures()->getMessages());
+        return $this->isUploadValid($files);
+    }
 
-		return false;
-	}
+    public function getMessages()
+    {
+        return $this->messages;
+    }
 
-	protected function removeEmptyMessages($data)
-	{
-		foreach ($data as $field => $messages) {
-			$data[$field] = array_filter($messages, function ($message) {
-				return $message !== static::EMPTY_MESSAGE;
-			});
-		}
+    public function getResult()
+    {
+        return $this->result;
+    }
 
-		return $data;
-	}
+    protected function isDataValid($data)
+    {
+        $this->result   = [];
+        $this->messages = [];
 
-	protected function isUploadValid($files)
-	{
-		$this->result   = [];
-		$this->messages = [];
+        if ($this->facade->apply($data)) {
+            foreach ($data as $key => $value) {
+                array_set($this->result, $key, $value);
+            }
 
-		$result = $this->uploader->process($files);
+            foreach (array_keys($this->rules->forValidator()) as $key) {
+// checkboxes are otherwise missing
+                if (!array_has($this->result, $key)) {
+                    array_set($this->result, $key, null);
+                }
+            }
 
-		if ($result->isValid()) {
-			$this->result = $result->getArrayCopy();
+            unset($this->result[$_SESSION['csrf']['key']]);
 
-			return true;
-		}
+            return true;
+        }
 
-		$this->messages = $this->removeEmptyMessages($result->getMessages());
+        $this->messages = $this->removeEmptyMessages($this->facade->getFailures()->getMessages());
 
-		return false;
-	}
+        return false;
+    }
 
-	protected function loadSanitizerRules($formId)
-	{
-		if ($this->sanitizerRulesLoaded) {
-			return;
-		}
+    protected function isUploadValid($files)
+    {
+        $this->result   = [];
+        $this->messages = [];
 
-		$this->sanitizerRulesLoaded = true;
-		$this->rules->load($formId);
+        $result = $this->uploader->process($files);
 
-		foreach ($this->rules->forSanitizer() as $field => $rules) {
-			foreach ($rules as $rule) {
-				$filter = $this->facade->sanitize($field);
+        if ($result->isValid()) {
+            $this->result = $result->getArrayCopy();
 
-				$filter->toBlankOr($rule['spec'], ...$rule['args']);
+            return true;
+        }
 
-				if ($rule['blank'] !== null) {
-					$filter->useBlankValue($rule['blank']);
-				}
-			}
-		}
-	}
+        $this->messages = $this->removeEmptyMessages($result->getMessages());
 
-	protected function loadUploaderRules($formId, array $prefixes)
-	{
-		if ($this->uploaderRulesLoaded) {
-			return;
-		}
+        return false;
+    }
 
-		$this->uploaderRulesLoaded = true;
-		$this->rules->load($formId);
+    protected function loadSanitizerRules($formId)
+    {
+        if ($this->sanitizerRulesLoaded) {
+            return;
+        }
 
-		foreach ($this->rules->forUploader() as $field => $rules) {
-			$uploadHandler = App::get('UploadHandler');
+        $this->sanitizerRulesLoaded = true;
+        $this->rules->load($formId);
 
-			if (isset($prefixes[$field]) || isset($prefixes['*'])) {
-				$uploadHandler->setPrefix($prefixes[$field] ?: $prefixes['*']);
-			}
+        foreach ($this->rules->forSanitizer() as $field => $rules) {
+            foreach ($rules as $rule) {
+                $filter = $this->facade->sanitize($field);
 
-			foreach ($rules as $rule) {
-				$uploadHandler->addRule($rule['spec'], json_decode($rule['args'], true), $rule['message'], $rule['label']);
-			}
+                $filter->toBlankOr($rule['spec'], ...$rule['args']);
 
-			$this->uploader->addHandler($field, $uploadHandler);
-		}
-	}
+                if ($rule['blank'] !== null) {
+                    $filter->useBlankValue($rule['blank']);
+                }
+            }
+        }
+    }
 
-	protected function loadValidatorRules($formId)
-	{
-		if ($this->validatorRulesLoaded) {
-			return;
-		}
+    protected function loadUploaderRules($formId, array $prefixes)
+    {
+        if ($this->uploaderRulesLoaded) {
+            return;
+        }
 
-		$this->validatorRulesLoaded = true;
-		$this->rules->load($formId);
+        $this->uploaderRulesLoaded = true;
+        $this->rules->load($formId);
 
-		$this->facade->validate($_SESSION['csrf']['key'])->isNot('blank')->asStopRule();
-		$this->facade->validate($_SESSION['csrf']['key'])->is('equalToValue', $_SESSION['csrf']['value'])->asStopRule();
-		$this->facade->useFieldMessage($_SESSION['csrf']['key'], 'Ungültiges oder abgelaufenes Sicherheitstoken. Bitte Formular erneut versenden.');
+        foreach ($this->rules->forUploader() as $field => $rules) {
+            $uploadHandler = App::get('UploadHandler');
 
-		foreach ($this->rules->forValidator() as $field => $rules) {
-			if (!count($rules)) {
-				$this->facade->validate($field)->is('optional');
-				continue;
-			}
+            if (isset($prefixes[$field]) || isset($prefixes['*'])) {
+                $uploadHandler->setPrefix($prefixes[$field] ?: $prefixes['*']);
+            }
 
-			$isRequired = array_reduce($rules, function ($isRequired, $rule) {
-				return $isRequired || $rule['spec'] === 'required';
-			});
+            foreach ($rules as $rule) {
+                $uploadHandler->addRule($rule['spec'], json_decode($rule['args'], true), $rule['message'], $rule['label']);
+            }
 
-			foreach ($rules as $rule) {
-				$this->addRule($field, $rule, $isRequired);
-			}
-		}
-	}
+            $this->uploader->addHandler($field, $uploadHandler);
+        }
+    }
+
+    protected function loadValidatorRules($formId)
+    {
+        if ($this->validatorRulesLoaded) {
+            return;
+        }
+
+        $this->validatorRulesLoaded = true;
+        $this->rules->load($formId);
+
+        $this->facade->validate($_SESSION['csrf']['key'])->isNot('blank')->asStopRule();
+        $this->facade->validate($_SESSION['csrf']['key'])->is('equalToValue', $_SESSION['csrf']['value'])->asStopRule();
+        $this->facade->useFieldMessage($_SESSION['csrf']['key'], 'Ungültiges oder abgelaufenes Sicherheitstoken. Bitte Formular erneut versenden.');
+
+        foreach ($this->rules->forValidator() as $field => $rules) {
+            if (!count($rules)) {
+                $this->facade->validate($field)->is('optional');
+                continue;
+            }
+
+            $isRequired = array_reduce($rules, function ($isRequired, $rule) {
+                return $isRequired || $rule['spec'] === 'required';
+            });
+
+            foreach ($rules as $rule) {
+                $this->addRule($field, $rule, $isRequired);
+            }
+        }
+    }
+
+    protected function removeEmptyMessages($data)
+    {
+        foreach ($data as $field => $messages) {
+            $data[$field] = array_filter($messages, function ($message) {
+                return $message !== static::EMPTY_MESSAGE;
+            });
+        }
+
+        return $data;
+    }
 }

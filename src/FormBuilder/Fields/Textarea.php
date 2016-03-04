@@ -1,48 +1,49 @@
-<?php namespace Mopsis\FormBuilder\Fields;
+<?php
+namespace Mopsis\FormBuilder\Fields;
 
 use Exception;
 use Mopsis\FormBuilder\Contracts\Resizable;
 
 class Textarea extends AbstractField implements Resizable
 {
-	public function setValue($value)
-	{
-		if (is_array($value)) {
-			$value = implode(PHP_EOL, $value);
-		}
+    public function getValue()
+    {
+        return $this->text();
+    }
 
-		if ($this->attr('data-encoding') === 'base64') {
-			$value = base64_encode($value);
-		}
+    public function setValue($value)
+    {
+        if (is_array($value)) {
+            $value = implode(PHP_EOL, $value);
+        }
 
-		$this->text($value);
-	}
+        if ($this->attr('data-encoding') === 'base64') {
+            $value = base64_encode($value);
+        }
 
-	public function updateSize()
-	{
-		if (!$this->hasAttr('rows') || ctype_digit($this->attr('rows'))) {
-			return;
-		}
+        $this->text($value);
+    }
 
-		$rows = count(explode(PHP_EOL, $this->getValue()));
+    public function updateSize()
+    {
+        if (!$this->hasAttr('rows') || ctype_digit($this->attr('rows'))) {
+            return;
+        }
 
-		if ($this->attr('rows') === 'auto') {
-			$this->attr('rows', $rows);
+        $rows = count(explode(PHP_EOL, $this->getValue()));
 
-			return;
-		}
+        if ($this->attr('rows') === 'auto') {
+            $this->attr('rows', $rows);
 
-		if (preg_match('/\{(\d*),(\d*)\}/', $this->attr('rows'), $m)) {
-			$this->attr('rows', between($rows, $m[1], $m[2]));
+            return;
+        }
 
-			return;
-		}
+        if (preg_match('/\{(\d*),(\d*)\}/', $this->attr('rows'), $m)) {
+            $this->attr('rows', between($rows, $m[1], $m[2]));
 
-		throw new Exception('invalid value "' . $this->attr('rows') . '" for attribute "rows"');
-	}
+            return;
+        }
 
-	public function getValue()
-	{
-		return $this->text();
-	}
+        throw new Exception('invalid value "' . $this->attr('rows') . '" for attribute "rows"');
+    }
 }

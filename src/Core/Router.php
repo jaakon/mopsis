@@ -1,142 +1,145 @@
-<?php namespace Mopsis\Core;
+<?php
+namespace Mopsis\Core;
 
 use Aura\Web\Request;
 use Psr\Log\LoggerInterface as Logger;
 
 class Router
 {
-	protected $logger;
-	protected $request;
-	protected $route;
+    protected $logger;
 
-	public function __construct(Logger $logger, Request $request)
-	{
-		$this->logger  = $logger;
-		$this->request = $request;
-	}
+    protected $request;
 
-	public function get()
-	{
-		$requestMethod = $this->request->method->get();
-		$this->route   = urldecode($this->request->url->get(PHP_URL_PATH));
+    protected $route;
 
-		if ($this->route === '/') {
-			$this->route = '/home';
-		}
+    public function __construct(Logger $logger, Request $request)
+    {
+        $this->logger  = $logger;
+        $this->request = $request;
+    }
 
-		$validRules = '/^(' . $requestMethod . '|\*)\s+(?<path>\/(?:\{[^}]+\}|' . preg_quote(preg_replace('/^\/([^\/]+).*/', '$1', $this->route), '/') . ')\S*)\s+(.+)\n?$/i';
+    public function get()
+    {
+        $requestMethod = $this->request->method->get();
+        $this->route   = urldecode($this->request->url->get(PHP_URL_PATH));
 
-		foreach (preg_grep($validRules, file('config/routes')) as $line) {
-			if (!preg_match($validRules, $line, $rule)) {
-				throw new \Exception('invalid route: ' . $line);
-			}
+        if ($this->route === '/') {
+            $this->route = '/home';
+        }
 
-			$test = preg_replace('/\\\{(.+?)\\\}/', '(?<$1>[^\/]*)', preg_quote($rule['path'], '/'));
+        $validRules = '/^(' . $requestMethod . '|\*)\s+(?<path>\/(?:\{[^}]+\}|' . preg_quote(preg_replace('/^\/([^\/]+).*/', '$1', $this->route), '/') . ')\S*)\s+(.+)\n?$/i';
 
-			if (!preg_match('/^' . $test . '(?:\/(?<params>.*))?/', rtrim($this->route, '/'), $m)) {
-				$this->logger->debug('Path "' . $this->route . '" does not match "' . $rule['path'] . '"');
-				continue;
-			}
+        foreach (preg_grep($validRules, file('config/routes')) as $line) {
+            if (!preg_match($validRules, $line, $rule)) {
+                throw new \Exception('invalid route: ' . $line);
+            }
 
-			$m['method'] = $requestMethod;
-			$result      = $this->getClassMethod($rule[3], $m);
+            $test = preg_replace('/\\\{(.+?)\\\}/', '(?<$1>[^\/]*)', preg_quote($rule['path'], '/'));
 
-			if ($result === false) {
-				continue;
-			}
+            if (!preg_match('/^' . $test . '(?:\/(?<params>.*))?/', rtrim($this->route, '/'), $m)) {
+                $this->logger->debug('Path "' . $this->route . '" does not match "' . $rule['path'] . '"');
+                continue;
+            }
 
-			list($class, $method) = $result;
-			$reflectionClass = new \ReflectionClass($class);
-			$funcArgs        = $this->getFunctionArguments($reflectionClass->getMethod($method), $m);
+            $m['method'] = $requestMethod;
+            $result      = $this->getClassMethod($rule[3], $m);
 
-			if ($funcArgs === false) {
-				continue;
-			}
+            if ($result === false) {
+                continue;
+            }
 
-			$this->logger->debug($this->route . ' ==> ' . $class . '->' . $method);
+            list($class, $method) = $result;
+            $reflectionClass      = new \ReflectionClass($class);
+            $funcArgs             = $this->getFunctionArguments($reflectionClass->getMethod($method), $m);
 
-			return App::get($class)->$method(...$funcArgs);
-		}
+            if ($funcArgs === false) {
+                continue;
+            }
 
-		return false;
-	}
+            $this->logger->debug($this->route . ' ==> ' . $class . '->' . $method);
 
-	protected function getClassMethod($path, $m)
-	{
-		$path = preg_replace_callback('/\{(.+?)\}/', function ($placeholder) use ($m) {
-			return studly_case($m[$placeholder[1]]);
-		}, $path);
+            return App::get($class)->$method(...$funcArgs);
+        }
 
-		if (preg_match('/^\w+\\\\\w+\\\\\w+$/', $path)) {
-			try {
-				$class  = App::build('Action', $path);
-				$method = '__invoke';
-			} catch (\DomainException $e) {
-				$this->logger->debug($path . ' => ' . $e->getMessage() . ' [' . $this->route . ']');
+        return false;
+    }
 
-				return false;
-			}
+    protected function getClassMethod($path, $m)
+    {
+        $path = preg_replace_callback('/\{(.+?)\}/', function ($placeholder) use ($m) {
+            return studly_case($m[$placeholder[1]]);
+        }, $path);
 
-			return [
-				$class,
-				$method
-			];
-		}
+        if (preg_match('/^\w+\\\\\w+\\\\\w+$/', $path)) {
+            try {
+                $class  = App::build('Action', $path);
+                $method = '__invoke';
+            } catch (\DomainException $e) {
+                $this->logger->debug($path . ' => ' . $e->getMessage() . ' [' . $this->route . ']');
 
-		if (preg_match('/^(\w+\\\\\w+)\.(\w+)$/', $path, $parts)) {
-			try {
-				$class  = App::build('Controller', $parts[1]);
-				$method = lcfirst($parts[2]);
-			} catch (\DomainException $e) {
-				$this->logger->debug($path . ' => ' . $e->getMessage() . ' [' . $this->route . ']');
+                return false;
+            }
 
-				return false;
-			}
+            return [
+                $class,
+                $method
+            ];
+        }
 
-			if (!method_exists($class, $method)) {
-				$this->logger->debug($path . ' => method "' . $method . '" not found [' . $this->route . ']');
+        if (preg_match('/^(\w+\\\\\w+)\.(\w+)$/', $path, $parts)) {
+            try {
+                $class  = App::build('Controller', $parts[1]);
+                $method = lcfirst($parts[2]);
+            } catch (\DomainException $e) {
+                $this->logger->debug($path . ' => ' . $e->getMessage() . ' [' . $this->route . ']');
 
-				return false;
-			}
+                return false;
+            }
 
-			return [
-				$class,
-				$method
-			];
-		}
+            if (!method_exists($class, $method)) {
+                $this->logger->debug($path . ' => method "' . $method . '" not found [' . $this->route . ']');
 
-		$this->logger->debug('Cannot parse "' . $path . '"');
+                return false;
+            }
 
-		return false;
-	}
+            return [
+                $class,
+                $method
+            ];
+        }
 
-	protected function getFunctionArguments(\ReflectionMethod $method, $m)
-	{
-		$m['params'] = isset($m['params']) ? explode('/', $m['params']) : [];
-		$funcArgs    = [];
+        $this->logger->debug('Cannot parse "' . $path . '"');
 
-		foreach ($method->getParameters() as $param) {
-			if ($param->isVariadic()) {
-				return array_merge($funcArgs, $m['params']);
-			}
+        return false;
+    }
 
-			if (isset($m[$param->name])) {
-				$funcArgs[] = urldecode($m[$param->name]);
-			} elseif (count($m['params'])) {
-				$funcArgs[] = urldecode(array_shift($m['params']));
-			} elseif (!$param->isOptional()) {
-				$this->logger->debug($method->name . ' => missing parameter "' . $param->name . '" [' . $this->route . ']');
+    protected function getFunctionArguments(\ReflectionMethod $method, $m)
+    {
+        $m['params'] = isset($m['params']) ? explode('/', $m['params']) : [];
+        $funcArgs    = [];
 
-				return false;
-			}
-		}
+        foreach ($method->getParameters() as $param) {
+            if ($param->isVariadic()) {
+                return array_merge($funcArgs, $m['params']);
+            }
 
-		if (count($m['params'])) {
-			$this->logger->debug($method->name . ' => unexpected parameters "' . implode('", "', $m['params']) . '" [' . $this->route . ']');
+            if (isset($m[$param->name])) {
+                $funcArgs[] = urldecode($m[$param->name]);
+            } elseif (count($m['params'])) {
+                $funcArgs[] = urldecode(array_shift($m['params']));
+            } elseif (!$param->isOptional()) {
+                $this->logger->debug($method->name . ' => missing parameter "' . $param->name . '" [' . $this->route . ']');
 
-			return false;
-		}
+                return false;
+            }
+        }
 
-		return $funcArgs;
-	}
+        if (count($m['params'])) {
+            $this->logger->debug($method->name . ' => unexpected parameters "' . implode('", "', $m['params']) . '" [' . $this->route . ']');
+
+            return false;
+        }
+
+        return $funcArgs;
+    }
 }

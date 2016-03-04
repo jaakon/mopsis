@@ -1,4 +1,5 @@
-<?php namespace Mopsis\Extensions\SwiftMailer;
+<?php
+namespace Mopsis\Extensions\SwiftMailer;
 
 use Swift_Image;
 use Swift_Mailer;
@@ -9,63 +10,63 @@ use Swift_SmtpTransport;
 
 class Mailer extends Swift_Mailer
 {
-	public function __construct()
-	{
-		$transport = Swift_MailTransport::newInstance();
+    public function __construct()
+    {
+        $transport = Swift_MailTransport::newInstance();
 
-		if (config('mail.host') && config('mail.port')) {
-			$transport = Swift_SmtpTransport::newInstance(config('mail.host'), config('mail.port'), config('mail.encryption'));
+        if (config('mail.host') && config('mail.port')) {
+            $transport = Swift_SmtpTransport::newInstance(config('mail.host'), config('mail.port'), config('mail.encryption'));
 
-			if (config('mail.username') && config('mail.password')) {
-				$transport->setUsername(config('mail.username'))->setPassword(config('mail.password'));
-			}
-		}
+            if (config('mail.username') && config('mail.password')) {
+                $transport->setUsername(config('mail.username'))->setPassword(config('mail.password'));
+            }
+        }
 
-		parent::__construct($transport);
-	}
+        parent::__construct($transport);
+    }
 
-	public static function quickSend($recipient, $subject, $textBody = null, $htmlBody = null, $embedImages = false)
-	{
-		$mailer  = new static;
-		$message = static::newMessage()->setTo($recipient)->setSubject($subject);
+    public static function encodeName($name)
+    {
+        return '=?UTF-8?B?' . base64_encode($name) . '?=';
+    }
 
-		if ($htmlBody !== null) {
-			if ($embedImages && preg_match_all('/<img [^>]*src="((http:\/\/.+?\/)?([^"]+?))"/i', $htmlBody, $matches, PREG_SET_ORDER)) {
-				foreach ($matches as $m) {
-					$htmlBody = str_replace($m[1], $message->embed(Swift_Image::fromPath('public/' . $m[3])), $htmlBody);
-				}
-			}
+    public static function newMessage()
+    {
+        $message = Swift_Message::newInstance()->setFrom([config('mail.from') => static::encodeName(config('mail.fromName'))]);
 
-			$message->setBody($htmlBody, 'text/html');
-		}
+        if (config('mail.replyto')) {
+            $message->setReplyTo(config('mail.replyto'));
+        }
 
-		$message->addPart($textBody ?: 'This email is only available as HTML version', 'text/plain');
+        return $message;
+    }
 
-		return $mailer->send($message);
-	}
+    public static function quickSend($recipient, $subject, $textBody = null, $htmlBody = null, $embedImages = false)
+    {
+        $mailer  = new static();
+        $message = static::newMessage()->setTo($recipient)->setSubject($subject);
 
-	public static function newMessage()
-	{
-		$message = Swift_Message::newInstance()->setFrom([config('mail.from') => static::encodeName(config('mail.fromName'))]);
+        if ($htmlBody !== null) {
+            if ($embedImages && preg_match_all('/<img [^>]*src="((http:\/\/.+?\/)?([^"]+?))"/i', $htmlBody, $matches, PREG_SET_ORDER)) {
+                foreach ($matches as $m) {
+                    $htmlBody = str_replace($m[1], $message->embed(Swift_Image::fromPath('public/' . $m[3])), $htmlBody);
+                }
+            }
 
-		if (config('mail.replyto')) {
-			$message->setReplyTo(config('mail.replyto'));
-		}
+            $message->setBody($htmlBody, 'text/html');
+        }
 
-		return $message;
-	}
+        $message->addPart($textBody ?: 'This email is only available as HTML version', 'text/plain');
 
-	public static function encodeName($name)
-	{
-		return '=?UTF-8?B?' . base64_encode($name) . '?=';
-	}
+        return $mailer->send($message);
+    }
 
-	public function send(Swift_Mime_Message $message, &$failedRecipients = null)
-	{
-		if (config('mail.subject')) {
-			$message->setSubject(config('mail.subject') . $message->getSubject());
-		}
+    public function send(Swift_Mime_Message $message, &$failedRecipients = null)
+    {
+        if (config('mail.subject')) {
+            $message->setSubject(config('mail.subject') . $message->getSubject());
+        }
 
-		return parent::send($message, $failedRecipients);
-	}
+        return parent::send($message, $failedRecipients);
+    }
 }

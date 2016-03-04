@@ -1,17 +1,18 @@
-<?php namespace Mopsis\Extensions\Aura\Filter\Rule\Sanitize;
+<?php
+namespace Mopsis\Extensions\Aura\Filter\Rule\Sanitize;
 
 class ArrayValue
 {
-	public function __invoke($subject, $field)
-	{
-		$value = $subject->$field;
+    public function __invoke($subject, $field)
+    {
+        $value = $subject->$field;
 
-		if (!is_string($value)) {
-			return false;
-		}
+        if (!is_string($value)) {
+            return false;
+        }
 
-		$subject->$field = array_values(array_filter(explode(PHP_EOL, $value), 'strlen'));
+        $subject->$field = array_values(array_filter(explode(PHP_EOL, $value), 'strlen'));
 
-		return true;
-	}
+        return true;
+    }
 }

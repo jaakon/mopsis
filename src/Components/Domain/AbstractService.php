@@ -1,4 +1,5 @@
-<?php namespace Mopsis\Components\Domain;
+<?php
+namespace Mopsis\Components\Domain;
 
 use Exception;
 use Mopsis\Security\Token;
@@ -10,261 +11,265 @@ use Mopsis\Security\Token;
  */
 abstract class AbstractService
 {
-	protected $filter;
-	protected $gateway;
-	protected $payload;
-	protected $instanceKey   = 'instance';
-	protected $collectionKey = 'collection';
+    protected $collectionKey = 'collection';
 
-	public function create($formId, array $data = null)
-	{
-		try {
-			$instance = $this->gateway->newEntity();
+    protected $filter;
 
-			if ($data === null) {
-				return $this->payload->newEntity([
-					'instance' => $instance,
-					'formId'   => $formId
-				]);
-			}
+    protected $gateway;
 
-			if (!$this->filter->forInsert($formId, $data)) {
-				return $this->payload->notValid([
-					'instance'    => $instance,
-					'formId'      => $formId,
-					'errors'      => $this->filter->getMessages(),
-					'requestData' => $data
-				]);
-			}
+    protected $instanceKey = 'instance';
 
-			if (!$this->gateway->create($instance, $this->filter->getResult())) {
-				return new $this->payload->notCreated([
-					'instance' => $instance,
-					'formId'   => $formId
-				]);
-			}
+    protected $payload;
 
-			return $this->payload->created(['instance' => $instance]);
-		} catch (Exception $e) {
-			return $this->payload->error([
-				'exception' => $e,
-				'formId'    => $formId,
-				'data'      => $data
-			]);
-		}
-	}
+    public function create($formId, array $data = null)
+    {
+        try {
+            $instance = $this->gateway->newEntity();
 
-	public function createChild($ancestorToken, $formId, array $data = null)
-	{
-		try {
-			$ancestor = Token::extract($ancestorToken);
+            if ($data === null) {
+                return $this->payload->newEntity([
+                    'instance' => $instance,
+                    'formId'   => $formId
+                ]);
+            }
 
-			if (!$ancestor) {
-				return $this->payload->notFound(['token' => $ancestorToken]);
-			}
+            if (!$this->filter->forInsert($formId, $data)) {
+                return $this->payload->notValid([
+                    'instance'    => $instance,
+                    'formId'      => $formId,
+                    'errors'      => $this->filter->getMessages(),
+                    'requestData' => $data
+                ]);
+            }
 
-			$instance  = $this->gateway->newEntity();
-			$relations = $instance->findRelations($ancestor);
+            if (!$this->gateway->create($instance, $this->filter->getResult())) {
+                return new $this->payload->notCreated([
+                    'instance' => $instance,
+                    'formId'   => $formId
+                ]);
+            }
 
-			if (count($relations) !== 1) {
-				throw new Exception('expected 1 relation, found ' . count($relations));
-			}
+            return $this->payload->created(['instance' => $instance]);
+        } catch (Exception $e) {
+            return $this->payload->error([
+                'exception' => $e,
+                'formId'    => $formId,
+                'data'      => $data
+            ]);
+        }
+    }
 
-			if ($data === null) {
-				return $this->payload->newEntity([
-					'instance'      => $instance,
-					'formId'        => $formId,
-					'ancestorToken' => $ancestorToken
-				]);
-			}
+    public function createChild($ancestorToken, $formId, array $data = null)
+    {
+        try {
+            $ancestor = Token::extract($ancestorToken);
 
-			if (!$this->filter->forInsert($formId, $data)) {
-				return $this->payload->notValid([
-					'instance'      => $instance,
-					'formId'        => $formId,
-					'ancestorToken' => $ancestorToken,
-					'errors'        => $this->filter->getMessages(),
-					'requestData'   => $data
-				]);
-			}
+            if (!$ancestor) {
+                return $this->payload->notFound(['token' => $ancestorToken]);
+            }
 
-			$relation = array_pop($relations);
-			$instance->$relation()->associate($ancestor);
+            $instance  = $this->gateway->newEntity();
+            $relations = $instance->findRelations($ancestor);
 
-			if (!$this->gateway->create($instance, $this->filter->getResult())) {
-				return new $this->payload->notCreated([
-					'instance'      => $instance,
-					'formId'        => $formId,
-					'ancestorToken' => $ancestorToken
-				]);
-			}
+            if (count($relations) !== 1) {
+                throw new Exception('expected 1 relation, found ' . count($relations));
+            }
 
-			return $this->payload->created(['instance' => $instance]);
-		} catch (Exception $e) {
-			return $this->payload->error([
-				'exception'     => $e,
-				'formId'        => $formId,
-				'ancestorToken' => $ancestorToken,
-				'data'          => $data
-			]);
-		}
-	}
+            if ($data === null) {
+                return $this->payload->newEntity([
+                    'instance'      => $instance,
+                    'formId'        => $formId,
+                    'ancestorToken' => $ancestorToken
+                ]);
+            }
 
-	public function delete($token)
-	{
-		try {
-			$instance = $this->gateway->fetchByToken($token);
+            if (!$this->filter->forInsert($formId, $data)) {
+                return $this->payload->notValid([
+                    'instance'      => $instance,
+                    'formId'        => $formId,
+                    'ancestorToken' => $ancestorToken,
+                    'errors'        => $this->filter->getMessages(),
+                    'requestData'   => $data
+                ]);
+            }
 
-			if (!$instance) {
-				return $this->payload->notFound(['token' => $token]);
-			}
+            $relation = array_pop($relations);
+            $instance->$relation()->associate($ancestor);
 
-			if (!$this->gateway->delete($instance)) {
-				return $this->payload->notDeleted(['instance' => $instance]);
-			}
+            if (!$this->gateway->create($instance, $this->filter->getResult())) {
+                return new $this->payload->notCreated([
+                    'instance'      => $instance,
+                    'formId'        => $formId,
+                    'ancestorToken' => $ancestorToken
+                ]);
+            }
 
-			return $this->payload->deleted(['instance' => $instance]);
-		} catch (Exception $e) {
-			return $this->payload->error([
-				'exception' => $e,
-				'token'     => $token
-			]);
-		}
-	}
+            return $this->payload->created(['instance' => $instance]);
+        } catch (Exception $e) {
+            return $this->payload->error([
+                'exception'     => $e,
+                'formId'        => $formId,
+                'ancestorToken' => $ancestorToken,
+                'data'          => $data
+            ]);
+        }
+    }
 
-	public function fetch($token)
-	{
-		try {
-			$instance = $this->gateway->fetchByToken($token);
+    public function delete($token)
+    {
+        try {
+            $instance = $this->gateway->fetchByToken($token);
 
-			if (!$instance) {
-				return $this->payload->notFound(['token' => $token]);
-			}
+            if (!$instance) {
+                return $this->payload->notFound(['token' => $token]);
+            }
 
-			return $this->payload->found([$this->instanceKey => $instance]);
-		} catch (Exception $e) {
-			return $this->payload->error([
-				'exception' => $e,
-				'token'     => $token
-			]);
-		}
-	}
+            if (!$this->gateway->delete($instance)) {
+                return $this->payload->notDeleted(['instance' => $instance]);
+            }
 
-	public function fetchAll()
-	{
-		try {
-			$collection = $this->gateway->fetchAll();
+            return $this->payload->deleted(['instance' => $instance]);
+        } catch (Exception $e) {
+            return $this->payload->error([
+                'exception' => $e,
+                'token'     => $token
+            ]);
+        }
+    }
 
-			if (!$collection) {
-				return $this->payload->notFound();
-			}
+    public function fetch($token)
+    {
+        try {
+            $instance = $this->gateway->fetchByToken($token);
 
-			return $this->payload->found([$this->collectionKey => $collection]);
-		} catch (Exception $e) {
-			return $this->payload->error([
-				'exception' => $e
-			]);
-		}
-	}
+            if (!$instance) {
+                return $this->payload->notFound(['token' => $token]);
+            }
 
-	public function fetchBySlug($slug)
-	{
-		return $this->fetchByAttributes(['slug' => $slug]);
-	}
+            return $this->payload->found([$this->instanceKey => $instance]);
+        } catch (Exception $e) {
+            return $this->payload->error([
+                'exception' => $e,
+                'token'     => $token
+            ]);
+        }
+    }
 
-	public function fetchByAttributes($attributes)
-	{
-		try {
-			$instance = $this->gateway->findOne($attributes);
+    public function fetchAll()
+    {
+        try {
+            $collection = $this->gateway->fetchAll();
 
-			if (!$instance->exists) {
-				return $this->payload->notFound($attributes);
-			}
+            if (!$collection) {
+                return $this->payload->notFound();
+            }
 
-			return $this->payload->found([$this->instanceKey => $instance]);
-		} catch (Exception $e) {
-			return $this->payload->error([
-				'exception'  => $e,
-				'attributes' => $attributes
-			]);
-		}
-	}
+            return $this->payload->found([$this->collectionKey => $collection]);
+        } catch (Exception $e) {
+            return $this->payload->error([
+                'exception' => $e
+            ]);
+        }
+    }
 
-	public function noop()
-	{
-		try {
-			return $this->payload->found([]);
-		} catch (Exception $e) {
-			return $this->payload->error([
-				'exception' => $e
-			]);
-		}
-	}
+    public function fetchByAttributes($attributes)
+    {
+        try {
+            $instance = $this->gateway->findOne($attributes);
 
-	public function setAttribute($token, $key, $value)
-	{
-		try {
-			$instance = $this->gateway->fetchByToken($token);
+            if (!$instance->exists) {
+                return $this->payload->notFound($attributes);
+            }
 
-			if (!$instance) {
-				return $this->payload->notFound(['token' => $token]);
-			}
+            return $this->payload->found([$this->instanceKey => $instance]);
+        } catch (Exception $e) {
+            return $this->payload->error([
+                'exception'  => $e,
+                'attributes' => $attributes
+            ]);
+        }
+    }
 
-			if (!$this->gateway->set($instance, $key, $value)) {
-				return $this->payload->notUpdated(['instance' => $instance]);
-			}
+    public function fetchBySlug($slug)
+    {
+        return $this->fetchByAttributes(['slug' => $slug]);
+    }
 
-			return $this->payload->updated(['instance' => $instance]);
-		} catch (Exception $e) {
-			return $this->payload->error([
-				'exception' => $e,
-				'token'     => $token,
-				'key'       => $key,
-				'value'     => $value
-			]);
-		}
-	}
+    public function noop()
+    {
+        try {
+            return $this->payload->found([]);
+        } catch (Exception $e) {
+            return $this->payload->error([
+                'exception' => $e
+            ]);
+        }
+    }
 
-	public function update($token, $formId, array $data = null)
-	{
-		try {
-			$instance = $this->gateway->fetchByToken($token);
+    public function setAttribute($token, $key, $value)
+    {
+        try {
+            $instance = $this->gateway->fetchByToken($token);
 
-			if (!$instance) {
-				return $this->payload->notFound(['token' => $token]);
-			}
+            if (!$instance) {
+                return $this->payload->notFound(['token' => $token]);
+            }
 
-			if ($data === null) {
-				return $this->payload->found([
-					'instance' => $instance,
-					'formId'   => $formId
-				]);
-			}
+            if (!$this->gateway->set($instance, $key, $value)) {
+                return $this->payload->notUpdated(['instance' => $instance]);
+            }
 
-			if (!$this->filter->forUpdate($formId, $data)) {
-				return $this->payload->notValid([
-					'instance'    => $instance,
-					'formId'      => $formId,
-					'errors'      => $this->filter->getMessages(),
-					'requestData' => $data
-				]);
-			}
+            return $this->payload->updated(['instance' => $instance]);
+        } catch (Exception $e) {
+            return $this->payload->error([
+                'exception' => $e,
+                'token'     => $token,
+                'key'       => $key,
+                'value'     => $value
+            ]);
+        }
+    }
 
-			if (!$this->gateway->update($instance, $this->filter->getResult())) {
-				return $this->payload->notUpdated([
-					'instance' => $instance,
-					'formId'   => $formId
-				]);
-			}
+    public function update($token, $formId, array $data = null)
+    {
+        try {
+            $instance = $this->gateway->fetchByToken($token);
 
-			return $this->payload->updated(['instance' => $instance]);
-		} catch (Exception $e) {
-			return $this->payload->error([
-				'exception' => $e,
-				'formId'    => $formId,
-				'token'     => $token,
-				'data'      => $data
-			]);
-		}
-	}
+            if (!$instance) {
+                return $this->payload->notFound(['token' => $token]);
+            }
+
+            if ($data === null) {
+                return $this->payload->found([
+                    'instance' => $instance,
+                    'formId'   => $formId
+                ]);
+            }
+
+            if (!$this->filter->forUpdate($formId, $data)) {
+                return $this->payload->notValid([
+                    'instance'    => $instance,
+                    'formId'      => $formId,
+                    'errors'      => $this->filter->getMessages(),
+                    'requestData' => $data
+                ]);
+            }
+
+            if (!$this->gateway->update($instance, $this->filter->getResult())) {
+                return $this->payload->notUpdated([
+                    'instance' => $instance,
+                    'formId'   => $formId
+                ]);
+            }
+
+            return $this->payload->updated(['instance' => $instance]);
+        } catch (Exception $e) {
+            return $this->payload->error([
+                'exception' => $e,
+                'formId'    => $formId,
+                'token'     => $token,
+                'data'      => $data
+            ]);
+        }
+    }
 }
