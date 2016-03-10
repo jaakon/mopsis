@@ -23,7 +23,7 @@ class TypeFactory
                 return (float) $value;
             case 'date':
             case 'datetime':
-                return $value !== '' ? self::create('\Mopsis\Types\DateTime', $value ?: 'now'): null;
+                return $value !== '' ? self::create('\Mopsis\Extensions\Carbon\Carbon', $value ?: 'now'): null;
             case 'enum':
                 return (string) $value;
             case 'json':

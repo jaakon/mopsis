@@ -66,7 +66,8 @@ class SimpleXMLElement
     {
         $isPrefix       = ($namespace !== null);
         $attributes     = $this->element->attributes($namespace, $isPrefix);
-        $attributeValue = $attributes->{$name}
+        $attributeValue = $attributes->{$name};
+
         return ($attributeValue !== null) ? (string) $attributeValue : null;
     }
 

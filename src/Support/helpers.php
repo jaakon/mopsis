@@ -19,32 +19,32 @@ function app($name = null, array $parameters = null)
     return LaravelHelpers::app($name, $parameters);
 }
 
-function arrayConcat(array $array, ...$values)
+function array_concat(array $array, ...$values)
 {
     return ArrayHelpers::concat($array, ...$values);
 }
 
-function arrayDiffValues(array $array1, array $array2)
+function array_diff_values(array $array1, array $array2)
 {
     return ArrayHelpers::diffValues($array1, $array2);
 }
 
-function arrayDot($array, $prepend = '')
+function array_dot($array, $prepend = '')
 {
     return ArrayHelpers::dot($array, $prepend);
 }
 
-function arrayTrim(array $array, callable $callback = null)
+function array_trim(array $array, callable $callback = null)
 {
     return ArrayHelpers::trim($array, $callback);
 }
 
-function arrayValue($array, $key)
+function array_value($array, $key)
 {
     return ArrayHelpers::value($array, $key);
 }
 
-function arrayWrap($data)
+function array_wrap($data)
 {
     return ArrayHelpers::wrap($data);
 }
@@ -79,17 +79,17 @@ function env($key, $default = null)
     return LaravelHelpers::env($key, $default);
 }
 
-function closestMatch($input, $words)
+function closest_match($input, $words)
 {
     return StringHelpers::getClosestMatch($input, $words);
 }
 
-function isHtml($string)
+function is_html($string)
 {
     return StringHelpers::isHtml($string);
 }
 
-function isUtf8($string)
+function is_utf8($string)
 {
     return StringHelpers::isUtf8($string);
 }
@@ -104,17 +104,17 @@ function model($className)
     return ClassHelpers::model($className);
 }
 
-function objectMerge(stdClass $baseObject, stdClass...$objects)
+function object_merge(stdClass $baseObject, stdClass...$objects)
 {
     return ObjectHelpers::merge($baseObject, ...$objects);
 }
 
-function objectToArray($object)
+function object_to_array($object)
 {
     return ObjectHelpers::toArray($object);
 }
 
-function locationChange($uri, $code = 302, $phrase = null)
+function location_change($uri, $code = 302, $phrase = null)
 {
     return MiscHelpers::locationChange($uri, $code, $phrase);
 }
@@ -129,17 +129,17 @@ function redirect($uri, $code = 302, $phrase = null)
     return MiscHelpers::redirect($uri, $code, $phrase);
 }
 
-function resolvePath($path)
+function resolve_path($path)
 {
     return PathHelpers::resolve($path);
 }
 
-function staticPage($code)
+function static_page($code)
 {
     return MiscHelpers::getStaticPage($code);
 }
 
-function stripInvalidChars($string, $charlist = null)
+function strip_invalid_chars($string, $charlist = null)
 {
     return StringHelpers::stripInvalidChars($string, $charlist);
 }
