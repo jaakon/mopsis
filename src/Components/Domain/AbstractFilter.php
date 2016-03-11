@@ -40,7 +40,7 @@ abstract class AbstractFilter
         $rule['args'] = array_wrap($rule['args']);
 
         if ($rule['spec'] === 'required') {
-            $filter->isNot('blank');
+            $filter->isNotBlank();
         } elseif ($isRequired) {
             $filter->is($rule['spec'], ...$rule['args']);
         } else {
@@ -199,13 +199,13 @@ abstract class AbstractFilter
         $this->validatorRulesLoaded = true;
         $this->rules->load($formId);
 
-        $this->facade->validate($_SESSION['csrf']['key'])->isNot('blank')->asStopRule();
+        $this->facade->validate($_SESSION['csrf']['key'])->isNotBlank()->asStopRule();
         $this->facade->validate($_SESSION['csrf']['key'])->is('equalToValue', $_SESSION['csrf']['value'])->asStopRule();
         $this->facade->useFieldMessage($_SESSION['csrf']['key'], 'Ungültiges oder abgelaufenes Sicherheitstoken. Bitte Formular erneut versenden.');
 
         foreach ($this->rules->forValidator() as $field => $rules) {
             if (!count($rules)) {
-                $this->facade->validate($field)->is('optional');
+                $this->facade->validate($field)->isBlankOr('optional');
                 continue;
             }
 

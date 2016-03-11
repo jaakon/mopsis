@@ -12,7 +12,8 @@ return [
     'app' => [
         'forms'           => APPLICATION_PATH . '/config/forms.xml',
         'error_log'       => APPLICATION_PATH . '/storage/logs/error.log',
-        'application_log' => APPLICATION_PATH . '/storage/logs/application.log'
+        'application_log' => APPLICATION_PATH . '/storage/logs/application.log',
+        'views'           => ['resources/views']
     ],
 
     'config' => object(Mopsis\Core\Config::class),
@@ -103,8 +104,6 @@ return [
 
         return $extensions;
     },
-
-    'twigloader.config' => ['resources/views'],
 
     Aptoma\Twig\Extension\MarkdownEngineInterface::class
     => object(Mopsis\Extensions\Twig\Markdown\MarkdownEngine::class),
@@ -274,7 +273,7 @@ return [
 
     Twig_LoaderInterface::class
     => object(Twig_Loader_Filesystem::class)
-        ->constructor(get('twigloader.config')),
+        ->constructor(dot('app.views')),
 
     Whoops\Handler\JsonResponseHandler::class
     => object()
@@ -358,7 +357,13 @@ return [
         $logger->pushHandler(new Monolog\Handler\ChromePHPHandler(Monolog\Logger::INFO));
         $logger->pushHandler($c->get(MonologNoticeHandler::class));
         $logger->pushHandler($c->get(MonologErrorHandler::class));
-        $logger->pushHandler(new Monolog\Handler\PushoverHandler('aw6zvva5hvy67Y1gvnagx7y3GZzEDA', 'uF1VyiRtDd1XXnEKA41imF2P88gxJ4', config('project.title'), Monolog\Logger::ERROR, false));
+        $logger->pushHandler(new Monolog\Handler\PushoverHandler(
+            'aw6zvva5hvy67Y1gvnagx7y3GZzEDA',
+            'uF1VyiRtDd1XXnEKA41imF2P88gxJ4',
+            config('project.title'),
+            Monolog\Logger::ERROR,
+            false
+        ));
 
         return $logger;
     },

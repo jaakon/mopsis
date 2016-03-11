@@ -66,11 +66,11 @@ abstract class Model implements ModelInterface
             return $this->ancestor();
         }
 
-        if (method_exists($this, 'get' . ucfirst($key) . 'Attribute')) {
-            if ($this->cache[$key] === null) {
-                $this->cache[$key] = $this->{'get' . ucfirst($key) . 'Attribute'}
+        $method = 'get' . ucfirst($key) . 'Attribute';
 
-                ();
+        if (method_exists($this, $method)) {
+            if ($this->cache[$key] === null) {
+                $this->cache[$key] = $this->$method();
             }
 
             return $this->cache[$key];
@@ -119,10 +119,10 @@ abstract class Model implements ModelInterface
     {
         unset($this->cache[$key]);
 
-        if (method_exists($this, 'set' . ucfirst($key) . 'Attribute')) {
-            $this->{'set' . ucfirst($key) . 'Attribute'}
+        $method = 'set' . ucfirst($key) . 'Attribute';
 
-            ($value);
+        if (method_exists($this, $method)) {
+            $this->$method($value);
         }
 
         $this->setAttribute($key, $value);
@@ -206,7 +206,13 @@ abstract class Model implements ModelInterface
     {
         list($query, $values) = Sql::expandQuery($query, $values);
 
-        return TypeFactory::cast(Sql::db()->getValue(Sql::buildQuery(static::_getDefaultQuery($attribute, $query, $orderBy)), $values), ModelFactory::getConfig(get_called_class())['types'][$attribute]);
+        return TypeFactory::cast(
+            Sql::db()->getValue(
+                Sql::buildQuery(static::_getDefaultQuery($attribute, $query, $orderBy)),
+                $values
+            ),
+            ModelFactory::getConfig(get_called_class())['types'][$attribute]
+        );
     }
 
     public function getAttribute($key)

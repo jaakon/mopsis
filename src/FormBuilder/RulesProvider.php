@@ -36,7 +36,7 @@ class RulesProvider
             foreach ($item->all('rule[@type="sanitize"]') as $rule) {
                 $rules[] = [
                     'spec'  => $rule->attr('spec'),
-                    'args'  => explode('|', $rule->attr('args')),
+                    'args'  => array_filter(explode('|', $rule->attr('args')), 'strlen'),
                     'blank' => $rule->attr('blankValue') ?: null
                 ];
             }
@@ -60,7 +60,7 @@ class RulesProvider
             foreach ($item->all('rule[@type="upload"]') as $rule) {
                 $rules[] = [
                     'spec'    => $rule->attr('spec'),
-                    'args'    => explode('|', $rule->attr('args')),
+                    'args'    => array_filter(explode('|', $rule->attr('args')), 'strlen'),
                     'message' => $rule->attr('suppressMessage') === 'true' ? false : $rule->text()
                 ];
             }
@@ -82,7 +82,7 @@ class RulesProvider
             foreach ($item->all('rule[@type="validate"]') as $rule) {
                 $rules[] = [
                     'spec'    => $rule->attr('spec'),
-                    'args'    => explode('|', $rule->attr('args')),
+                    'args'    => array_filter(explode('|', $rule->attr('args')), 'strlen'),
                     'message' => $rule->attr('suppressMessage') === 'true' ? false : $rule->text(),
                     'mode'    => $rule->attr('failureMode') ?: 'hard'
                 ];

@@ -27,7 +27,7 @@ class TypeFactory
             case 'enum':
                 return (string) $value;
             case 'json':
-                return self::create('\Mopsis\Types\JSON', $value);
+                return self::create('\Mopsis\Extensions\Json', $value);
             case 'model':
                 if ($value instanceof ModelContract) {
                     return $value;

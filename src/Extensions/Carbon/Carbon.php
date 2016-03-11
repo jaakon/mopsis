@@ -29,14 +29,7 @@ class Carbon extends CarbonLib
     {
     return !$this->diff($date)->format($accuracy);
     }
-
-    public function untilNow()
-    {
-    return $this->format('U') - time();
-    }
      */
-
-    const DE_SHORT = 'd.m.Y';
 
     const ISO8601 = 'Y-m-d';
 
@@ -126,5 +119,10 @@ class Carbon extends CarbonLib
         }
 
         throw new \Exception('invalid interval size: ' . $size);
+    }
+
+    public function toDeDateString()
+    {
+        return $this->format('d.m.Y');
     }
 }

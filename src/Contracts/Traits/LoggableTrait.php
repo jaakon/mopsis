@@ -6,39 +6,13 @@ use Mopsis\Core\Auth;
 
 trait LoggableTrait
 {
-    /*
-    if (class_exists('\App\Models\Event')) {
-    Event::add($instance, Auth::user(), $this->findRoute(), array_diff_values($oldData, $newData));
-    }
-
-    if (class_exists('\App\Models\Event')) {
-    Event::add($instance, Auth::user(), $this->findRoute());
-    }
-
-    if (class_exists('\App\Models\Event')) {
-    Event::add($instance, Auth::user(), $this->findRoute(), [$key => $value]);
-    }
-
-    protected function findRoute()
-    {
-    return class_basename($this) . '.' . debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)[2]['function'];
-    }
-
-    if ($instance->hasProperty('uri')) {
-    $instance->set('uri', null)->uri;
-    }
-
-     */
-
     public function logChanges($message = null)
     {
         if ($this->exists && !count($this->getDirty())) {
             return $this;
         }
 
-        $eventClass = App::get('Event');
-
-        $event = new $eventClass([
+        $event = App::make('Event', [
             'message' => $message ?: $this->traceAction(),
             'values'  => json_encode($this->getDiff())
         ]);
@@ -61,12 +35,6 @@ trait LoggableTrait
             }
         }
 
-        /**
-         * @noinspection PhpUndefinedClassConstantInspection
-         */
-        /**
-         * @noinspection PhpUndefinedClassConstantInspection
-         */
         /**
          * @noinspection PhpUndefinedClassConstantInspection
          */

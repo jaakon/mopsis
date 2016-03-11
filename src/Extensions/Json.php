@@ -46,8 +46,8 @@ class Json implements JsonSerializable
     {
         if ($this->bodyType === 'array' && Arr::has($this->body, $name)) {
             return Arr::get($this->body, $name);
-        } elseif ($this->bodyType === 'stdClass' && isset($this->body->{$name})) {
-            return $this->body->{$name}
+        } elseif ($this->bodyType === 'stdClass' && isset($this->body->$name)) {
+            return $this->body->$name;
         }
 
         throw new \Exception(sprintf('Non-existent property %s.', $name));
@@ -64,7 +64,7 @@ class Json implements JsonSerializable
     {
         return
             ($this->bodyType === 'array' && Arr::has($this->body, $name)) ||
-            ($this->bodyType === 'stdClass' && isset($this->body->{$name}));
+            ($this->bodyType === 'stdClass' && isset($this->body->$name));
     }
 
     /**
