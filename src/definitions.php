@@ -387,7 +387,7 @@ return [
             array_filter(
                 [
                     'redis'    => \Stash\Driver\Redis::class,
-                    'apc'      => \Stash\Driver\Apc::class,
+                    'apcu'     => \Stash\Driver\Apc::class,
                     'sqlite3'  => \Stash\Driver\Sqlite::class,
                     'standard' => \Stash\Driver\FileSystem::class
                 ],
