@@ -72,7 +72,7 @@ class View
 
             $twigException = new TwigException(ucfirst($message) . '.', $exception->getCode(), $exception);
 
-            foreach (App::get('twigloader.config') as $path) {
+            foreach (App::get('app')['views'] as $path) {
                 $file = APPLICATION_PATH . '/' . $path . '/' . $template;
 
                 if (file_exists($file)) {

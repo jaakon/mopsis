@@ -9,7 +9,7 @@ class MultiSelect extends Select
     {
         $values = [];
 
-        foreach ($this->find('option[selected]') as $node) {
+        foreach ($this->find('.//option[selected]') as $node) {
             $option = FieldFactory::create($node);
 
             $values[] = $option->val();
@@ -22,7 +22,7 @@ class MultiSelect extends Select
     {
         $values = array_map('strval', array_wrap($value));
 
-        foreach ($this->find('option') as $node) {
+        foreach ($this->find('.//option') as $node) {
             $option = FieldFactory::create($node);
 
             $option->prop('selected', in_array($option->val(), $values, true));
