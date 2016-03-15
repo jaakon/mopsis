@@ -100,11 +100,6 @@ class Carbon extends CarbonLib
         return $result . parent::format($format);
     }
 
-    public function formatLocalized($format)
-    {
-        return utf8_encode(parent::formatLocalized($format));
-    }
-
     public function startOfInterval($size)
     {
         switch ($size) {

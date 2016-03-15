@@ -110,9 +110,9 @@ abstract class AbstractFilter
             }
 
             foreach (array_keys($this->rules->forValidator()) as $key) {
-// checkboxes are otherwise missing
+// checkboxes are missing otherwise
                 if (!array_has($this->result, $key)) {
-                    array_set($this->result, $key, null);
+                    array_set($this->result, $key, false);
                 }
             }
 
