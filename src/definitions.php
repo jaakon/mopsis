@@ -253,19 +253,19 @@ return [
 
     Stash\Driver\Apc::class
     => object()
-        ->method('setOptions', dot('stash.apc')),
+        ->constructor(dot('stash.apc')),
 
     Stash\Driver\FileSystem::class
     => object()
-        ->method('setOptions', dot('stash.filesystem')),
+        ->constructor(dot('stash.filesystem')),
 
     Stash\Driver\Redis::class
     => object()
-        ->method('setOptions', dot('stash.redis')),
+        ->constructor(dot('stash.redis')),
 
     Stash\Driver\Sqlite::class
     => object()
-        ->method('setOptions', dot('stash.sqlite')),
+        ->constructor(dot('stash.sqlite')),
 
     Twig_Environment::class
     => object()
@@ -382,17 +382,21 @@ return [
     => object(Twig_Environment::class),
 
     StashDriver::class
-    => object(array_filter(
-        [
-            'redis'    => \Stash\Driver\Redis::class,
-            'apc'      => \Stash\Driver\Apc::class,
-            'sqlite3'  => \Stash\Driver\Sqlite::class,
-            'standard' => \Stash\Driver\FileSystem::class
-        ],
-        function ($name) {
-            return extension_loaded($name);
-        },
-        ARRAY_FILTER_USE_KEY)[0]
+    => object(
+        array_shift(
+            array_filter(
+                [
+                    'redis'    => \Stash\Driver\Redis::class,
+                    'apc'      => \Stash\Driver\Apc::class,
+                    'sqlite3'  => \Stash\Driver\Sqlite::class,
+                    'standard' => \Stash\Driver\FileSystem::class
+                ],
+                function ($name) {
+                    return extension_loaded($name);
+                },
+                ARRAY_FILTER_USE_KEY
+            )
+        )
     ),
 
     Translator::class

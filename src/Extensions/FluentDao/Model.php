@@ -582,7 +582,7 @@ abstract class Model implements ModelInterface
     protected function _getCachedAttribute($attribute, callable $callback, $ttl = null)
     {
         return Cache::get([
-            (string) $this,
+            $this,
             $attribute
         ], $callback, $ttl);
     }
