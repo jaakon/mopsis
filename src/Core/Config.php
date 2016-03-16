@@ -25,6 +25,6 @@ class Config extends Repository
         /**
          * @noinspection PhpIncludeInspection
          */
-        $this->set(array_dot(include $configFile));
+        $this->set(arrayDot(include $configFile));
     }
 }

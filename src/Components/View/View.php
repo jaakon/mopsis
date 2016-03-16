@@ -109,7 +109,7 @@ class View
 
     public function assign($data)
     {
-        $this->data = array_merge($this->data, object_to_array($data));
+        $this->data = array_merge($this->data, objectToArray($data));
 
         return $this;
     }

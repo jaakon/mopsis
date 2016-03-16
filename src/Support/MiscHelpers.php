@@ -30,6 +30,13 @@ class MiscHelpers
         return $ladybug->dump(...$args);
     }
 
+    public static function dump(...$args)
+    {
+        if (defined('DEBUGGING')) {
+            return debug(...$args);
+        }
+    }
+
     public static function getStaticPage($code)
     {
         $pages = App::get('static-pages');

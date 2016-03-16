@@ -147,7 +147,7 @@ class Bootstrap extends \Twig_Extension
     protected function getSplitButtonDropdown($text, $url, array $links, array $button, array $attr)
     {
         return TagBuilder::create('div')->attr($attr)->addClass('btn-group btn-group-fixed hidden-print')->html([
-            is_html((string) $url) ? $url : $this->getButton($text, $url, $button, []),
+            isHtml((string) $url) ? $url : $this->getButton($text, $url, $button, []),
             $this->getDropdownButton($button),
             $this->getDropdownList($links)
         ]);
@@ -156,7 +156,7 @@ class Bootstrap extends \Twig_Extension
     protected function prepareLinks($links)
     {
         foreach ($links as &$link) {
-            if (is_html($link)) {
+            if (isHtml($link)) {
                 continue;
             }
 
@@ -165,7 +165,7 @@ class Bootstrap extends \Twig_Extension
             }
         }
 
-        return array_trim($links, function ($item) {
+        return arrayTrim($links, function ($item) {
             return $item !== '--';
         });
     }

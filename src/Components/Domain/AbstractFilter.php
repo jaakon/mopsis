@@ -37,7 +37,7 @@ abstract class AbstractFilter
     public function addRule($field, array $rule, $isRequired = true)
     {
         $filter       = $this->facade->validate($field);
-        $rule['args'] = array_wrap($rule['args']);
+        $rule['args'] = arrayWrap($rule['args']);
 
         if ($rule['spec'] === 'required') {
             $filter->isNotBlank();

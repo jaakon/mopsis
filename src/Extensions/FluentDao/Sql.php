@@ -208,7 +208,7 @@ class Sql
             $defaults[$column['Field']] = $column['Default'];
 
             if ($column['Null'] === 'NO' && ($column['Type'] === 'datetime' || $column['Type'] === 'date') && $column['Default'] == null) {
-                $defaults[$column['Field']] = date('Y-m-d H:i:s');
+                $defaults[$column['Field']] = 'now';
             }
 
             if ($column['Null'] === 'NO' && $column['Extra'] !== 'auto_increment') {

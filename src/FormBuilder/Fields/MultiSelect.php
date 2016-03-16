@@ -20,7 +20,7 @@ class MultiSelect extends Select
 
     public function setValue($value)
     {
-        $values = array_map('strval', array_wrap($value));
+        $values = array_map('strval', arrayWrap($value));
 
         foreach ($this->find('.//option') as $node) {
             $option = FieldFactory::create($node);

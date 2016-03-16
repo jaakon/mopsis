@@ -19,32 +19,32 @@ function app($name = null, array $parameters = null)
     return LaravelHelpers::app($name, $parameters);
 }
 
-function array_concat(array $array, ...$values)
+function arrayConcat(array $array, ...$values)
 {
     return ArrayHelpers::concat($array, ...$values);
 }
 
-function array_diff_values(array $array1, array $array2)
+function arrayDiffValues(array $array1, array $array2)
 {
     return ArrayHelpers::diffValues($array1, $array2);
 }
 
-function array_dot($array, $prepend = '')
+function arrayDot($array, $prepend = '')
 {
     return ArrayHelpers::dot($array, $prepend);
 }
 
-function array_trim(array $array, callable $callback = null)
+function arrayTrim(array $array, callable $callback = null)
 {
     return ArrayHelpers::trim($array, $callback);
 }
 
-function array_value($array, $key)
+function arrayValue($array, $key)
 {
     return ArrayHelpers::value($array, $key);
 }
 
-function array_wrap($data)
+function arrayWrap($data)
 {
     return ArrayHelpers::wrap($data);
 }
@@ -69,6 +69,11 @@ function debug(...$args)
     echo MiscHelpers::debug(...$args);
 }
 
+function dump(...$args)
+{
+    echo MiscHelpers::dump(...$args);
+}
+
 function duration($hours)
 {
     return StringHelpers::duration($hours);
@@ -79,17 +84,17 @@ function env($key, $default = null)
     return LaravelHelpers::env($key, $default);
 }
 
-function closest_match($input, $words)
+function closestMatch($input, $words)
 {
     return StringHelpers::getClosestMatch($input, $words);
 }
 
-function is_html($string)
+function isHtml($string)
 {
     return StringHelpers::isHtml($string);
 }
 
-function is_utf8($string)
+function isUtf8($string)
 {
     return StringHelpers::isUtf8($string);
 }
@@ -104,17 +109,17 @@ function model($className)
     return ClassHelpers::model($className);
 }
 
-function object_merge(stdClass $baseObject, stdClass...$objects)
+function objectMerge(stdClass $baseObject, stdClass...$objects)
 {
     return ObjectHelpers::merge($baseObject, ...$objects);
 }
 
-function object_to_array($object)
+function objectToArray($object)
 {
     return ObjectHelpers::toArray($object);
 }
 
-function location_change($uri, $code = 302, $phrase = null)
+function locationChange($uri, $code = 302, $phrase = null)
 {
     return MiscHelpers::locationChange($uri, $code, $phrase);
 }
@@ -129,17 +134,17 @@ function redirect($uri, $code = 302, $phrase = null)
     return MiscHelpers::redirect($uri, $code, $phrase);
 }
 
-function resolve_path($path)
+function resolvePath($path)
 {
     return PathHelpers::resolve($path);
 }
 
-function static_page($code)
+function staticPage($code)
 {
     return MiscHelpers::getStaticPage($code);
 }
 
-function strip_invalid_chars($string, $charlist = null)
+function stripInvalidChars($string, $charlist = null)
 {
     return StringHelpers::stripInvalidChars($string, $charlist);
 }

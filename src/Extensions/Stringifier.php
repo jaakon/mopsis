@@ -29,7 +29,7 @@ class Stringifier
     {
         $data = [];
 
-        foreach (object_to_array($this->object) as $key => $value) {
+        foreach (objectToArray($this->object) as $key => $value) {
             $data[$key] = $this->$key;
         }
 
@@ -87,7 +87,7 @@ class Stringifier
             case 'object':
                 return $this->castObjectToString($value);
             case 'array':
-                return array_dot($this->castArrayValuesToString($value));
+                return arrayDot($this->castArrayValuesToString($value));
         }
 
         if (is_callable($value)) {

@@ -69,7 +69,7 @@ class TagBuilder
 
     public function html($content)
     {
-        return $this->setInnerHtml(array_wrap($content));
+        return $this->setInnerHtml(arrayWrap($content));
     }
 
     public function toString($renderMode = null)

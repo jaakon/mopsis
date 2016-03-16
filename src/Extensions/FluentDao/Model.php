@@ -40,6 +40,8 @@ abstract class Model implements ModelInterface
         if ($id === null) {
             $this->data = $this->config['defaults'];
 
+            dump($this->data);
+
             return;
         }
 
@@ -307,7 +309,7 @@ abstract class Model implements ModelInterface
 
     public function import($import)
     {
-        $import = object_to_array($import);
+        $import = objectToArray($import);
 
         if (!count($import)) {
             return $this;
@@ -337,8 +339,7 @@ abstract class Model implements ModelInterface
 
             if (static::isJson($this->data[$key])) {
                 foreach (preg_filter('/^' . preg_quote($key, '/') . '\.(.+)$/', '$1', array_keys($import)) as $importKey) {
-                    $this->data[$key]->{$importKey}
-                    = $import[$key . '.' . $importKey];
+                    $this->data[$key]->$importKey = $import[$key . '.' . $importKey];
                     unset($import[$key . '.' . $importKey]);
                 }
 
@@ -358,7 +359,7 @@ abstract class Model implements ModelInterface
 
     public function inject($import)
     {
-        $import           = object_to_array($import);
+        $import           = objectToArray($import);
         $id               = $this->data['id'] ?: $import['id'];
         $this->data['id'] = null;
 
@@ -592,7 +593,7 @@ abstract class Model implements ModelInterface
         $class = get_called_class();
 
         return [
-            'select'  => implode(', ', array_wrap($attribute)),
+            'select'  => implode(', ', arrayWrap($attribute)),
             'from'    => ModelFactory::findTable($class),
             'where'   => $query,
             'orderBy' => $orderBy ?: (new $class())->getSortOrder()
