@@ -180,7 +180,7 @@ class FormBuilder
 
         $dom = \FluentDOM::QueryCss(utf8_decode($html), 'text/html');
 
-        foreach ($dom->find('input,select,textarea')->filter('[name]') as $node) {
+        foreach ($dom->find('input,select,textarea')->filter('[name][name!="csrfToken"]') as $node) {
             $field = FieldFactory::create($node);
             $name  = preg_match('/(.+)\[(.*)\]$/', $field->attr('name'), $m) ? $m[1] : $field->attr('name');
             $value = $values[$name];

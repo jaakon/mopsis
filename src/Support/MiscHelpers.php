@@ -21,6 +21,13 @@ class MiscHelpers
 
     public static function debug(...$args)
     {
+        if (defined('DEBUGGING')) {
+            return dump(...$args);
+        }
+    }
+
+    public static function dump(...$args)
+    {
         $ladybug = new Dumper();
 
         $ladybug->setTheme('modern');
@@ -28,13 +35,6 @@ class MiscHelpers
         $ladybug->setOption('helpers', ['debug']);
 
         return $ladybug->dump(...$args);
-    }
-
-    public static function dump(...$args)
-    {
-        if (defined('DEBUGGING')) {
-            return debug(...$args);
-        }
     }
 
     public static function getStaticPage($code)
