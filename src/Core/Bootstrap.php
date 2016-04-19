@@ -64,7 +64,7 @@ class Bootstrap
         }
 
         if ($response === null) {
-            return $this->buildResponse(502, static_page(502));
+            return $this->buildResponse(502, staticPage(502));
         }
 
         if ($response !== false) {
@@ -73,7 +73,7 @@ class Bootstrap
 
         App::get('Logger')->error('file not found: ' . $_SERVER['REQUEST_METHOD'] . ' ' . $_SERVER['REQUEST_URI'] . ' [' . $_SERVER['HTTP_USER_AGENT'] . ']');
 
-        return $this->buildResponse(404, static_page(404));
+        return $this->buildResponse(404, staticPage(404));
     }
 
     protected function updateCache($flushMode)

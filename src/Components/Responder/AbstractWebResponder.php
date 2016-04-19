@@ -23,7 +23,7 @@ abstract class AbstractWebResponder extends AbstractResponder
 
         $this->response->status->setCode(500);
         $this->response->content->set($exception->getMessage());
-        //        $this->response->content->set(static_page(500));
+        //        $this->response->content->set(staticPage(500));
     }
 
     protected function newEntity()
@@ -34,25 +34,25 @@ abstract class AbstractWebResponder extends AbstractResponder
     protected function notCreated()
     {
         $this->response->status->setCode(503);
-        $this->response->content->set(static_page(503));
+        $this->response->content->set(staticPage(503));
     }
 
     protected function notDeleted()
     {
         $this->response->status->setCode(503);
-        $this->response->content->set(static_page(503));
+        $this->response->content->set(staticPage(503));
     }
 
     protected function notFound()
     {
         $this->response->status->setCode(404);
-        $this->response->content->set(static_page(404));
+        $this->response->content->set(staticPage(404));
     }
 
     protected function notUpdated()
     {
         $this->response->status->setCode(503);
-        $this->response->content->set(static_page(503));
+        $this->response->content->set(staticPage(503));
     }
 
     protected function notValid()
