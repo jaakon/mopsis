@@ -150,6 +150,9 @@ return [
             'conditional' => function () {
                 return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\Conditional::class);
             },
+            'csrfToken'   => function () {
+                return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\CsrfToken::class);
+            },
             'decimal'     => function () {
                 return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\Decimal::class);
             },

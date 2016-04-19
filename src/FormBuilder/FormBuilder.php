@@ -51,7 +51,9 @@ class FormBuilder
     {
         $token = Csrf::generateToken();
 
-        return '<input type="hidden" name="' . $token->key . '" value="' . $token->value . '">';
+        Csrf::addToken($token);
+
+        return '<input type="hidden" name="csrfToken" value="' . $token->key . '/' . $token->value . '">';
     }
 
     protected function addValues(array $data, $prefix, array...$values)

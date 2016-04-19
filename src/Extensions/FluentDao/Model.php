@@ -22,10 +22,8 @@ abstract class Model implements ModelInterface
     public function __call($name, $args)
     {
         if (static::isJson($this->data[$name])) {
-            $this->data[$name]->{$args[0]}
-            = $args[1];
-            $this->{$name}
-            = $this->data[$name]; // triggers saving
+            $this->data[$name]->{$args[0]} = $args[1];
+            $this->$name = $this->data[$name]; // triggers saving
 
             return $this;
         }
@@ -39,9 +37,6 @@ abstract class Model implements ModelInterface
 
         if ($id === null) {
             $this->data = $this->config['defaults'];
-
-            dump($this->data);
-
             return;
         }
 

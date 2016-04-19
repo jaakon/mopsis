@@ -7,10 +7,25 @@ class TypeFactory
 {
     public static function cast($value, $type)
     {
-        if ($value === null && $type !== 'json') {
-            return $value;
+        if ($value === null) {
+            return self::castNullToType($type);
         }
 
+        return self::castValueToType($value, $type);
+    }
+
+    protected static function castNullToType($type)
+    {
+        switch ($type) {
+            case 'json':
+                return self::create('\Mopsis\Extensions\Json');
+        }
+
+        return null;
+    }
+
+    protected static function castValueToType($value, $type)
+    {
         switch ($type) {
             case 'string':
                 return (string) $value;
@@ -45,7 +60,7 @@ class TypeFactory
         return $value;
     }
 
-    public static function create($type, $value)
+    public static function create($type, $value = null)
     {
         return $value instanceof $type ? $value : new $type($value);
     }

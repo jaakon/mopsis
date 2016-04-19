@@ -1,6 +1,0 @@
-@echo off
-
-for /F %%f in ('dir /b /s src\*.php') do (
-    @echo %%f;
-    @fmt.phar.bat --psr --passes=AddMissingParentheses,AliasToMaster,AlignConstVisibilityEquals,AlignDoubleArrow,AlignDoubleSlashComments,AlignEquals,AlignGroupDoubleArrow,AlignPHPCode,AlignTypehint,AutoSemicolon,ClassToSelf,ClassToStatic,ConvertOpenTagWithEcho,DoubleToSingleQuote,IndentTernaryConditions,MergeElseIf,MergeNamespaceWithOpenTag,NewLineBeforeReturn,NoSpaceAfterPHPDocBlocks,OrderAndRemoveUseClauses,OrganizeClass,PHPDocTypesToFunctionTypehint,PrettyPrintDocBlocks,PSR2EmptyFunction,ReindentAndAlignObjOps,ReindentSwitchBlocks,RemoveIncludeParentheses,RemoveSemicolonAfterCurly,RemoveUseLeadingSlash,ReplaceBooleanAndOr,ReplaceIsNull,RestoreComments,ReturnNull,ShortArray,SmartLnAfterCurlyOpen,SpaceAroundControlStructures,SpaceBetweenMethods,StripExtraCommaInArray,StripNewlineAfterClassOpen,StripNewlineAfterCurlyOpen,StripSpaceWithinControlStructures,TrimSpaceBeforeSemicolon,UpgradeToPreg,WrongConstructorName %%f
-)
