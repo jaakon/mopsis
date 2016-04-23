@@ -231,9 +231,16 @@ return [
         $whoops = new Whoops\Run();
 
         $whoops->pushHandler($c->get(Whoops\Handler\PrettyPageHandler::class));
-        $whoops->pushHandler($c->get(Whoops\Handler\PlainTextHandler::class));
-        $whoops->pushHandler($c->get(Whoops\Handler\JsonResponseHandler::class));
-        $whoops->pushHandler(function ($exception, $inspector, $run) use ($c) {
+
+        if (Whoops\Util\Misc::isCommandLine()) {
+            $whoops->pushHandler($c->get(Whoops\Handler\PlainTextHandler::class));
+        }
+
+        if (Whoops\Util\Misc::isAjaxRequest()) {
+            $whoops->pushHandler($c->get(Whoops\Handler\JsonResponseHandler::class));
+        }
+
+        $whoops->pushHandler(function (Exception $exception) use ($c) {
             $c->get(Logger::class)->error($exception->getMessage());
         });
 

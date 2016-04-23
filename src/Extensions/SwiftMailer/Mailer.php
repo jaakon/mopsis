@@ -1,4 +1,5 @@
-<?php namespace Mopsis\Extensions\SwiftMailer;
+<?php
+namespace Mopsis\Extensions\SwiftMailer;
 
 use Swift_Image;
 use Swift_Mailer;
@@ -9,63 +10,66 @@ use Swift_SmtpTransport;
 
 class Mailer extends Swift_Mailer
 {
-	public function __construct()
-	{
-		$transport = Swift_MailTransport::newInstance();
+    public function __construct()
+    {
+        $transport = Swift_MailTransport::newInstance();
 
-		if (defined('MAIL_SERVER') && defined('MAIL_PORT')) {
-			$transport = Swift_SmtpTransport::newInstance(MAIL_SERVER, MAIL_PORT, MAIL_ENCRYPTION);
+        if (defined('MAIL_SERVER') && defined('MAIL_PORT')) {
+            $transport = Swift_SmtpTransport::newInstance(MAIL_SERVER, MAIL_PORT, MAIL_ENCRYPTION);
 
-			if (defined('MAIL_USERNAME') && defined('MAIL_PASSWORD')) {
-				$transport->setUsername(MAIL_USERNAME)->setPassword(MAIL_PASSWORD);
-			}
-		}
+            if (defined('MAIL_USERNAME') && defined('MAIL_PASSWORD')) {
+                $transport->setUsername(MAIL_USERNAME)->setPassword(MAIL_PASSWORD);
+            }
+        }
 
-		parent::__construct($transport);
-	}
+        parent::__construct($transport);
 
-	public static function quickSend($recipient, $subject, $textBody = null, $htmlBody = null, $embedImages = false)
-	{
-		$mailer  = new static;
-		$message = static::newMessage()->setTo($recipient)->setSubject($subject);
+        $logger = new Swift_Plugins_Loggers_ArrayLogger();
+        $this->registerPlugin(new Swift_Plugins_LoggerPlugin($logger));
+    }
 
-		if ($htmlBody !== null) {
-			if ($embedImages && preg_match_all('/<img [^>]*src="((http:\/\/.+?\/)?([^"]+?))"/i', $htmlBody, $matches, PREG_SET_ORDER)) {
-				foreach ($matches as $m) {
-					$htmlBody = str_replace($m[1], $message->embed(Swift_Image::fromPath('public/' . $m[3])), $htmlBody);
-				}
-			}
+    public static function encodeName($name)
+    {
+        return '=?UTF-8?B?' . base64_encode($name) . '?=';
+    }
 
-			$message->setBody($htmlBody, 'text/html');
-		}
+    public static function newMessage()
+    {
+        $message = Swift_Message::newInstance()->setFrom([MAIL_FROM => MAIL_FROMNAME]);
 
-		$message->addPart($textBody ?: 'This email is only available as HTML version', 'text/plain');
+        if (defined('MAIL_REPLYTO')) {
+            $message->setReplyTo(MAIL_REPLYTO);
+        }
 
-		return $mailer->send($message);
-	}
+        return $message;
+    }
 
-	public static function newMessage()
-	{
-		$message = Swift_Message::newInstance()->setFrom([MAIL_FROM => MAIL_FROMNAME]);
+    public static function quickSend($recipient, $subject, $textBody = null, $htmlBody = null, $embedImages = false)
+    {
+        $mailer  = new static();
+        $message = static::newMessage()->setTo($recipient)->setSubject($subject);
 
-		if (defined('MAIL_REPLYTO')) {
-			$message->setReplyTo(MAIL_REPLYTO);
-		}
+        if ($htmlBody !== null) {
+            if ($embedImages && preg_match_all('/<img [^>]*src="((http:\/\/.+?\/)?([^"]+?))"/i', $htmlBody, $matches, PREG_SET_ORDER)) {
+                foreach ($matches as $m) {
+                    $htmlBody = str_replace($m[1], $message->embed(Swift_Image::fromPath('public/' . $m[3])), $htmlBody);
+                }
+            }
 
-		return $message;
-	}
+            $message->setBody($htmlBody, 'text/html');
+        }
 
-	public static function encodeName($name)
-	{
-		return '=?UTF-8?B?' . base64_encode($name) . '?=';
-	}
+        $message->addPart($textBody ?: 'This email is only available as HTML version', 'text/plain');
 
-	public function send(Swift_Mime_Message $message, &$failedRecipients = null)
-	{
-		if (defined('MAIL_SUBJECT')) {
-			$message->setSubject(MAIL_SUBJECT . $message->getSubject());
-		}
+        return $mailer->send($message);
+    }
 
-		return parent::send($message, $failedRecipients);
-	}
+    public function send(Swift_Mime_Message $message, &$failedRecipients = null)
+    {
+        if (defined('MAIL_SUBJECT')) {
+            $message->setSubject(MAIL_SUBJECT . $message->getSubject());
+        }
+
+        return parent::send($message, $failedRecipients);
+    }
 }
