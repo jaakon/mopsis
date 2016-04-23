@@ -1,111 +1,96 @@
-<?php
-namespace Mopsis\Extensions;
-
-use DateTime;
-use Exception;
+<?php namespace Mopsis\Extensions;
 
 class Stringifier
 {
-    public function __construct($object)
-    {
-        $this->object = $object;
-    }
+	protected $object;
 
-    public function __get($key)
-    {
-        if ($this->objectHasAsStringMutator($key)) {
-            return $this->objectGetAsStringMutator($key);
-        }
+	public function __construct($object)
+	{
+		$this->object = $object;
+	}
 
-        return $this->castValueToString($this->object->$key);
-    }
+	public function __get($key)
+	{
+		return $this->stringify($this->getValue($key));
+	}
 
-    public function __isset($key)
-    {
-        return true; // for Twig
-    }
+	public function __isset($key)
+	{
+		return true; // for Twig
+	}
 
-    public function toArray()
-    {
-        $data = [];
+	public function toArray()
+	{
+		$data = method_exists($this->object, 'toArray') ? $this->object->toArray() : get_object_vars($this->object);
 
-        foreach (objectToArray($this->object) as $key => $value) {
-            $data[$key] = $this->$key;
-        }
+		return $this->stringifyArray($data);
+	}
 
-        return $this->castArrayValuesToString($data);
-    }
+	protected function getValue($key)
+	{
+		if ($this->objectHasAsStringMutator($key)) {
+			return $this->objectGetAsStringMutator($key);
+		}
 
-    protected function castArrayValuesToString(array $array)
-    {
-        foreach ($array as $key => $value) {
-            $array[$key] = is_array($value) ? $this->castArrayValuesToString($value) : $this->castValueToString($value);
-        }
+		return $this->object->$key;
+	}
 
-        return $array;
-    }
+	protected function objectGetAsStringMutator($key)
+	{
+		return $this->object->{'get' . studly_case($key) . 'AsStringAttribute'}();
+	}
 
-    protected function castFloatToString($float)
-    {
-        $locale = localeconv();
+	protected function objectHasAsStringMutator($key)
+	{
+		return method_exists($this->object, 'get' . studly_case($key) . 'AsStringAttribute');
+	}
 
-        return preg_replace('/(?:(,\d*[1-9])|,)0+$/', '$1', number_format( // trim tailing zeros
-            $float, $locale['frac_digits'], $locale['decimal_point'], $locale['thousands_sep']));
-    }
+	protected function objectToString($object)
+	{
+		switch (get_class($object)) {
+			case 'Carbon\Carbon':
+				return $object->format(DATETIME_DE_SHORT);
+			default:
+				return get_class($object); //(string) $object;
+		}
+	}
 
-    protected function castObjectToString($object)
-    {
-        if ($object instanceof DateTime) {
-            return $object->format(config('stringify.datetime'));
-        }
+	protected function stringify($value)
+	{
+		if ($value === null) {
+			return '';
+		}
 
-        if ($object instanceof Json) {
-            return $object->toArray();
-        }
+		if (is_scalar($value)) {
+			return $value === false ? '0' : (string)$value;
+		}
 
-        if (method_exists($object, '__toString')) {
-            return (string) $object;
-        }
+		if (is_object($value)) {
+			return $this->objectToString($value);
+		}
 
-        throw new Exception('cannot cast instance of ' . get_class($object) . ' to string');
-    }
+		if (is_array($value)) {
+			return json_encode($value);
+		}
 
-    protected function castValueToString($value)
-    {
-        switch (gettype($value)) {
-            case 'NULL':
-                return '';
-            case 'string':
-                return $value;
-            case 'boolean':
-                return $value ? 1 : 0;
-            case 'integer':
-                return (string) $value;
-            case 'double':
-            case 'float':
-                return $this->castFloatToString($value);
-            case 'object':
-                return $this->castObjectToString($value);
-            case 'array':
-                return arrayDot($this->castArrayValuesToString($value));
-        }
+		if (is_callable($value)) {
+			return $this->stringify($value());
+		}
 
-        if (is_callable($value)) {
-            return $this->castValueToString($value());
-        }
+		throw new \Exception('cannot stringify value of type "' . gettype($value) . '"');
+	}
 
-        throw new \Exception('cannot cast value of type "' . gettype($value) . '" to string');
-    }
+	protected function stringifyArray(array $data)
+	{
+		foreach ($data as $key => $value) {
+			if (is_array($value)) {
+				$data[$key] = $this->stringifyArray($value);
+				continue;
+			}
 
-    protected function objectGetAsStringMutator($key)
-    {
-        return $this->object->{'get' . studly_case($key) . 'AsString'}
+			$data[$key] = $this->stringify($this->getValue($key) ?: $value);
+		}
 
-        ();
-    }
-
-    protected function objectHasAsStringMutator($key)
-    {
-        return method_exists($this->object, 'get' . studly_case($key) . 'AsString');
-    }
+		return $data;
+	}
 }

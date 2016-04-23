@@ -1,12 +1,9 @@
-<?php
-namespace Mopsis\FormBuilder\Fields;
+<?php namespace Mopsis\FormBuilder\Fields;
 
 class Checkbox extends AbstractField
 {
-    public function setValue($value)
-    {
-        $values = array_map('strval', arrayWrap($value));
-
-        $this->prop('checked', in_array($this->val(), $values));
-    }
+	public function setValue($value)
+	{
+		$this->prop('checked', is_array($value) ? in_array($this->val(), $value) : !!$value);
+	}
 }

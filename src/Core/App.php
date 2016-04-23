@@ -1,95 +1,91 @@
 <?php
-namespace Mopsis\Core;
 
-use DI\Container;
+namespace Mopsis\Core {
 
-/**
- * @method static make($name, array $parameters = [])
- */
-class App
-{
-    protected static $container;
+	use Interop\Container\ContainerInterface as ContainerInterface;
 
-    public static function __callStatic($method, $args)
-    {
-        return static::getInstance()->$method(...$args);
-    }
+	class App
+	{
+		private static $container;
 
-    public static function build($type, $name)
-    {
-        $class = static::getFullyQualifiedName($type, $name);
+		public static function initialize(ContainerInterface $container)
+		{
+			static::$container = $container;
+		}
 
-        if (!static::getInstance()->has($class)) {
-            throw new \DomainException('class "' . $class . '" for type "' . $type . '" not found');
-        }
+		public static function build($type, $entity)
+		{
+			$format = static::make('classFormats')[$type];
 
-        return $class;
-    }
+			if ($format === null) {
+				throw new \UnexpectedValueException('invalid type "' . $type . '" for entity "' . $entity . '"');
+			}
 
-    public static function create($type, $name, array $parameters = [])
-    {
-        return static::getInstance()->make(static::build($type, $name), $parameters);
-    }
+			list($module, $domain, $subtype) = explode('\\', $entity);
 
-    public static function get(...$args)
-    {
-        return static::getInstance()->get(...$args);
-    }
+			$replacements = array_filter([
+				'{{MODULE}}'  => $module,
+				'{{DOMAIN}}'  => $domain,
+				'{{SUBTYPE}}' => $subtype
+			]);
 
-    public static function getFullyQualifiedName($type, $name)
-    {
-        $format = static::getInstance()->get('classFormats')[$type];
+			$class = str_replace(array_keys($replacements), array_values($replacements), $format);
 
-        if ($format === null) {
-            throw new \UnexpectedValueException('unknown type "' . $type . '" for entity "' . $name . '"');
-        }
+			if (preg_match('/\{\{(\w+)\}\}/', $class, $m)) {
+				throw new \InvalidArgumentException('value for placeholder "' . $m[1] . '" for type "' . $type . '" is missing');
+			}
 
-        list($module, $domain, $subtype) = explode('\\', $name);
+			if (!static::has($class)) {
+				throw new \DomainException('class "' . $class . '" for type "' . $type . '" not found');
+			}
 
-        $replacements = array_filter([
-            '{{MODULE}}'  => $module,
-            '{{DOMAIN}}'  => $domain,
-            '{{SUBTYPE}}' => $subtype
-        ]);
+			return $class;
+		}
 
-        $class = str_replace(array_keys($replacements), array_values($replacements), $format);
+		public static function create($type, $entity, array $parameters = null)
+		{
+			return static::make(static::build($type, $entity), $parameters);
+		}
 
-        if (preg_match('/\{\{(\w+)\}\}/', $class, $m)) {
-            throw new \InvalidArgumentException('value for placeholder "' . $m[1] . '" for type "' . $type . '" is missing');
-        }
+		public static function make($entity, array $parameters = null)
+		{
+			switch ($entity) {
+				case 'db':
+					return static::$container->get(Database::class)->getConnection();
+				default:
+					return is_array($parameters) ? static::$container->make($entity, $parameters) : static::$container->get($entity);
+			}
+		}
 
-        return $class;
-    }
+		public static function set($entity, $value)
+		{
+			static::$container->set($entity, $value);
+		}
+	}
+}
 
-    public static function getInstance(): Container
-    {
-        return static::$container;
-    }
+namespace {
 
-    public static function has(...$args)
-    {
-        return static::getInstance()->has(...$args);
-    }
+	class App
+	{
+		public static function build($type, $entity)
+		{
+			return \Mopsis\Core\App::build($type, $entity);
+		}
 
-    public static function identify($class)
-    {
-        if (is_object($class)) {
-            $class = get_class($class);
-        }
+		public static function create($type, $entity, array $parameters = null)
+		{
+			return \Mopsis\Core\App::create($type, $entity, $parameters);
+		}
 
-        foreach (static::getInstance()->get('classFormats') as $format) {
-            $format = preg_replace('/\{\{[A-Z]+\}\}/', '((?:[A-Z][a-z]+)+)', str_replace('\\', '\\\\', $format));
+		public static function make($entity, array $parameters = null)
+		{
+			return \Mopsis\Core\App::make($entity, $parameters);
+		}
 
-            if (preg_match('/' . $format . '/', $class, $m)) {
-                return array_slice($m, 1);
-            }
-        }
-
-        throw new \DomainException('called class "' . $class . '" cannot be identified');
-    }
-
-    public static function initialize(Container $container)
-    {
-        static::$container = $container;
-    }
+		public static function set($entity, $value)
+		{
+			\Mopsis\Core\App::set($entity, $value);
+		}
+	}
 }

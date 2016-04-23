@@ -1,59 +1,47 @@
 <?php
 namespace Mopsis\Extensions\Eloquent;
 
-use Cviebrock\EloquentSluggable\SluggableInterface;
-use Mopsis\Contracts\Loggable;
-use Mopsis\Contracts\Traceable;
-
 class ModelObserver
 {
-//    public function restoring(Model $model)
+	public function saving($model)
+	{
+		if ($model instanceof \Cviebrock\EloquentSluggable\SluggableInterface) {
+			$model->sluggify();
+		}
+	}
 
-//    public function restored(Model $model)
+	public function creating($model)
+	{
+		if ($model instanceof \Mopsis\Contracts\Traceable) {
+			$model->setCreatingUser();
+		}
+	}
 
-    public function created(Model $model)
-    {
-        if ($model instanceof Loggable) {
-            $model->logChanges(class_basename($model) . '.created');
-        }
-    }
+	public function created($model)
+	{
+		if ($model instanceof \Mopsis\Contracts\Loggable) {
+			$model->logChanges(getClassName($model) . '.created');
+		}
+	}
 
-    public function creating(Model $model)
-    {
-        if ($model instanceof Traceable) {
-            $model->setCreatingUser();
-        }
-    }
+	public function updating($model)
+	{
+		if ($model instanceof \Mopsis\Contracts\Traceable) {
+			$model->setUpdatingUser();
+		}
+	}
 
-//    public function saved(Model $model)
+	public function updated($model)
+	{
+		if ($model instanceof \Mopsis\Contracts\Loggable) {
+			$model->logChanges(getClassName($model) . '.updated');
+		}
+	}
 
-//    public function deleting(Model $model)
-
-    public function deleted(Model $model)
-    {
-        if ($model instanceof Loggable) {
-            $model->logChanges(class_basename($model) . '.deleted');
-        }
-    }
-
-    public function saving(Model $model)
-    {
-        if ($model instanceof SluggableInterface) {
-            $model->sluggify();
-        }
-    }
-
-    public function updated(Model $model)
-    {
-        if ($model instanceof Loggable) {
-            $model->logChanges(class_basename($model) . '.updated');
-        }
-    }
-
-    public function updating(Model $model)
-    {
-        if ($model instanceof Traceable) {
-            $model->setUpdatingUser();
-        }
-    }
+	public function deleted($model)
+	{
+		if ($model instanceof \Mopsis\Contracts\Loggable) {
+			$model->logChanges(getClassName($model) . '.deleted');
+		}
+	}
 }

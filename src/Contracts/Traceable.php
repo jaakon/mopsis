@@ -1,15 +1,55 @@
-<?php
-namespace Mopsis\Contracts;
+<?php namespace Mopsis\Contracts;
 
 interface Traceable
 {
-    public function getEvents($depth = 0);
+	public function getEvents($depth = 0);
+	public function setCreatedBy($value);
+	public function setCreatingUser();
+	public function setUpdatedBy($value);
+	public function setUpdatingUser();
+}
 
-    public function setCreatedBy($value);
+trait TraceableTrait
+{
+	public function getEvents($depth = 0)
+	{
+		if ($depth > 0)
+			throw new \BadMethodCallException("not implemented");
 
-    public function setCreatingUser();
+		return $this->events;
+	}
 
-    public function setUpdatedBy($value);
+	/** @Override */
+	public function setCreatedAt($value)
+	{
+		parent::setCreatedAt($value);
+		$this->setCreatingUser();
+	}
 
-    public function setUpdatingUser();
+	public function setCreatedBy($value)
+	{
+		$this->{static::CREATED_BY} = $value;
+	}
+
+	public function setCreatingUser()
+	{
+		$this->setCreatedBy(\Mopsis\Core\Auth::user()->getKey());
+	}
+
+	/** @Override */
+	public function setUpdatedAt($value)
+	{
+		parent::setUpdatedAt($value);
+		$this->setUpdatingUser();
+	}
+
+	public function setUpdatedBy($value)
+	{
+		$this->{static::UPDATED_BY} = $value;
+	}
+
+	public function setUpdatingUser()
+	{
+		$this->setUpdatedBy(\Mopsis\Core\Auth::user()->getKey());
+	}
 }

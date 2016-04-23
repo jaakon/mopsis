@@ -1,205 +1,143 @@
-<?php
-namespace Mopsis\Components\View;
+<?php namespace Mopsis\Components\View;
 
-use Aura\Web\Request;
-use Mopsis\Components\Domain\AbstractFilter as Filter;
-use Mopsis\Core\App;
-use Mopsis\Extensions\Twig\TwigException;
 use Twig_Environment as Renderer;
-use Twig_Error_Runtime;
 
 class View
 {
-    protected $renderer;
+	protected $renderer;
 
-    protected $request;
+	private $template;
+	private $data       = [];
+	private $forms      = [];
+	private $extensions = [];
+	private $functions  = [];
+	private $filters    = [];
 
-    private $data = [];
+	public function __construct(Renderer $renderer, array $extensions = [])
+	{
+		$this->renderer   = $renderer;
+		$this->extensions = $extensions;
+	}
 
-    private $extensions = [];
+	public function __invoke()
+	{
+		foreach ($this->extensions as $extension) {
+			$this->renderer->addExtension($extension);
+		}
 
-    private $filters = [];
+		foreach ($this->filters as $filter) {
+			$this->renderer->addFilter($filter);
+		}
 
-    private $forms = [];
+		foreach ($this->functions as $function) {
+			$this->renderer->addFunction($function);
+		}
 
-    private $functions = [];
+		$this->extensions = [];
+		$this->filters    = [];
+		$this->functions  = [];
 
-    private $template;
+		if ($this->renderer->hasExtension('formbuilder')) {
+			$this->renderer->getExtension('formbuilder')->setOptions(['forms' => $this->forms]);
+		}
 
-    public function __construct(Renderer $renderer, Request $request, array $extensions = [])
-    {
-        $this->renderer   = $renderer;
-        $this->request    = $request;
-        $this->extensions = $extensions;
-    }
+		return $this->renderer->render($this->template, $this->data);
+	}
 
-    public function __invoke()
-    {
-        foreach ($this->extensions as $extension) {
-            $this->renderer->addExtension($extension);
-        }
+	public function addExtension($extension)
+	{
+		$this->extensions[] = $extension;
 
-        foreach ($this->filters as $filter) {
-            $this->renderer->addFilter($filter);
-        }
+		return $this;
+	}
 
-        foreach ($this->functions as $function) {
-            $this->renderer->addFunction($function);
-        }
+	public function addFilter($name, $filter = null)
+	{
+		$this->filters[] = new \Twig_SimpleFilter($name, $filter ?: $name, ['is_safe' => ['html']]);
 
-        $this->extensions = [];
-        $this->filters    = [];
-        $this->functions  = [];
+		return $this;
+	}
 
-        if ($this->renderer->hasExtension('formbuilder')) {
-            $this->renderer->getExtension('formbuilder')->setConfigurations($this->forms);
-        }
+	public function addFunction($name, $function = null)
+	{
+		$this->functions[] = new \Twig_SimpleFunction($name, $function ?: $name, ['is_safe' => ['html']]);
 
-        try {
-            return trim($this->renderer->render($this->template, $this->data));
-        } catch (Twig_Error_Runtime $exception) {
-            if (!preg_match('/(.+?) in "(.+?)" at line (\d+)/', $exception->getMessage(), $m)) {
-                throw $exception;
-            }
+		return $this;
+	}
 
-            $message  = $m[1];
-            $template = $m[2];
-            $line     = $m[3];
+	public function assign($data)
+	{
+		$this->data = array_merge($this->data, object2array($data));
 
-            if (preg_match('/An exception has been thrown during the rendering of a template \("(.+?)"\)/', $message, $m)) {
-                $message = $m[1];
-            }
+		return $this;
+	}
 
-            $twigException = new TwigException(ucfirst($message) . '.', $exception->getCode(), $exception);
+	public function clearCache()
+	{
+		$this->renderer->clearCacheFiles();
 
-            foreach (App::get('app')['views'] as $path) {
-                $file = APPLICATION_PATH . '/' . $path . '/' . $template;
+		return $this;
+	}
 
-                if (file_exists($file)) {
-                    $twigException->setFile($file);
-                    $twigException->setLine($line);
-                    break;
-                }
-            }
+	public function prefillForm($formId, \Mopsis\Validation\ValidationFacade $facade)
+	{
+		$this->initializeForm($formId);
 
-            throw $twigException;
-        }
-    }
+		if ($facade->isValid()) {
+			return $this;
+		}
 
-    public function addExtension($extension)
-    {
-        $this->extensions[] = $extension;
+		$this
+			->setFormValues($formId, $facade->getRawRequest()->toArray())
+			->setFormErrors($formId, $facade->getInvalidFields())
+			->assign(['errors' => $facade->getErrors()]);
 
-        return $this;
-    }
+		return $this;
+	}
 
-    public function addFilter($name, $filter = null)
-    {
-        $this->filters[] = new \Twig_SimpleFilter($name, $filter ?: $name, ['is_safe' => ['html']]);
+	public function setFormErrors($formId, ...$data)
+	{
+		$this->initializeForm($formId);
+		$this->forms[$formId]['errors'] = array_merge($this->forms[$formId]['errors'], ...$data);
 
-        return $this;
-    }
+		return $this;
+	}
 
-    public function addFunction($name, $function = null)
-    {
-        $this->functions[] = new \Twig_SimpleFunction($name, $function ?: $name, ['is_safe' => ['html']]);
+	public function setFormOptions($formId, ...$data)
+	{
+		$this->initializeForm($formId);
+		$this->forms[$formId]['options'] = array_merge($this->forms[$formId]['options'], ...$data);
 
-        return $this;
-    }
+		return $this;
+	}
 
-    public function assign($data)
-    {
-        $this->data = array_merge($this->data, objectToArray($data));
+	public function setFormValues($formId, ...$data)
+	{
+		$this->initializeForm($formId);
+		$this->forms[$formId]['values'] = array_merge($this->forms[$formId]['values'], ...$data);
 
-        return $this;
-    }
+		return $this;
+	}
 
-    public function clearCache()
-    {
-        $cachePath = rtrim(App::get('twig.config')['cache'], DIRECTORY_SEPARATOR);
+	public function setTemplate($template)
+	{
+		$this->template = preg_replace('/^App\\\/', '', $template);
 
-        if (!$cachePath) {
-            return $this;
-        }
+		if (!pathinfo($this->template, PATHINFO_EXTENSION)) {
+			$this->template .= '.twig';
+		}
 
-        /**
-         * @var \League\Flysystem\Filesystem $filesystem
-         */
-        $filesystem = App::make('Filesystem');
+		return $this;
+	}
 
-        $filesystem->getAdapter()->setPathPrefix(dirname($cachePath));
-        $filesystem->deleteDir(basename($cachePath));
+	private function initializeForm($formId)
+	{
+		if (empty($formId)) {
+			throw new \Exception('form id must not be empty');
+		}
 
-        return $this;
-    }
-
-    public function prefillForm($formId, Filter $filter)
-    {
-        $messages = $filter->getMessages();
-
-        $this->setFormValues($formId, $this->request->post->get())->setFormErrors($formId, array_keys($messages))->assign(['errors' => array_flatten($messages)]);
-
-        return $this;
-    }
-
-    public function setFormErrors($formId, ...$data)
-    {
-        $this->setFormData('errors', $formId, $data);
-
-        return $this;
-    }
-
-    public function setFormOptions($formId, ...$data)
-    {
-        $this->setFormData('options', $formId, $data);
-
-        return $this;
-    }
-
-    public function setFormSettings($formId, ...$data)
-    {
-        $this->setFormData('settings', $formId, $data);
-
-        return $this;
-    }
-
-    public function setFormValues($formId, ...$data)
-    {
-        $this->setFormData('values', $formId, $data);
-
-        return $this;
-    }
-
-    public function setTemplate($template)
-    {
-        $this->template = $template;
-
-        if (!pathinfo($this->template, PATHINFO_EXTENSION)) {
-            $this->template .= '.twig';
-        }
-
-        return $this;
-    }
-
-    protected function initializeForm($formId)
-    {
-        if (empty($formId)) {
-            throw new \Exception('formId must not be empty');
-        }
-
-        if (!isset($this->forms[$formId])) {
-            $this->forms[$formId] = [
-                'errors'   => [],
-                'options'  => [],
-                'settings' => [],
-                'values'   => []
-            ];
-        }
-    }
-
-    protected function setFormData($key, $formId, array $data)
-    {
-        $this->initializeForm($formId);
-        $this->forms[$formId][$key] = array_merge($this->forms[$formId][$key], ...$data);
-    }
+		if (!isset($this->forms[$formId])) {
+			$this->forms[$formId] = ['values' => [], 'options' => [], 'errors' => []];
+		}
+	}
 }

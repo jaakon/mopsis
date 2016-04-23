@@ -1,9 +1,14 @@
-<?php
-namespace Mopsis\Contracts;
+<?php namespace Mopsis\Contracts;
 
-/**
- * @property Hierarchical $ancestor
- */
 interface Hierarchical
 {
+	public function getAncestorAttribute();
+}
+
+trait HierarchicalTrait
+{
+	public function getAncestorAttribute()
+	{
+		return isset($this->ancestor) ? $this->{$this->ancestor} : false;
+	}
 }

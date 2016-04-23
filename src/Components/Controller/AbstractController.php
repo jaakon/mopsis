@@ -1,99 +1,112 @@
-<?php
-namespace Mopsis\Components\Controller;
+<?php namespace Mopsis\Components\Controller;
 
-use Aura\Web\Request;
-use Aura\Web\Response;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Mopsis\Components\View\View;
-use Mopsis\Core\App;
-use Mopsis\Core\Auth;
+use Mopsis\Core\User;
+use Mopsis\Core\Registry;
+use Mopsis\FormBuilder\FormBuilder;
+use Mopsis\Validation\ValidationFacade as Facade;
 
 abstract class AbstractController
 {
-    protected $filter;
+	protected $view;
+	protected $facade;
 
-    protected $loginMandatory;
+	public function __construct(View $view, Facade $facade)
+	{
+		$this->view   = $view;
+		$this->facade = $facade;
+	}
 
-    protected $request;
+	public function __invoke($class)
+	{
+		return \App::make('\\App\\Controllers\\' . $class);
+	}
 
-    protected $view;
+	public function callMethod($method, array $funcArgs = [])
+	{
+		$this->checkAccess();
+		$this->loadValidations($method);
+		$this->setTemplate($method);
 
-    public function __call($method, $funcArgs)
-    {
-        $this->setTemplate($method);
+		try {
+			return $this->{$method}(...$funcArgs) ?: $this->view;
+		} catch (ModelNotFoundException $e) {
+			return 'The session token is no longer valid.';
+		}
+	}
 
-        if (!method_exists($this, $method)) {
-            throw new \Exception('invalid method "' . $method . '" for class "' . get_called_class() . '"');
-        }
+	protected function setTemplate($page)
+	{
+		$this->view->setTemplate($this->getRoute($page));
+	}
 
-        try {
-            $result = $this->$method(...$funcArgs) ?: 200;
-        } catch (ModelNotFoundException $e) {
-            return 'The session token is no longer valid.';
-        }
+	private function addValidation($field, $rule, $message)
+	{
+		if (preg_match('/(\w+):(.+)/', $rule, $m)) {
+			$validator = $this->facade->addRule($field, $m[1], preg_match('/^`(.+)`$/', $m[2], $n) ? eval('return '.$n[1].';') : $m[2]);
+		} else {
+			$validator = $this->facade->addRule($field, $rule);
+		}
 
-        if ($result instanceof Response) {
-            return $result;
-        }
+		if ($message) {
+			$validator->withMessage(preg_match('/^__(.+)/', $message, $m) ? __($m[1]) : $message);
+		}
+	}
 
-        $response = App::get('Aura\Web\Response');
+	protected function checkAccess()
+	{
+		if (CORE_LOGIN_MANDATORY && CORE_LOGIN_PAGE && CORE_LOGIN_PAGE !== $_SERVER['SCRIPT_URL'] && !\Mopsis\Core\Auth::user()->exists) {
+			if (defined('static::ACCESS') && static::ACCESS === 'PUBLIC') {
+				return true;
+			}
 
-        switch (gettype($result)) {
-            case 'integer':
-                $response->status->setCode($result);
-                $response->content->set($this->view->__invoke());
-                break;
-            case 'array':
-                $response->status->setCode($result[0]);
-                $response->content->set($result[1]);
-                break;
-            default:
-                throw new \Exception('invalid return type "' . gettype($result) . '"');
-        }
+			if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+				redirect(CORE_LOGIN_PAGE);
+			}
 
-        return $response;
-    }
+			redirect(CORE_LOGIN_PAGE.(strpos(CORE_LOGIN_PAGE, '?') !== false ? '&' : '?').'redirect='.urlencode($_SERVER['REQUEST_URI']));
+		}
+	}
 
-    public function __construct(Request $request, Filter $filter, View $view)
-    {
-        $this->request = $request;
-        $this->filter  = $filter;
-        $this->view    = $view;
+	private function getRoute($page)
+	{
+		return resolve_path(getClassName(get_called_class()).'/'.$page);
+	}
 
-        $this->init();
-    }
+	private function loadValidations($method)
+	{
+		if (!defined('CORE_FORMS') || !file_exists(CORE_FORMS)) {
+			return;
+		}
 
-    public function init()
-    {
-        $this->checkAccess();
-    }
+		$route = getClassName(get_called_class()).'.'.$method;
 
-    protected function checkAccess()
-    {
-        $loginMandatory = is_bool($this->loginMandatory) ? $this->loginMandatory : config('app.login.mandatory');
+		if (!Registry::has('forms/'.$route)) {
+			return;
+		}
 
-        if (!$loginMandatory || Auth::check()) {
-            return true;
-        }
+		$this->facade->addRule('csrf', 'error', !isset($_SESSION['csrf']) || $_POST[$_SESSION['csrf']['key']] !== $_SESSION['csrf']['value'])->withMessage('Ungültiges oder abgelaufenes Sicherheitstoken. Bitte Formular erneut versenden.');
 
-        $loginPage = config('app.login.page');
+		foreach ((new FormBuilder())->getRules(Registry::get('forms/'.$route)) as $field => $validations) {
+			if (!count($validations)) {
+				$this->addValidation($field, null, null);
+				continue;
+			}
 
-        if ($loginPage === $this->request->url->get(PHP_URL_PATH)) {
-            return true;
-        }
+			if (!array_key_exists('required', $validations)) {
+				if (is_string($this->facade->getRawRequest()->{$field}) && !strlen($this->facade->getRawRequest()->{$field})) {
+					continue;
+				}
 
-        if (!$this->request->method->isGet()) {
-            return redirect($loginPage);
-        }
+				if (is_array($this->facade->getRawRequest()->{$field}) && !count($this->facade->getRawRequest()->{$field})) {
+					continue;
+				}
+			}
 
-        return redirect($loginPage . '?redirect=' . urlencode($this->request->url->get(PHP_URL_PATH)));
-    }
-
-    protected function setTemplate($page)
-    {
-        $class    = App::identify($this);
-        $template = App::getFullyQualifiedName('View', $class[0] . '\\' . $class[1] . '\\' . $page);
-
-        $this->view->setTemplate($template);
-    }
+			foreach ($validations as $rule => $message) {
+				$this->addValidation($field, $rule, $message);
+			}
+		}
+	}
 }

@@ -1,39 +1,38 @@
-<?php
-namespace Mopsis\FormBuilder\Fields;
+<?php namespace Mopsis\FormBuilder\Fields;
 
 use FluentDOM\Query;
 
 class AbstractField extends Query
 {
-    public function getValue()
-    {
-        return $this->attr('value');
-    }
+	public function val($value = null)
+	{
+		if (!func_num_args()) {
+			return $this->getValue();
+		}
 
-    public function val($value = null)
-    {
-        return func_num_args() ? $this->setValue($value) : $this->getValue();
-    }
+		return $this->setValue($value);
+	}
 
-    protected function escapeHtml($string)
-    {
-        return htmlspecialchars($string, ENT_COMPAT | ENT_HTML5, 'UTF-8', false);
-    }
+	public function getValue()
+	{
+		return $this->attr('value');
+	}
 
-    protected function prop($name, $enabled = null)
-    {
-        if ($enabled === null) {
-            return $this->hasAttr($name);
-        }
+	protected function escapeHtml($string)
+	{
+		return htmlspecialchars($string, ENT_COMPAT | ENT_HTML5, 'UTF-8', false);
+	}
 
-        $this->removeAttr($name);
+	protected function prop($name, $enabled = null)
+	{
+		if ($enabled === null) {
+			return $this->hasAttr($name);
+		}
 
-        if ($enabled) {
-            $this->attr($name, true);
+		$this->removeAttr($name);
 
-            return true;
-        }
-
-        return false;
-    }
+		if ($enabled) {
+			$this->attr($name, true);
+		}
+	}
 }

@@ -1,123 +1,48 @@
-<?php
-namespace Mopsis\Core;
+<?php namespace Mopsis\Core;
 
-use Exception;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Mopsis\Contracts\PrivilegedUser;
-use Mopsis\Contracts\User;
+use Illuminate\Contracts\Validation\ValidationException;
 
 class Auth
 {
-    protected static $user;
+	protected static $user;
 
-    public static function attempt(array $credentials = [], $remember = false, $login = true)
-    {
-        $userClass = App::get('User');
-        $password  = array_pull($credentials, 'password');
+	public static function login(User $user)
+	{
+		self::$user = $user;
+	}
 
-        if (!($user = $userClass::find($credentials))) {
-            return false;
-        }
+	public static function user()
+	{
+		if (self::$user === null) {
+			$model      = App::make('User');
+			self::$user = $model::autoload();
+		}
 
-// Update passwords without salt (set manually in database)
-        if ($user->password === sha1($password)) {
-            $user->password = sha1($user->id . config('app.key') . $password);
-        }
+		return self::$user;
+	}
 
-        if ($user->password !== sha1($user->id . config('app.key') . $password)) {
-            return false;
-        }
+	public static function checkAccess($permission, $model = null, $redirect = null)
+	{
+		if (is_bool($permission)) {
+			if ($permission) {
+				return true;
+			}
 
-        if ($login) {
-            static::login($user, $remember);
-        }
+			if ($redirect) {
+				redirect($redirect);
+			}
 
-        return true;
-    }
+			throw new ValidationException('user has no access');
+		}
 
-    public static function check()
-    {
-        return static::user()->exists;
-    }
+		if (self::user()->may($permission, $model)) {
+			return true;
+		}
 
-    public static function checkAccess($permission, $model = null, $redirect = null)
-    {
-        if (is_bool($permission)) {
-            if ($permission) {
-                return true;
-            }
+		if ($redirect) {
+			redirect($redirect);
+		}
 
-            if ($redirect) {
-                redirect($redirect);
-            }
-
-            throw new Exception('user has no access');
-        }
-
-        if (!(static::user() instanceof PrivilegedUser)) {
-            throw new Exception('user has no privileges');
-        }
-
-        if (static::user()->may($permission, $model)) {
-            return true;
-        }
-
-        if ($redirect) {
-            redirect($redirect);
-        }
-
-        throw new Exception('user has no "' . $permission . '" permission for model "' . $model . '"');
-    }
-
-    public static function login(User $user, $remember = false)
-    {
-        static::$user     = $user;
-        $_SESSION['user'] = (string) $user->token;
-
-        if ($remember) {
-            App::get('Cookie')->forever('user', $user->hash);
-        }
-    }
-
-    public static function logout()
-    {
-        App::get('Cookie')->delete('user');
-        $_SESSION = [];
-        session_destroy();
-    }
-
-    public static function user(): User
-    {
-        if (static::$user === null) {
-            static::$user = static::autoload();
-        }
-
-        return static::$user;
-    }
-
-    protected static function autoload(): User
-    {
-        $userClass = App::get('User');
-
-        if (isset($_SESSION['user'])) {
-            try {
-                return $userClass::unpack($_SESSION['user']);
-            } catch (ModelNotFoundException $e) {
-                unset($_SESSION['user']);
-            }
-        }
-
-        if (isset($_COOKIE['user'])) {
-            try {
-                $user             = $userClass::unpack($_COOKIE['user']);
-                $_SESSION['user'] = (string) $user->token;
-
-                return $user;
-            } catch (ModelNotFoundException $e) {
-                App::get('Cookie')->delete('user');
-            }
-        }
-
-        return new $userClass();
-    }
+		throw new ValidationException('user has no "' . $permission . '" permission for model "' . $model . '"');
+	}
 }

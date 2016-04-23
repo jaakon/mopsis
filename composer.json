@@ -3,42 +3,37 @@
 	"type": "library",
 	"description": "The Mopsis Framework.",
 	"keywords": ["framework", "mopsis"],
-	"homepage": "https://github.com/jaakon/mopsis",
+	"homepage":     "https://github.com/jaakon/mopsis",
 	"license": "MIT",
-	"repositories": [
-		{
-			"type": "git",
-			"url": "https://github.com/jaakon/PHP-DI"
-		}
-	],
 	"require": {
-		"php":                         ">=7.0",
-		"aptoma/twig-markdown":        "^2.0",
-		"asm89/twig-cache-extension":  "^1.0",
-		"aura/accept":                 "^2.2",
-		"aura/filter":                 "^2.0",
-		"aura/web":                    "^2.0",
-		"codezero/cookie":             "^1.0",
-		"erusev/parsedown":            "^1.5",
-		"filp/whoops":                 "^2.0",
-		"fluentdom/fluentdom":         "^5.3",
-		"FluentDOM/Selectors-Symfony": "^1.0",
-		"gordalina/cachetool":         "^2.0",
-		"illuminate/config":           "^5.1",
-		"illuminate/database":         "^5.1",
-		"illuminate/events":           "^5.1",
-		"illuminate/translation":      "^5.1",
-		"jschaedl/iban":               "^1.1",
-		"league/flysystem":            "^1.0",
-		"monolog/monolog":             "^1.16",
-		"patchwork/utf8":              "^1.2",
-		"php-di/php-di":               "dev-dot-helper as 5.2.2",
-		"raulfraile/ladybug":          "^1.0",
-		"swiftmailer/swiftmailer":     "^5.4",
-		"tedivm/stash":                "^0.14",
-		"twig/twig":                   "^1.20"
+		"php":                        ">=5.6.0",
+		"aptoma/twig-markdown":       "~1.2",
+		"asm89/twig-cache-extension": "~1.0",
+		"aura/accept":                 "~2.2",
+		"aura/filter":                 "~2.0",
+		"aura/web":                    "~2.0",
+		"erusev/parsedown":           "~1.5",
+		"filp/whoops":                "~1.1",
+		"fluentdom/fluentdom":         "~5.3",
+		"FluentDOM/Selectors-Symfony": "~1.0",
+		"gordalina/cachetool":        "~1.10",
+		"illuminate/database":        "~5.1",
+		"illuminate/events":          "~5.1",
+		"illuminate/translation":      "~5.1",
+		"raulfraile/ladybug":          "~1.0",
+		"league/flysystem":           "~1.0",
+		"monolog/monolog":            "~1.16",
+		"patchwork/utf8":             "~1.2",
+		"php-di/php-di":              "~5.0",
+		"swiftmailer/swiftmailer":    "~5.4",
+		"tburry/pquery":              "~1.1",
+		"tedivm/stash":               "~0.13",
+		"twig/twig":                  "~1.20"
 	},
 	"autoload": {
+		"files": [
+			"src/functions.php"
+		],
 		"psr-4": {
 			"Mopsis\\": "src/"
 		}

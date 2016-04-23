@@ -1,107 +1,81 @@
-<?php
-namespace Mopsis\Components\Controller;
+<?php namespace Mopsis\Components\Controller;
 
-use Mopsis\Contracts\Model;
-use Mopsis\Extensions\Eloquent\Model as Eloquent;
+use Mopsis\Core\Registry;
+use Mopsis\Extensions\Eloquent\Model;
 
 abstract class AbstractCrudController extends AbstractController
 {
-    protected function createChildModel($formId, Model $instance, Model $ancestor)
-    {
-        $this->view->assign(['ancestorToken' => $ancestor->token]);
+	protected function _create(Model $model)
+	{
+		$model->fill($this->_getAcceptedData($model))->save();
 
-        $status = $this->handleFormAction($formId, $instance);
+		return $model;
+	}
 
-        if ($status !== 200) {
-            return $this->getResponseObject($status, $instance);
-        }
+	protected function _update(Model $model)
+	{
+		$model->update($this->_getAcceptedData($model));
 
-        if ($instance instanceof Eloquent) {
-            $instance->ancestor()->associate($ancestor);
-            $instance->fill($this->filter->getResult())->save();
-        } else {
-            $instance->set(strtolower(class_basename($ancestor)), $ancestor);
-            $instance->update($this->filter->getResult());
-        }
+		return $model;
+	}
 
-        return $this->getResponseObject(201, $instance);
-    }
+	protected function _delete(Model $model)
+	{
+		$model->delete();
 
-    protected function createModel($formId, Model $instance)
-    {
-        $status = $this->handleFormAction($formId, $instance);
+		return $model;
+	}
 
-        if ($status !== 200) {
-            return $this->getResponseObject($status, $instance);
-        }
+	protected function _set(Model $model, $key, $value)
+	{
+		$model->setAttribute($key, $value);
+		$model->save();
 
-        if ($instance instanceof Eloquent) {
-            $instance->fill($this->filter->getResult())->save();
-        } else {
-            $instance->update($this->filter->getResult());
-        }
+		return $model;
+	}
 
-        return $this->getResponseObject(201, $instance);
-    }
+	protected function _getAcceptedData(Model $model)
+	{
+		return array_intersect_key($this->facade->getCleanRequest()->toArray(), array_flip($model->getFillableAttributes()));
+	}
 
-    protected function deleteModel(Model $instance)
-    {
-        $instance->delete();
+	protected function _getRoute($additionalLevels = 0)
+	{
+		$backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)[1 + $additionalLevels];
+		return str_replace('App\\Controllers\\', '', $backtrace['class']).'.'.$backtrace['function'];
+	}
 
-        return $this->getResponseObject(204, $instance);
-    }
+	protected function _handleFormAction(Model $model, $route = null)
+	{
+		if (!$model) {
+			throw new \Exception('invalid or missing object');
+		}
 
-    protected function handleFormAction($formId, Model $instance)
-    {
-        $this->view->setFormValues($formId, $instance->toFormData())->assign(['formId' => $formId]);
+		if ($route === null) {
+			$route = $this->_getRoute(1);
+		}
 
-        if ($instance->exists) {
-            $this->view->assign(['token' => $instance->token]);
-        }
+		if (!Registry::has('forms/'.$route)) {
+			throw new \Exception('cannot find form for route "'.$route.'"');
+		}
 
-        if (!$this->request->method->isPost()) {
-            return 202;
-        }
+		$formId = Registry::get('forms/'.$route);
 
-        if ($instance->exists && $this->filter->forUpdate($formId, $this->request->post->get())) {
-            return 200;
-        }
+		$this->view->setFormValues($formId, $model->toArray());
 
-        if (!$instance->exists && $this->filter->forInsert($formId, $this->request->post->get())) {
-            return 200;
-        }
+		if ($model->exists) {
+			$this->view->assign(['token' => $model->token]);
+		}
 
-        $this->view->prefillForm($formId, $this->filter);
+		if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+			return false;
+		}
 
-        return 422;
-    }
+		if (!$this->facade->isValid()) {
+			$this->view->prefillForm($formId, $this->facade);
+			return false;
+		}
 
-    protected function setModelProperty(Model $instance, $key, $value)
-    {
-        $instance->setAttribute($key, $value);
-
-        return $this->getResponseObject(205, $instance);
-    }
-
-    protected function updateModel($formId, Model $instance)
-    {
-        $status = $this->handleFormAction($formId, $instance);
-
-        if ($status !== 200) {
-            return $this->getResponseObject($status, $instance);
-        }
-
-        $instance->update($this->filter->getResult());
-
-        return $this->getResponseObject(205, $instance);
-    }
-
-    private function getResponseObject($code, $entity)
-    {
-        return (object) [
-            'status'   => $code,
-            'instance' => $entity,
-            'success'  => $code !== 202 && $code !== 422
-        ];
-    }
+		return true;
+	}
 }

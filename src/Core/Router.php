@@ -1,145 +1,106 @@
-<?php
-namespace Mopsis\Core;
+<?php namespace Mopsis\Core;
 
 use Aura\Web\Request;
 use Psr\Log\LoggerInterface as Logger;
 
 class Router
 {
-    protected $logger;
+	protected $logger;
+	protected $request;
 
-    protected $request;
+	public function __construct(Logger $logger, Request $request)
+	{
+		$this->logger  = $logger;
+		$this->request = $request;
+	}
 
-    protected $route;
+	public function get()
+	{
+		$requestMethod = $this->request->method->get();
+		$route         = urldecode($this->request->url->get(PHP_URL_PATH));
 
-    public function __construct(Logger $logger, Request $request)
-    {
-        $this->logger  = $logger;
-        $this->request = $request;
-    }
+		if ($route === '/') {
+			$route = '/home';
+		}
 
-    public function get()
-    {
-        $requestMethod = $this->request->method->get();
-        $this->route   = urldecode($this->request->url->get(PHP_URL_PATH));
+		$validRules = '/^(' . $requestMethod . '|\*)\s+(?<path>\/(?:\{[^}]+\}|' . preg_quote(preg_replace('/^\/([^\/]+).*/', '$1', $route), '/') . ')\S*)\s+(.+)\n?$/i';
 
-        if ($this->route === '/') {
-            $this->route = '/home';
-        }
+		foreach (preg_grep($validRules, file('config/routes')) as $line) {
+			if (!preg_match($validRules, $line, $rule)) {
+				throw new \Exception('invalid route: ' . $line);
+			}
 
-        $validRules = '/^(' . $requestMethod . '|\*)\s+(?<path>\/(?:\{[^}]+\}|' . preg_quote(preg_replace('/^\/([^\/]+).*/', '$1', $this->route), '/') . ')\S*)\s+(.+)\n?$/i';
+			$test = preg_replace('/\\\{(.+?)\\\}/', '(?<$1>[^\/]*)', preg_quote($rule['path'], '/'));
+			if (!preg_match('/^' . $test . '(?:\/(?<params>.*))?/', rtrim($route, '/'), $m)) {
+				$this->logger->debug($rule[3] . ' => path does not match [' . $route . ']');
+				continue;
+			}
 
-        foreach (preg_grep($validRules, file('config/routes')) as $line) {
-            if (!preg_match($validRules, $line, $rule)) {
-                throw new \Exception('invalid route: ' . $line);
-            }
+			$m['method'] = $requestMethod;
 
-            $test = preg_replace('/\\\{(.+?)\\\}/', '(?<$1>[^\/]*)', preg_quote($rule['path'], '/'));
+			list($controller, $method) = explode('.', preg_replace_callback('/\{(.+?)\}/', function ($n) use ($m) {
+				return $m[$n[1]];
+			}, $rule[3]));
 
-            if (!preg_match('/^' . $test . '(?:\/(?<params>.*))?/', rtrim($this->route, '/'), $m)) {
-                $this->logger->debug('Path "' . $this->route . '" does not match "' . $rule['path'] . '"');
-                continue;
-            }
+			$controller = '\\App\\Controllers\\'.ucfirst(preg_replace_callback('/-([a-z])/i', function ($n) {
+				return strtoupper($n[1]);
+			}, $controller));
 
-            $m['method'] = $requestMethod;
-            $result      = $this->getClassMethod($rule[3], $m);
+			$method = preg_replace_callback('/-([a-z])/i', function ($n) {
+				return strtoupper($n[1]);
+			}, $method);
 
-            if ($result === false) {
-                continue;
-            }
+			if (!class_exists($controller)) {
+				$this->logger->debug($rule[3].' => controller "'.$controller.'" not found ['.$route.']');
+				continue;
+			}
 
-            list($class, $method) = $result;
-            $reflectionClass      = new \ReflectionClass($class);
-            $funcArgs             = $this->getFunctionArguments($reflectionClass->getMethod($method), $m);
+			if (!method_exists($controller, $method)) {
+				$this->logger->debug($rule[3].' => method "'.$method.'" not found ['.$route.']');
+				continue;
+			}
 
-            if ($funcArgs === false) {
-                continue;
-            }
+			$reflectionClass = new \ReflectionClass($controller);
+			$funcArgs        = $this->getFunctionArguments($reflectionClass->getMethod($method), $m);
 
-            $this->logger->debug($this->route . ' ==> ' . $class . '->' . $method);
+			if ($funcArgs === false) {
+				continue;
+			}
 
-            return App::get($class)->$method(...$funcArgs);
-        }
+			$this->logger->debug($route . ' ==> ' . $class . '->' . $method);
+			return App::make($controller)->callMethod($method, $funcArgs);
+		}
 
-        return false;
-    }
+		return false;
+	}
 
-    protected function getClassMethod($path, $m)
-    {
-        $path = preg_replace_callback('/\{(.+?)\}/', function ($placeholder) use ($m) {
-            return studly_case($m[$placeholder[1]]);
-        }, $path);
+	protected function getFunctionArguments(\ReflectionMethod $method, $m)
+	{
+		$m['params'] = isset($m['params']) ? explode('/', $m['params']) : [];
+		$funcArgs    = [];
 
-        if (preg_match('/^\w+\\\\\w+\\\\\w+$/', $path)) {
-            try {
-                $class  = App::build('Action', $path);
-                $method = '__invoke';
-            } catch (\DomainException $e) {
-                $this->logger->debug($path . ' => ' . $e->getMessage() . ' [' . $this->route . ']');
+		foreach ($method->getParameters() as $param) {
+			if ($param->isVariadic()) {
+				return array_merge($funcArgs, $m['params']);
+			}
 
-                return false;
-            }
+			if (isset($m[$param->name])) {
+				$funcArgs[] = urldecode($m[$param->name]);
+			} elseif (count($m['params'])) {
+				$funcArgs[] = urldecode(array_shift($m['params']));
+			} elseif (!$param->isOptional()) {
+				$this->logger->debug($method->name . ' => missing parameter "' . $param->name . '" [' . $route . ']');
 
-            return [
-                $class,
-                $method
-            ];
-        }
+				return false;
+			}
+		}
 
-        if (preg_match('/^(\w+\\\\\w+)\.(\w+)$/', $path, $parts)) {
-            try {
-                $class  = App::build('Controller', $parts[1]);
-                $method = lcfirst($parts[2]);
-            } catch (\DomainException $e) {
-                $this->logger->debug($path . ' => ' . $e->getMessage() . ' [' . $this->route . ']');
+		if (count($m['params'])) {
+			$this->logger->debug($method->name . ' => unexpected parameters "' . implode('", "', $m['params']) . '" [' . $route . ']');
 
-                return false;
-            }
+			return false;
+		}
 
-            if (!method_exists($class, $method)) {
-                $this->logger->debug($path . ' => method "' . $method . '" not found [' . $this->route . ']');
-
-                return false;
-            }
-
-            return [
-                $class,
-                $method
-            ];
-        }
-
-        $this->logger->debug('Cannot parse "' . $path . '"');
-
-        return false;
-    }
-
-    protected function getFunctionArguments(\ReflectionMethod $method, $m)
-    {
-        $m['params'] = isset($m['params']) ? explode('/', $m['params']) : [];
-        $funcArgs    = [];
-
-        foreach ($method->getParameters() as $param) {
-            if ($param->isVariadic()) {
-                return array_merge($funcArgs, $m['params']);
-            }
-
-            if (isset($m[$param->name])) {
-                $funcArgs[] = urldecode($m[$param->name]);
-            } elseif (count($m['params'])) {
-                $funcArgs[] = urldecode(array_shift($m['params']));
-            } elseif (!$param->isOptional()) {
-                $this->logger->debug($method->name . ' => missing parameter "' . $param->name . '" [' . $this->route . ']');
-
-                return false;
-            }
-        }
-
-        if (count($m['params'])) {
-            $this->logger->debug($method->name . ' => unexpected parameters "' . implode('", "', $m['params']) . '" [' . $this->route . ']');
-
-            return false;
-        }
-
-        return $funcArgs;
-    }
+		return $funcArgs;
+	}
 }

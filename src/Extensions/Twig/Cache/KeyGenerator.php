@@ -1,17 +1,15 @@
-<?php
-namespace Mopsis\Extensions\Twig\Cache;
+<?php namespace Mopsis\Extensions\Twig\Cache;
 
-use Asm89\Twig\CacheExtension\CacheStrategy\KeyGeneratorInterface;
 use Mopsis\Extensions\Eloquent\Model;
 
-class KeyGenerator implements KeyGeneratorInterface
+class KeyGenerator implements \Asm89\Twig\CacheExtension\CacheStrategy\KeyGeneratorInterface
 {
-    public function generateKey($value)
-    {
-        if ($value instanceof Model) {
-            return (string) $value . '_' . $value->updatedAt;
-        }
+	public function generateKey($value)
+	{
+		if ($value instanceof Model) {
+			return (string)$value . '_' . $value->updatedAt;
+		}
 
-        return;
-    }
+		return null;
+	}
 }
