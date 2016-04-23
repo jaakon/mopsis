@@ -183,8 +183,7 @@ return [
 
     Whoops\Handler\JsonResponseHandler::class
     => object()
-        ->method('addTraceToOutput', true)
-        ->method('onlyForAjaxRequests', true),
+        ->method('addTraceToOutput', true),
 
     Whoops\Handler\PlainTextHandler::class
     => object()
@@ -271,22 +270,7 @@ return [
     => object(Twig_Environment::class),
 
     StashDriver::class
-    => object(
-        array_shift(
-            array_filter(
-                [
-                    'redis'    => \Stash\Driver\Redis::class,
-                    'apcu'     => \Stash\Driver\Apc::class,
-                    'sqlite3'  => \Stash\Driver\Sqlite::class,
-                    'standard' => \Stash\Driver\FileSystem::class
-                ],
-                function ($name) {
-                    return extension_loaded($name);
-                },
-                ARRAY_FILTER_USE_KEY
-            )
-        )
-    ),
+    => object(\Stash\Driver\Redis::class),
 
     Translator::class
     => object(Illuminate\Translation\Translator::class)
