@@ -23,9 +23,6 @@ class Mailer extends Swift_Mailer
         }
 
         parent::__construct($transport);
-
-        $logger = new Swift_Plugins_Loggers_ArrayLogger();
-        $this->registerPlugin(new Swift_Plugins_LoggerPlugin($logger));
     }
 
     public static function encodeName($name)
