@@ -279,6 +279,9 @@ return [
     StashDriver::class
     => object(\Stash\Driver\Redis::class),
 
+    TagService::class
+    => object(\Cviebrock\EloquentTaggable\Services\TagService::class),
+
     Translator::class
     => object(Illuminate\Translation\Translator::class)
         ->constructorParameter('locale', get('translator.locale'))

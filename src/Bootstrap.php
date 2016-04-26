@@ -35,6 +35,10 @@ class Bootstrap
 			define('APPLICATION_PATH', realpath($_SERVER['DOCUMENT_ROOT'] . '/..'));
 		}
 
+        if (strpos($_SERVER['HTTP_USER_AGENT'], '(DEBUGGER)') !== false) {
+            define('DEBUGGING', true);
+        }
+
 		$builder = new \DI\ContainerBuilder;
 		$builder->addDefinitions(__DIR__ . '/config.php');
 		$builder->addDefinitions(APPLICATION_PATH . '/config/definitions.php');

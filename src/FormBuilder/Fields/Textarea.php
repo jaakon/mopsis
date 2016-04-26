@@ -14,9 +14,10 @@ class Textarea extends AbstractField
 		}
 
 		if ($this->attr('data-encoding') === 'base64') {
-			$value = base64_encode($value);
+			$this->text(base64_encode($value));
+			return;
 		}
 
-		$this->text($value);
+		$this->text($this->escapeHtml($value));
 	}
 }

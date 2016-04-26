@@ -118,12 +118,20 @@ function convertObjectToArray($input)
 
 function debug(...$args)
 {
-	echo '<pre class="debug">';
-	foreach ($args as $i => $arg) {
-		echo $i > 0 ? '<hr>' : '';
-		print_r($arg);
-	}
-	echo '</pre>';
+    if (defined('DEBUGGING')) {
+        echo dump(...$args);
+    }
+}
+
+function dump(...$args)
+{
+    $ladybug = new \Ladybug\Dumper();
+
+    $ladybug->setTheme('modern');
+    $ladybug->setOption('expanded', false);
+    $ladybug->setOption('helpers', ['debug']);
+
+    return $ladybug->dump(...$args);
 }
 
 function escape_html($string)

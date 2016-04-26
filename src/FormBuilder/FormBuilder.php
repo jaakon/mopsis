@@ -303,6 +303,11 @@ class FormBuilder
 		foreach ($dom->find('input,select,textarea') as $node) {
 			$field = FieldFactory::create($node);
 			$key   = preg_match('/(.+)\[(.*)\]$/', $field->attr('name'), $m) ? $m[1] : $field->attr('name');
+
+			if (!isset($values[$key]) && preg_match('/^(\w+)_id$/', $key, $k)) {
+				$key = $k[1] . 'Id';
+			}
+
 			$value = $values[$key];
 
 			if (preg_match('/(.+?)\.(.+)/', $key, $n) && isset($values[$n[1]])) {
