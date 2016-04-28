@@ -36,7 +36,7 @@ abstract class AbstractGateway
         return $this->model->unpack($token);
     }
 
-    public function find($sql, array $bindings): Builder
+    public function find($sql, array $bindings)
     {
         return $this->model->whereRaw($sql, $bindings);
     }
