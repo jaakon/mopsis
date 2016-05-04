@@ -35,8 +35,6 @@ class Sql
         ];
     }
 
-    //=== PUBLIC METHODS ===========================================================
-
     public static function buildQuery(array $args)
     {
         $args     = array_filter($args);
@@ -128,8 +126,6 @@ class Sql
     {
         return $this->query($query, $values)->fetchAll(PDO::FETCH_COLUMN, $col);
     }
-
-    //=== PRIVATE METHODS ==========================================================
 
     public function getCrossboundReferences($table)
     {
@@ -354,8 +350,6 @@ class Sql
     {
         return $this->query('UPDATE ' . $table . ' SET `' . implode('`=?, `', array_keys($data)) . '`=? WHERE ' . $where, array_merge(array_values($data), is_array($values) ? $values : [$values]))->rowCount();
     }
-
-    //=== PUBLIC STATIC FUNCTIONS ==================================================
 
     private function __construct($key = 'default')
     {

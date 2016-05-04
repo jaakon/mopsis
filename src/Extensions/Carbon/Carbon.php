@@ -56,7 +56,7 @@ class Carbon extends CarbonLib
 
     public function __isset($name)
     {
-        return constant('static::' . $name) ?: constant('self::' . $name);
+        return defined('static::' . $name) ?: defined('self::' . $name);
     }
 
     public function cloned()

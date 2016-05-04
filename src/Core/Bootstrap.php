@@ -96,11 +96,11 @@ class Bootstrap
         }
 
         Cache::get('css.version', function () {
-            return filemtime(APPLICATION_PATH . '/public/css') ?: time();
+            return time();
         });
 
         Cache::get('javascript.version', function () {
-            return filemtime(APPLICATION_PATH . '/public/js') ?: time();
+            return time();
         });
     }
 

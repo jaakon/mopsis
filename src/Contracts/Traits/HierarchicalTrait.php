@@ -5,8 +5,7 @@ trait HierarchicalTrait
 {
     public function getAncestorAttribute()
     {
-        return isset($this->ancestor) ? $this->{$this->ancestor}
-            : false;
+        return isset($this->ancestor) ? $this->{$this->ancestor} : false;
     }
 
     public function getUriRecursive()
