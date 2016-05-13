@@ -240,7 +240,7 @@ return [
             $whoops->pushHandler($c->get(Whoops\Handler\JsonResponseHandler::class));
         }
 
-        $whoops->pushHandler(function (Exception $exception) use ($c) {
+        $whoops->pushHandler(function (Throwable $exception) use ($c) {
             $c->get(Logger::class)->error($exception->getMessage());
         });
 
