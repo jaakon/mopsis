@@ -1,6 +1,7 @@
 /vendor
 
-.idea
+auth.json
 composer.lock
-
+sftp-config.json
+*.sqlite
 *.sublime-*
