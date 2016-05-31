@@ -22,7 +22,7 @@ class MiscHelpers
     public static function debug(...$args)
     {
         if (defined('DEBUGGING')) {
-            return dump(...$args);
+            echo dump(...$args);
         }
     }
 
@@ -35,6 +35,14 @@ class MiscHelpers
         $ladybug->setOption('helpers', ['debug']);
 
         return $ladybug->dump(...$args);
+    }
+
+    public static function finalDebug(...$args)
+    {
+        if (defined('DEBUGGING')) {
+            echo dump(...$args);
+            exit();
+        }
     }
 
     public static function getStaticPage($code)
