@@ -190,6 +190,11 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model
 		return (string)$this->token;
 	}
 
+    public function hasAttribute($key)
+    {
+        return (array_key_exists($key, $this->attributes) || array_key_exists(snake_case($key), $this->attributes) || array_key_exists($key, $this->relations) || $this->hasGetMutator($key));
+    }
+
 	/** @Override */
 	public function newCollection(array $models = [])
 	{

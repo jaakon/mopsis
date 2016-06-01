@@ -1,6 +1,9 @@
 <?php namespace Mopsis\Components\View;
 
+use Mopsis\Core\App;
+use Mopsis\Extensions\Twig\TwigException;
 use Twig_Environment as Renderer;
+use Twig_Error_Runtime;
 
 class View
 {
@@ -41,7 +44,35 @@ class View
 			$this->renderer->getExtension('formbuilder')->setOptions(['forms' => $this->forms]);
 		}
 
-		return $this->renderer->render($this->template, $this->data);
+		try {
+            return trim($this->renderer->render($this->template, $this->data));
+        } catch (Twig_Error_Runtime $exception) {
+            if (!preg_match('/(.+?) in "(.+?)" at line (\d+)/', $exception->getMessage(), $m)) {
+                throw $exception;
+            }
+
+            $message  = $m[1];
+            $template = $m[2];
+            $line     = $m[3];
+
+            if (preg_match('/An exception has been thrown during the rendering of a template \("(.+?)"\)/', $message, $m)) {
+                $message = $m[1];
+            }
+
+            $twigException = new TwigException(ucfirst($message) . '.', $exception->getCode(), $exception);
+
+            foreach (App::make('twigloader.config') as $path) {
+                $file = APPLICATION_PATH . '/' . $path . '/' . $template;
+
+                if (file_exists($file)) {
+                    $twigException->setFile($file);
+                    $twigException->setLine($line);
+                    break;
+                }
+            }
+
+            throw $twigException;
+        }
 	}
 
 	public function addExtension($extension)
