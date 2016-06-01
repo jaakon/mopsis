@@ -236,8 +236,7 @@ abstract class Model extends EloquentModel implements ModelInterface
 
     public function set($key, $value)
     {
-        $this->{$key}
-        = $value;
+        $this->$key = $value;
 
         return $this;
     }

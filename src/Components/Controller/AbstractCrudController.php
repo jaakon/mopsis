@@ -24,7 +24,7 @@ abstract class AbstractCrudController extends AbstractController
             $instance->update($this->filter->getResult());
         }
 
-        return $this->getResponseObject(201, $instance);
+        return $this->getResponseObject(201, $instance, $instance->toArray());
     }
 
     protected function createModel($formId, Model $instance)
@@ -41,7 +41,7 @@ abstract class AbstractCrudController extends AbstractController
             $instance->update($this->filter->getResult());
         }
 
-        return $this->getResponseObject(201, $instance);
+        return $this->getResponseObject(201, $instance, $instance->toArray());
     }
 
     protected function deleteModel(Model $instance)
@@ -91,17 +91,19 @@ abstract class AbstractCrudController extends AbstractController
             return $this->getResponseObject($status, $instance);
         }
 
+        $diff = $instance->diff($this->filter->getResult());
         $instance->update($this->filter->getResult());
 
-        return $this->getResponseObject(205, $instance);
+        return $this->getResponseObject(205, $instance, $diff);
     }
 
-    private function getResponseObject($code, $entity)
+    private function getResponseObject($code, $entity, $payload = null)
     {
         return (object) [
             'status'   => $code,
             'instance' => $entity,
-            'success'  => $code !== 202 && $code !== 422
+            'success'  => $code !== 202 && $code !== 422,
+            'payload'  => $payload
         ];
     }
 }

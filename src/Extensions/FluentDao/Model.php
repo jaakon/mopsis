@@ -6,7 +6,6 @@ use Mopsis\Contracts\Model as ModelInterface;
 use Mopsis\Core\Cache;
 use Mopsis\Extensions\Stringifier;
 use Mopsis\Security\Token;
-use Mopsis\Types\JSON;
 use UnexpectedValueException;
 
 abstract class Model implements ModelInterface
@@ -18,18 +17,6 @@ abstract class Model implements ModelInterface
     protected $data = [];
 
     protected $stringifier;
-
-    public function __call($name, $args)
-    {
-        if (static::isJson($this->data[$name])) {
-            $this->data[$name]->{$args[0]} = $args[1];
-            $this->$name = $this->data[$name]; // triggers saving
-
-            return $this;
-        }
-
-        throw new \Exception('unknown function "' . $name . '"');
-    }
 
     public function __construct($id = null)
     {
@@ -171,6 +158,13 @@ abstract class Model implements ModelInterface
         $this->data['id'] = null;
 
         return $this;
+    }
+
+    public function diff(array $data)
+    {
+        $originalData = array_intersect_key($this->stringify()->toArray(), $data);
+
+        return arrayDiffValues($originalData, $data);
     }
 
     public static function find($query = null, $values = [], $orderBy = null, $useCache = true)
@@ -331,16 +325,6 @@ abstract class Model implements ModelInterface
                 unset($import[$m[1]]);
                 continue;
             }
-
-            if (static::isJson($this->data[$key])) {
-                foreach (preg_filter('/^' . preg_quote($key, '/') . '\.(.+)$/', '$1', array_keys($import)) as $importKey) {
-                    $this->data[$key]->$importKey = $import[$key . '.' . $importKey];
-                    unset($import[$key . '.' . $importKey]);
-                }
-
-                $this->$key = $this->data[$key]; // triggers saving
-                continue;
-            }
         }
 
         foreach ($import as $key => $value) {
@@ -362,11 +346,6 @@ abstract class Model implements ModelInterface
         $this->data['id'] = (int) $id;
 
         return $this;
-    }
-
-    public static function isJson($var)
-    {
-        return $var instanceof JSON;
     }
 
     public function jsonSerialize()
@@ -392,20 +371,17 @@ abstract class Model implements ModelInterface
     public function save($throwBoundException = true)
     {
         if ($this->exists) {
-            if ($throwBoundException) {
-                throw new \Exception('object is already bound');
+            if (!$throwBoundException) {
+                return $this;
             }
 
-            return $this;
+            throw new \Exception('object is already bound');
         }
 
         foreach ($this->config['constraints'] as $key => $value) {
             if ($value & Sql::REQUIRED_VALUE && $this->data[$key] === null) {
                 throw new \Exception('required property [' . $key . '] is not set');
             }
-
-//            if ($value & Sql::UNIQUE_VALUE && Sql::db()->exists($this->config['table'], $key.'=?', $this->data[$key]))
-            //                throw new \Exception('value of property ['.$key.'] is not unique: "'.$this->data[$key].'"');
         }
 
         foreach ($this->data as &$value) {
@@ -531,14 +507,6 @@ abstract class Model implements ModelInterface
         $data = [];
 
         foreach (array_keys($this->data) as $key) {
-            if (static::isJson($this->$key) && count($this->$key->toArray())) {
-                foreach ($this->$key->toArray() as $k => $v) {
-                    $data[$key . '.' . $k] = $v;
-                }
-
-                continue;
-            }
-
             $data[$key] = $this->$key;
         }
 

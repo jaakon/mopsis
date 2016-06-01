@@ -59,6 +59,11 @@ function config($key = null, $default = null)
     return LaravelHelpers::config($key, $default);
 }
 
+function closestMatch($input, $words)
+{
+    return StringHelpers::getClosestMatch($input, $words);
+}
+
 function controller($className)
 {
     return ClassHelpers::controller($className);
@@ -66,12 +71,12 @@ function controller($className)
 
 function debug(...$args)
 {
-    echo MiscHelpers::debug(...$args);
+    MiscHelpers::debug(...$args);
 }
 
 function dump(...$args)
 {
-    echo MiscHelpers::dump(...$args);
+    return MiscHelpers::dump(...$args);
 }
 
 function duration($hours)
@@ -84,9 +89,9 @@ function env($key, $default = null)
     return LaravelHelpers::env($key, $default);
 }
 
-function closestMatch($input, $words)
+function finalDebug(...$args)
 {
-    return StringHelpers::getClosestMatch($input, $words);
+    MiscHelpers::finalDebug(...$args);
 }
 
 function isHtml($string)
