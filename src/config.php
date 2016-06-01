@@ -18,19 +18,21 @@ return [
     'stash.sqlite.config'    => [
         'path' => 'storage/cache/'
     ],
-    'translator.locale'      => 'de',
-    'translator.path'        => 'resources/lang/',
-    'twig.dev.config'        => [
-        'debug'            => true,
-        'cache'            => false,
-        'auto_reload'      => true,
-        'strict_variables' => true
+    'translator.locale'   => 'de',
+    'translator.path'     => 'resources/lang/',
+    'twig.dev.config'     => [
+        'base_template_class' => 'Mopsis\Extensions\Twig\Template',
+        'debug'               => true,
+        'cache'               => false,
+        'auto_reload'         => true,
+        'strict_variables'    => true
     ],
     'twig.live.config'       => [
-        'debug'            => false,
-        'cache'            => 'storage/cache/',
-        'auto_reload'      => false,
-        'strict_variables' => false
+        'base_template_class' => 'Mopsis\Extensions\Twig\Template',
+        'debug'               => false,
+        'cache'               => 'storage/cache/',
+        'auto_reload'         => false,
+        'strict_variables'    => false
     ],
     'twig.config'            => get('twig.dev.config'),
     'twigloader.config'      => ['resources/views'],

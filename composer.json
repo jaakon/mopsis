@@ -6,7 +6,7 @@
 	"homepage":     "https://github.com/jaakon/mopsis",
 	"license": "MIT",
 	"require": {
-		"php":                         ">=5.6.0",
+		"php":                         ">=7.0",
 		"aptoma/twig-markdown":        "~2.0",
 		"asm89/twig-cache-extension":  "~1.0",
 		"aura/accept":                 "~2.2",
@@ -17,9 +17,9 @@
 		"fluentdom/fluentdom":         "~5.3",
 		"FluentDOM/Selectors-Symfony": "~1.0",
 		"gordalina/cachetool":         "~2.0",
-		"illuminate/database":         "5.2.31",
-		"illuminate/events":           "5.2.31",
-		"illuminate/translation":      "5.2.31",
+		"illuminate/database":         "~5.2",
+		"illuminate/events":           "~5.2",
+		"illuminate/translation":      "~5.2",
 		"raulfraile/ladybug":          "~1.0",
 		"league/flysystem":            "~1.0",
 		"monolog/monolog":             "~1.16",
@@ -28,7 +28,7 @@
 		"swiftmailer/swiftmailer":     "~5.4",
 		"tburry/pquery":               "~1.1",
 		"tedivm/stash":                "~0.13",
-		"twig/twig":                   "1.24.0"
+		"twig/twig":                   "~1.24"
 	},
 	"autoload": {
 		"files": [
