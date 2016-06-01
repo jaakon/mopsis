@@ -31,8 +31,9 @@ class MiscHelpers
         $ladybug = new Dumper();
 
         $ladybug->setTheme('modern');
+        $ladybug->setFormat('html');
         $ladybug->setOption('expanded', false);
-        $ladybug->setOption('helpers', ['debug']);
+        $ladybug->setOption('helpers', ['debug', 'finalDebug', 'dump']);
 
         return $ladybug->dump(...$args);
     }
