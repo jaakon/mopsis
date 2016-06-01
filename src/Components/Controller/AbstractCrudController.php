@@ -36,7 +36,10 @@ abstract class AbstractCrudController extends AbstractController
 
 	protected function _getAcceptedData(Model $model)
 	{
-		return array_intersect_key($this->facade->getCleanRequest()->toArray(), array_flip($model->getFillableAttributes()));
+		return array_intersect_key(
+			$this->facade->getCleanRequest()->toArray(),
+			array_flip($model->getFillableAttributes())
+		);
 	}
 
 	protected function _getRoute($additionalLevels = 0)

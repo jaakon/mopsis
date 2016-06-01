@@ -9,7 +9,7 @@ class RawRequest extends BasicRequest
 
 	public function __set($var, $value)
 	{
-		$this->_data->{$var} = $value;
+		$this->_data->$var = $value;
 	}
 
 	public function getForValidation($var)
@@ -19,13 +19,13 @@ class RawRequest extends BasicRequest
 		}
 
 		if (strpos($var, '.') === false) {
-			return $this->_data->{$var};
+			return $this->_data->$var;
 		}
 
 		$result = clone $this->_data;
 
 		foreach (explode('.', $var) as $key) {
-			$result = $result->{$key};
+			$result = $result->$key;
 		}
 
 		return $result;
@@ -42,7 +42,7 @@ class RawRequest extends BasicRequest
 			}
 
 			foreach ((array) $value as $subkey => $subvalue) {
-				$results[$key.'.'.$subkey] = $subvalue;
+				$results[$key . '.' . $subkey] = $subvalue;
 			}
 		}
 

@@ -33,7 +33,7 @@ return [
         'strict_variables' => false
     ],
     'twig.config'            => get('twig.dev.config'),
-    'twigloader.config'      => ['app/views'],
+    'twigloader.config'      => ['resources/views'],
 
     Aptoma\Twig\Extension\MarkdownEngineInterface::class
     => object(Mopsis\Extensions\Twig\Markdown\MarkdownEngine::class),

@@ -9,8 +9,8 @@ class ValidationCoordinator
 
 	public function __construct(Request\RawRequest $raw, Request\CleanRequest $clean)
 	{
-		$this->_raw		= $raw;
-		$this->_clean	= $clean;
+		$this->_raw   = $raw;
+		$this->_clean = $clean;
 	}
 
 	public function get($name)
@@ -20,8 +20,9 @@ class ValidationCoordinator
 
 	public function setClean($name = null)
 	{
-		if ($name === null)
+		if ($name === null) {
 			return false;
+		}
 
 		$this->_clean = $this->_clean->set($name, $this->_raw->getForValidation($name), false);
 	}

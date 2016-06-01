@@ -22,7 +22,9 @@ class ValidationFacade
 			$this->_validators[$group] = [];
 		}
 
-		return $this->_validators[$group][] = $validator;
+		$this->_validators[$group][] = $validator;
+
+		return $validator;
 	}
 
 	public function validate($request)
@@ -57,7 +59,10 @@ class ValidationFacade
 
 	public function isValid()
 	{
-		$this->validate($this->_request);
+		if (!$this->_coordinator) {
+			$this->validate($this->_request);
+		}
+
 		return !count($this->_coordinator->getErrors());
 	}
 
@@ -81,9 +86,9 @@ class ValidationFacade
 		return $this->_coordinator->getInvalidFields();
 	}
 
-	public function addRule($fieldname, $rule = null)
+	public function addRule($fieldname, $rule = null, ...$args)
 	{
-		return $this->addValidator($this->_createValidatorByRule($fieldname, $rule, array_slice(func_get_args(), 2)), $fieldname);
+		return $this->addValidator($this->_createValidatorByRule($fieldname, $rule, $args), $fieldname);
 	}
 
 	private function _createValidatorByRule($fieldname, $rule, $args)
@@ -268,7 +273,5 @@ class ValidationFacade
 				);
 				break;
 		}
-
-		return null;
 	}
 }

@@ -128,6 +128,7 @@ function dump(...$args)
     $ladybug = new \Ladybug\Dumper();
 
     $ladybug->setTheme('modern');
+    $ladybug->setFormat('html');
     $ladybug->setOption('expanded', false);
     $ladybug->setOption('helpers', ['debug']);
 

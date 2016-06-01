@@ -30,7 +30,7 @@ abstract class AbstractController
 		$this->setTemplate($method);
 
 		try {
-			return $this->{$method}(...$funcArgs) ?: $this->view;
+			return $this->$method(...$funcArgs) ?: $this->view;
 		} catch (ModelNotFoundException $e) {
 			return 'The session token is no longer valid.';
 		}
@@ -86,7 +86,9 @@ abstract class AbstractController
 			return;
 		}
 
-		$this->facade->addRule('csrf', 'error', !isset($_SESSION['csrf']) || $_POST[$_SESSION['csrf']['key']] !== $_SESSION['csrf']['value'])->withMessage('Ungültiges oder abgelaufenes Sicherheitstoken. Bitte Formular erneut versenden.');
+		$this->facade
+			->addRule('csrf', 'error', !isset($_SESSION['csrf']) || $_POST[$_SESSION['csrf']['key']] !== $_SESSION['csrf']['value'])
+			->withMessage('Ungültiges oder abgelaufenes Sicherheitstoken. Bitte Formular erneut versenden.');
 
 		foreach ((new FormBuilder())->getRules(Registry::get('forms/'.$route)) as $field => $validations) {
 			if (!count($validations)) {
@@ -95,11 +97,12 @@ abstract class AbstractController
 			}
 
 			if (!array_key_exists('required', $validations)) {
-				if (is_string($this->facade->getRawRequest()->{$field}) && !strlen($this->facade->getRawRequest()->{$field})) {
+				if (is_string($this->facade->getRawRequest()->$field) && !strlen($this->facade->getRawRequest()->$field)) {
+					$this->addValidation($field, null, null);
 					continue;
 				}
 
-				if (is_array($this->facade->getRawRequest()->{$field}) && !count($this->facade->getRawRequest()->{$field})) {
+				if (is_array($this->facade->getRawRequest()->$field) && !count($this->facade->getRawRequest()->$field)) {
 					continue;
 				}
 			}

@@ -7,7 +7,7 @@ class CleanRequest extends BasicRequest
 		$clone = clone $this;
 
 		if (strpos($var, '.') === false) {
-			$clone->_data->{$var} = $value;
+			$clone->_data->$var = $value;
 			return $clone;
 		}
 

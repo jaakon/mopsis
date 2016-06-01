@@ -35,7 +35,7 @@ class Bootstrap
 			define('APPLICATION_PATH', realpath($_SERVER['DOCUMENT_ROOT'] . '/..'));
 		}
 
-        if (strpos($_SERVER['HTTP_USER_AGENT'], '(DEBUGGER)') !== false) {
+        if (strpos($_SERVER['HTTP_USER_AGENT'], '(DEBUG)') !== false) {
             define('DEBUGGING', true);
         }
 

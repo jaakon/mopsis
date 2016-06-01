@@ -16,18 +16,18 @@ abstract class BasicRequest
 
 	public function __isset($var)
 	{
-		return isset($this->_data->{$var});
+		return isset($this->_data->$var);
 	}
 
 	public function __get($var)
 	{
-		return property_exists($this->_data, $var) ? $this->_data->{$var} : false;
+		return property_exists($this->_data, $var) ? $this->_data->$var : false;
 	}
 
 	/** @SuppressWarnings(PHPMD.UnusedFormalParameter) */
 	public function __set($var, $value)
 	{
-		throw new \Exception('write access for Request->'.$var.' denied!');
+		throw new \Exception('write access for Request->' . $var . ' denied!');
 	}
 
 	protected function _anatomizeKeys($data)
@@ -51,7 +51,7 @@ abstract class BasicRequest
 
 		if (count($newKeys)) {
 			foreach ($newKeys as $key) {
-				$data->{$key} = $this->_anatomizeKeys($data->{$key});
+				$data->$key = $this->_anatomizeKeys($data->$key);
 			}
 		}
 
