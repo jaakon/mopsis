@@ -136,8 +136,16 @@ class View
     public function prefillForm($formId, Filter $filter)
     {
         $messages = $filter->getMessages();
+        $values = [];
 
-        $this->setFormValues($formId, $this->request->post->get())->setFormErrors($formId, array_keys($messages))->assign(['errors' => array_flatten($messages)]);
+        foreach ($this->request->post->get() as $key => $value) {
+            array_set($values, $key, $value);
+        }
+
+        $this
+            ->setFormValues($formId, $values)
+            ->setFormErrors($formId, array_keys($messages))
+            ->assign(['errors' => array_flatten($messages)]);
 
         return $this;
     }
