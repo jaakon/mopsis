@@ -139,7 +139,9 @@ class SimpleXMLElement
             return false;
         }
 
-        return trim((string) $element) ?: null;
+        $text = trim((string) $element);
+
+        return strlen($text) ? $text : null;
     }
 
     public function xpath(string $path)
