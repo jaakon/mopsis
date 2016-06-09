@@ -65,8 +65,9 @@ class SimpleXMLElement
     {
         $isPrefix       = ($namespace !== null);
         $attributes     = $this->element->attributes($namespace, $isPrefix);
-        $attributeValue = $attributes->{$name}
-        return ($attributeValue !== null) ? (string) $attributeValue : null;
+        $attributeValue = $attributes->$name;
+
+        return $attributeValue !== null ? (string) $attributeValue : null;
     }
 
     public function attributes($namespace = null)
@@ -101,11 +102,11 @@ class SimpleXMLElement
 
     public function getFirstChildByTagName($tagName)
     {
-        if (!isset($this->element->{$tagName})) {
+        if (!isset($this->element->$tagName)) {
             return;
         }
 
-        return $this->wrapSimpleXMLElement($this->element->{$tagName});
+        return $this->wrapSimpleXMLElement($this->element->$tagName);
     }
 
     public function getWrappedElement()
