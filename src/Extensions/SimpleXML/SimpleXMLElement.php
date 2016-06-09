@@ -12,8 +12,7 @@ class SimpleXMLElement
 
     public function __call($name, $arguments)
     {
-        return $this->element->{$name}
-        (...$arguments);
+        return $this->element->$name(...$arguments);
     }
 
     public function __construct($xmlData)
@@ -66,8 +65,7 @@ class SimpleXMLElement
     {
         $isPrefix       = ($namespace !== null);
         $attributes     = $this->element->attributes($namespace, $isPrefix);
-        $attributeValue = $attributes->{$name};
-
+        $attributeValue = $attributes->{$name}
         return ($attributeValue !== null) ? (string) $attributeValue : null;
     }
 
