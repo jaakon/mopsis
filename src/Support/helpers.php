@@ -1,6 +1,7 @@
 <?php
 
 use Mopsis\Core\App;
+use Mopsis\Core\Bootstrap;
 use Mopsis\Support\ArrayHelpers;
 use Mopsis\Support\ClassHelpers;
 use Mopsis\Support\LaravelHelpers;
@@ -102,6 +103,11 @@ function isHtml($string)
 function isUtf8($string)
 {
     return StringHelpers::isUtf8($string);
+}
+
+function kickstart($flushMode)
+{
+    return (new Bootstrap())->kickstart($flushMode);
 }
 
 function logger($message = null)
