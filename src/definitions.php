@@ -350,6 +350,9 @@ return [
     Flash::class
     => object(Mopsis\Extensions\Flash::class),
 
+    HttpClient::class
+    => object(Http\Adapter\Guzzle6\Client::class),
+
     Json::class
     => object(Mopsis\Extensions\Json::class),
 
@@ -370,6 +373,10 @@ return [
 
         return $logger;
     },
+
+    Mailgun::class
+    => object(Mailgun\Mailgun::class)
+        ->constructorParameter('httpClient', get('HttpClient')),
 
     MonologErrorHandler::class
     => object(Monolog\Handler\StreamHandler::class)
