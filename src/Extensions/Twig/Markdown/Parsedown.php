@@ -1,70 +1,40 @@
-<?php namespace Mopsis\Extensions\Twig\Markdown;
+<?php
+namespace Mopsis\Extensions\Twig\Markdown;
 
 class Parsedown extends \Parsedown
 {
-	private static $instances   = [];
-	protected $attributes       = [];
-	protected $inlineMarkerList = '!"*_&[:<>`~\\{';
+    protected $attributes = [];
 
-	public static function instance($name = 'default')
-	{
-		if (isset(static::$instances[$name])) {
-			return static::$instances[$name];
-		}
+    private static $instances = [];
 
-		$instance = new static();
+    public static function instance($name = 'default')
+    {
+        if (isset(static::$instances[$name])) {
+            return static::$instances[$name];
+        }
 
-		static::$instances[$name] = $instance;
+        $instance = new static();
 
-		return $instance;
-	}
+        static::$instances[$name] = $instance;
 
-	public function __construct()
-	{
-		$this->BlockTypes['{'][]  = 'Placeholder';
-		$this->InlineTypes['{'][] = 'Placeholder';
-	}
+        return $instance;
+    }
 
-	public function setAttributes($blockType, array $attributes)
-	{
-		$this->attributes[$blockType] = $attributes;
-	}
+    public function setAttributes($blockType, array $attributes)
+    {
+        $this->attributes[$blockType] = $attributes;
+    }
 
-	protected function blockPlaceholder($line)
-	{
-		if (preg_match('/^\{(.+?)\}:[ ]*(.+?)[ ]*$/', $line['text'], $matches)) {
-			$this->DefinitionData['Placeholder'][$matches[1]] = $matches[2];
-			return ['hidden' => true];
-		}
-	}
+    protected function element(array $element)
+    {
+        if (count($this->attributes[$element['name']])) {
+            if (!isset($element['attributes'])) {
+                $element['attributes'] = [];
+            }
 
-	protected function inlinePlaceholder($excerpt)
-	{
-		if (!isset($this->DefinitionData['Placeholder'])) {
-			return;
-		}
+            $element['attributes'] = array_merge($element['attributes'], $this->attributes[$element['name']]);
+        }
 
-		foreach ($this->DefinitionData['Placeholder'] as $key => $value) {
-			$pattern = '/\{'.preg_quote($key, '/').'\}/i';
-			if (preg_match($pattern, $excerpt['text'], $matches)) {
-				return [
-					'extent' => strlen($matches[0]),
-					'markup' => $value
-				];
-			}
-		}
-	}
-
-	protected function element(array $element)
-	{
-		if (count($this->attributes[$element['name']])) {
-			if (!isset($element['attributes'])) {
-				$element['attributes'] = [];
-			}
-
-			$element['attributes'] = array_merge($element['attributes'], $this->attributes[$element['name']]);
-		}
-
-		return parent::element($element);
-	}
+        return parent::element($element);
+    }
 }
