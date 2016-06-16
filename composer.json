@@ -23,7 +23,6 @@
 		"filp/whoops":                     "^2.0",
 		"fluentdom/fluentdom":             "^5.3",
 		"FluentDOM/Selectors-Symfony":     "^1.0",
-		"funkjedi/composer-include-files": "dev-master",
 		"gordalina/cachetool":             "^2.0",
 		"illuminate/config":               "^5.1",
 		"illuminate/database":             "^5.1",
@@ -41,15 +40,10 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"Mopsis\\": "src/"
+			"Mopsis\\": "src"
 		}
 	},
 	"bin": [
 		"bin/mopsis"
-	],
-	"extra": {
-		"include_files": [
-			"src/Support/helpers.php"
-		]
-	}
+	]
 }

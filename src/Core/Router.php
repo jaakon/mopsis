@@ -29,7 +29,7 @@ class Router
 
         $validRules = '/^(' . $requestMethod . '|\*)\s+(?<path>\/(?:\{[^}]+\}|' . preg_quote(preg_replace('/^\/([^\/]+).*/', '$1', $this->route), '/') . ')\S*)\s+(.+)\n?$/i';
 
-        foreach (preg_grep($validRules, file('config/routes')) as $line) {
+        foreach (preg_grep($validRules, file(APPLICATION_PATH . '/config/routes')) as $line) {
             if (!preg_match($validRules, $line, $rule)) {
                 throw new \Exception('invalid route: ' . $line);
             }

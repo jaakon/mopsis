@@ -1,7 +1,7 @@
 <?php
 namespace Mopsis\Console\Commands;
 
-use Symfony\Component\Console\Command\Command;
+use Mopsis\Console\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -32,9 +32,9 @@ class MakeAction extends Command
         list($module, $domain, $action) = explode('\\', $input->getArgument('action'));
 
         $output->writeln(
-            createFile(
+            $this->filesystem->createFile(
                 $module . '/Action/' . $domain . $action . 'Action.php',
-                findTemplateForAction($action),
+                $this->filesystem->findTemplateForAction($action),
                 [
                     '{{MODULE}}'   => $module,
                     '{{DOMAIN}}'   => $domain,

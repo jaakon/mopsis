@@ -1,7 +1,7 @@
 <?php
 namespace Mopsis\Console\Commands;
 
-use Symfony\Component\Console\Command\Command;
+use Mopsis\Console\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -32,9 +32,9 @@ class MakeDomain extends Command
         list($module, $domain, $type) = explode('\\', $input->getArgument('domain'));
 
         $output->writeln(
-            createFile(
+            $this->filesystem->createFile(
                 $module . '/Domain/' . $domain . $type . '.php',
-                findTemplateForDomain($type),
+                $this->filesystem->findTemplateForDomain($type),
                 [
                     '{{MODULE}}'   => $module,
                     '{{DOMAIN}}'   => $domain,

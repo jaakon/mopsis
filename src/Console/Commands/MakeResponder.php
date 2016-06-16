@@ -1,7 +1,7 @@
 <?php
 namespace Mopsis\Console\Commands;
 
-use Symfony\Component\Console\Command\Command;
+use Mopsis\Console\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -32,14 +32,14 @@ class MakeResponder extends Command
         list($module, $domain, $action) = explode('\\', $input->getArgument('responder'));
 
         $output->writeln(
-            createFile(
+            $this->filesystem->createFile(
                 $module . '/Responder/' . $domain . $action . 'Responder.php',
-                findTemplateForResponder($action),
+                $this->filesystem->findTemplateForResponder($action),
                 [
                     '{{MODULE}}'     => $module,
                     '{{DOMAIN}}'     => $domain,
                     '{{ACTION}}'     => $action,
-                    '{{TEMPLATE}}'   => snakeCase($action),
+                    '{{TEMPLATE}}'   => $this->filesystem->snakeCase($action),
                     '{{COLLECTION}}' => strtolower($module),
                     '{{INSTANCE}}'   => strtolower($domain)
                 ],
