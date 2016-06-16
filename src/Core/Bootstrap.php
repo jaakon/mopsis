@@ -7,28 +7,41 @@ use Mopsis\Extensions\Aura\Web\ResponseSender;
 
 class Bootstrap
 {
-    public function initialize()
+    public function initializeApplication()
     {
-        setlocale(LC_ALL, [
-            'de_DE.UTF8',
-            'de-DE'
-        ]);
-        session_start();
-
-        if (!defined('APPLICATION_PATH')) {
-            define('APPLICATION_PATH', realpath($_SERVER['DOCUMENT_ROOT'] . '/..'));
-        }
-
         $builder = new ContainerBuilder();
         $builder->addDefinitions(__DIR__ . '/../definitions.php');
         $builder->addDefinitions(APPLICATION_PATH . '/config/definitions.php');
 
         App::initialize($builder->build());
 
-        App::get('config')->load(APPLICATION_PATH . '/config/config.php', APPLICATION_PATH . '/config/credentials.php');
+        App::get('config')->load(
+            APPLICATION_PATH . '/config/config.php',
+            APPLICATION_PATH . '/config/credentials.php'
+        );
 
         App::get('Database');
         App::get('ErrorHandler');
+    }
+
+    public function initializeFramework()
+    {
+        error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
+
+        setlocale(LC_ALL, [
+            'de_DE.UTF8',
+            'de-DE'
+        ]);
+
+        session_start();
+
+        if (!defined('APPLICATION_PATH')) {
+            define('APPLICATION_PATH', realpath(__DIR__ . '/../../../../..'));
+        }
+
+        if (!defined('DEBUGGING')) {
+            define('DEBUGGING', strpos($_SERVER['HTTP_USER_AGENT'], '(DEBUG)') !== false);
+        }
     }
 
     public function kickstart($flushMode = null)
@@ -37,7 +50,8 @@ class Bootstrap
             return phpinfo();
         }
 
-        $this->initialize();
+        $this->initializeFramework();
+        $this->initializeApplication();
         $this->updateCache($flushMode);
 
         /**

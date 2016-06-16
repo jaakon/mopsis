@@ -1,0 +1,11 @@
+#!/usr/bin/env php
+<?php
+
+(@include_once __DIR__ . '/../vendor/autoload.php') || @include_once __DIR__ . '/../../../autoload.php';
+
+use Mopsis\Console\Application;
+//(new \Mopsis\Core\Bootstrap())->initialize();
+
+$application = new Application('Mopsis Console Application', '1.0');
+$application->addDefaultCommands();
+$application->run();

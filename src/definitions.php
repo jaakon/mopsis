@@ -310,8 +310,10 @@ return [
     => function () {
         $manager = new Illuminate\Database\Capsule\Manager();
 
-        foreach (config('connections') as $name => $config) {
-            $manager->addConnection($config, $name);
+        if (is_array(config('connections'))) {
+            foreach (config('connections') as $name => $config) {
+                $manager->addConnection($config, $name);
+            }
         }
 
         $manager->setEventDispatcher(new Illuminate\Events\Dispatcher());

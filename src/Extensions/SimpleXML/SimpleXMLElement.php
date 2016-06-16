@@ -15,6 +15,11 @@ class SimpleXMLElement
         return $this->element->$name(...$arguments);
     }
 
+    public function __get($name)
+    {
+        return $this->first($name);
+    }
+
     public function __construct($xmlData)
     {
         if (gettype($xmlData) === 'string') {
