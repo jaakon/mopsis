@@ -42,6 +42,8 @@ class Bootstrap
         if (!defined('DEBUGGING')) {
             define('DEBUGGING', strpos($_SERVER['HTTP_USER_AGENT'], '(DEBUG)') !== false);
         }
+
+        chdir(APPLICATION_PATH);
     }
 
     public function kickstart($flushMode = null)

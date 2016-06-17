@@ -1,6 +1,6 @@
 <?php namespace App\{{MODULE}}\Action;
 
-use App\{{MODULE}}\Domain\{{DOMAIN}}Service as Service;
+use App\{{MODULE}}\{{DOMAIN}}Service as Service;
 use App\{{MODULE}}\Responder\{{DOMAIN}}IndexResponder as Responder;
 use Aura\Web\Request;
 use Mopsis\Components\Action\AbstractAction;
