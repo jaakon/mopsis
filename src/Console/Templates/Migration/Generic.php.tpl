@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Mopsis\Console\Libraries\Schema;
 
 class {{DOMAIN}}s extends Migration
 {

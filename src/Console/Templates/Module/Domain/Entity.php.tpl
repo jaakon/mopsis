@@ -1,4 +1,4 @@
-<?php namespace App\{{MODULE}}\Domain;
+<?php namespace App\{{MODULE}};
 
 use Mopsis\Extensions\Eloquent\Model;
 

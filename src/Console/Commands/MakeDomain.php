@@ -33,7 +33,7 @@ class MakeDomain extends Command
 
         $output->writeln(
             $this->filesystem->createFile(
-                $module . '/Domain/' . $domain . $type . '.php',
+                $module . '/' . $domain . $type . '.php',
                 $this->filesystem->findTemplateForDomain($type),
                 [
                     '{{MODULE}}'   => $module,

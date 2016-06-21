@@ -22,12 +22,10 @@ class DbSeed extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $class = $input->getArgument('class') ?: 'DatabaseSeeder';
+        $class = $input->getArgument('class');
+        $file  = APPLICATION_PATH . '/config/migrations/' . $class . '.php';
 
-        $file  = 'Migrations/' . $input->getArgument('migration') . '.php';
-        $class = $input->getArgument('migration');
-
-        $output->write('migrating ' . $class . ' ... ');
+        $output->write('migrating ' . $class . '... ');
 
         require_once $file;
         $migration = new $class();

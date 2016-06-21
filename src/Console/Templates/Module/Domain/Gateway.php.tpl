@@ -1,6 +1,6 @@
-<?php namespace App\{{MODULE}}\Domain;
+<?php namespace App\{{MODULE}};
 
-use App\{{MODULE}}\Domain\{{DOMAIN}}Model as Model;
+use App\{{MODULE}}\{{DOMAIN}}Model as Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Mopsis\Components\Domain\AbstractGateway;
 

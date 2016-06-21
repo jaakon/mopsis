@@ -105,7 +105,7 @@ function isUtf8($string)
     return StringHelpers::isUtf8($string);
 }
 
-function kickstart($flushMode)
+function kickstart($flushMode = null)
 {
     return (new Bootstrap())->kickstart($flushMode);
 }

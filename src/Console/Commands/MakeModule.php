@@ -32,7 +32,7 @@ class MakeModule extends Command
     {
         $path = explode('\\', $input->getArgument('module'));
 
-        foreach (['Action', 'Domain', 'Responder'] as $directory) {
+        foreach (['Action', 'Responder'] as $directory) {
             $output->writeln($this->filesystem->makeDirectory($path[0], $directory));
         }
 

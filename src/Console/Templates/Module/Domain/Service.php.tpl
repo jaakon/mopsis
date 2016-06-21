@@ -1,7 +1,7 @@
-<?php namespace App\{{MODULE}}\Domain;
+<?php namespace App\{{MODULE}};
 
-use App\{{MODULE}}\Domain\{{DOMAIN}}Filter as Filter;
-use App\{{MODULE}}\Domain\{{DOMAIN}}Gateway as Gateway;
+use App\{{MODULE}}\{{DOMAIN}}Filter as Filter;
+use App\{{MODULE}}\{{DOMAIN}}Gateway as Gateway;
 use Mopsis\Components\Domain\AbstractService;
 use Mopsis\Components\Domain\PayloadFactory;
 

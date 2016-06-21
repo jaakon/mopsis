@@ -20,12 +20,12 @@ return [
 
     'classFormats' => [
         'Action'     => 'App\\{{MODULE}}\\Action\\{{DOMAIN}}{{SUBTYPE}}Action',
-        'Collection' => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}Collection',
+        'Collection' => 'App\\{{MODULE}}\\{{DOMAIN}}Collection',
         'Controller' => 'App\\{{MODULE}}\\Controller',
-        'Domain'     => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}{{SUBTYPE}}',
-        'Gateway'    => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}Gateway',
-        'Model'      => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}Model',
-        'Observer'   => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}Observer',
+        'Domain'     => 'App\\{{MODULE}}\\{{DOMAIN}}{{SUBTYPE}}',
+        'Gateway'    => 'App\\{{MODULE}}\\{{DOMAIN}}Gateway',
+        'Model'      => 'App\\{{MODULE}}\\{{DOMAIN}}Model',
+        'Observer'   => 'App\\{{MODULE}}\\{{DOMAIN}}Observer',
         'Responder'  => 'App\\{{MODULE}}\\Responder\\{{DOMAIN}}{{SUBTYPE}}Responder',
         'View'       => '{{MODULE}}\\{{SUBTYPE}}'
     ],

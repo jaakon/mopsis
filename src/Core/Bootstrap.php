@@ -42,6 +42,8 @@ class Bootstrap
         if (!defined('DEBUGGING')) {
             define('DEBUGGING', strpos($_SERVER['HTTP_USER_AGENT'], '(DEBUG)') !== false);
         }
+
+        chdir(APPLICATION_PATH);
     }
 
     public function kickstart($flushMode = null)
@@ -52,11 +54,12 @@ class Bootstrap
 
         $this->initializeFramework();
         $this->initializeApplication();
-        $this->updateCache($flushMode);
 
-        /**
-         * @noinspection PhpIncludeInspection
-         */
+        if (php_sapi_name() === 'cli') {
+            return true;
+        }
+
+        $this->updateCache($flushMode);
         include APPLICATION_PATH . '/app/initialize.php';
 
         $response = $this->executeRoute();
