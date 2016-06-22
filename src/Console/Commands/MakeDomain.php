@@ -29,17 +29,13 @@ class MakeDomain extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        list($module, $domain, $type) = explode('\\', $input->getArgument('domain'));
+        $keys     = $this->identifyAction($input->getArgument('domain'));
+        $template = $this->filesystem->findTemplateForDomain($keys['action']);
 
         $output->writeln(
-            $this->filesystem->createFile(
-                $module . '/' . $domain . $type . '.php',
-                $this->filesystem->findTemplateForDomain($type),
-                [
-                    '{{MODULE}}'   => $module,
-                    '{{DOMAIN}}'   => $domain,
-                    '{{INSTANCE}}' => strtolower($domain)
-                ],
+            $this->filesystem->createClass(
+                $keys['module'] . '/' . $keys['action'],
+                $this->stringHelper->fillTemplate($template, $keys),
                 $input->getOption('override')
             )
         );

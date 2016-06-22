@@ -5,29 +5,25 @@ use Mopsis\Console\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class MigrateRefresh extends Command
+class DbRefresh extends Command
 {
     protected function configure()
     {
         $this
-            ->setName('migrate:refresh')
+            ->setName('db:refresh')
             ->setDescription('Reset and re-run all migrations');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $files = glob('Migrations/*.php');
+        $files = glob(APPLICATION_PATH . '/config/migrations/*.php');
 
         foreach ($files as $file) {
-            $class = basename($file, '.php');
+            $migration = $this->getMigration($file);
 
-            $output->write('migrating ' . $class . ' ... ');
-
-            require_once $file;
-            $migration = new $class();
+            $output->write('migrating ' . get_class($migration) . '... ');
             $migration->down();
             $migration->up();
-
             $output->writeln('ok');
         }
     }

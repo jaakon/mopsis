@@ -1,7 +1,7 @@
 <?php
 namespace Mopsis\Components\Domain;
 
-use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Mopsis\Extensions\Eloquent\Model;
 
 /**
@@ -10,6 +10,11 @@ use Mopsis\Extensions\Eloquent\Model;
 abstract class AbstractGateway
 {
     protected $model;
+
+    public function __construct(Model $model)
+    {
+        $this->model = $model;
+    }
 
     public function create(Model $instance, $data)
     {
@@ -64,6 +69,11 @@ abstract class AbstractGateway
     public function newEntity(array $attributes = []): Model
     {
         return $this->model->newInstance($attributes);
+    }
+
+    public function newRepository(Relation $relation)
+    {
+        return new Repository($relation);
     }
 
     public function set(Model $instance, $key, $value)

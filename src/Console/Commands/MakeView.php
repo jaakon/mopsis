@@ -7,17 +7,17 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class MakeResponder extends Command
+class MakeView extends Command
 {
     protected function configure()
     {
         $this
-            ->setName('make:responder')
-            ->setDescription('Create a new responder class')
+            ->setName('make:view')
+            ->setDescription('Create a new view for an action')
             ->addArgument(
-                'responder',
+                'action',
                 InputArgument::REQUIRED,
-                'What is the name of the responder?'
+                'What is the name of the action?'
             )
             ->addOption(
                 'override',
@@ -29,13 +29,18 @@ class MakeResponder extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $keys     = $this->identifyAction($input->getArgument('responder'));
-        $template = $this->filesystem->findTemplateForResponder($keys['action']);
+        list($module, $domain, $action) = explode('\\', $input->getArgument('action'));
 
         $output->writeln(
-            $this->filesystem->createClass(
-                $keys['module'] . '/Responder/' . $keys['action'] . 'Responder',
-                $this->stringHelper->fillTemplate($template, $keys),
+            $this->filesystem->createView(
+                $module . '/' . $action . '.tpl',
+                $this->filesystem->findTemplateForView($action),
+                [
+                    '{{MODULE}}'   => $module,
+                    '{{DOMAIN}}'   => $domain,
+                    '{{ACTION}}'   => $action,
+                    '{{INSTANCE}}' => strtolower($domain)
+                ],
                 $input->getOption('override')
             )
         );

@@ -1,0 +1,9 @@
+<?php
+namespace App\{{MODULE}};
+
+use Mopsis\Extensions\Eloquent\Model;
+
+abstract class Entity extends Model
+{
+    protected $table = '{{COLLECTION}}';
+}

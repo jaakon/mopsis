@@ -12,25 +12,21 @@ class DbSeed extends Command
     {
         $this
             ->setName('db:seed')
-            ->setDescription('seed')
+            ->setDescription('Run a database migration')
             ->addArgument(
-                'class',
-                InputArgument::OPTIONAL,
-                'glglgl'
+                'migration',
+                InputArgument::REQUIRED,
+                'What is the name of the migration?'
             );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $class = $input->getArgument('class');
-        $file  = APPLICATION_PATH . '/config/migrations/' . $class . '.php';
+        $file      = APPLICATION_PATH . '/config/migrations/' . $input->getArgument('migration') . '.php';
+        $migration = $this->getMigration($file);
 
-        $output->write('migrating ' . $class . '... ');
-
-        require_once $file;
-        $migration = new $class();
+        $output->write('migrating ' . get_class($migration) . '... ');
         $migration->up();
-
         $output->writeln('ok');
     }
 }

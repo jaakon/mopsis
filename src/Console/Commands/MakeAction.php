@@ -29,18 +29,13 @@ class MakeAction extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        list($module, $domain, $action) = explode('\\', $input->getArgument('action'));
+        $keys     = $this->identifyAction($input->getArgument('action'));
+        $template = $this->filesystem->findTemplateForAction($keys['action']);
 
         $output->writeln(
-            $this->filesystem->createFile(
-                $module . '/Action/' . $domain . $action . 'Action.php',
-                $this->filesystem->findTemplateForAction($action),
-                [
-                    '{{MODULE}}'   => $module,
-                    '{{DOMAIN}}'   => $domain,
-                    '{{ACTION}}'   => $action,
-                    '{{INSTANCE}}' => strtolower($domain)
-                ],
+            $this->filesystem->createClass(
+                $keys['module'] . '/Action/' . $keys['action'] . 'Action',
+                $this->stringHelper->fillTemplate($template, $keys),
                 $input->getOption('override')
             )
         );

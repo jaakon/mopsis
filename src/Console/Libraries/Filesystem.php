@@ -12,23 +12,40 @@ class Filesystem
         if (!defined('TEMPLATE_REPOSITORY')) {
             define('TEMPLATE_REPOSITORY', str_replace('\\', '/', realpath(__DIR__ . '/../Templates')));
         }
+
+        if (!defined('VIEWS_PATH')) {
+            define('VIEWS_PATH', realpath(APPLICATION_PATH . '/resources/views'));
+        }
     }
 
-    public function createFile($file, $template, $replacements, $override)
+    public function createClass($file, $content, $override)
     {
-        $file = '/' . 'app' . '/' . preg_replace('/Bare(\w+\.php)$/', '$1', $file);
+        return $this->createFile(
+            '/app/' . preg_replace('/Bare(\w+)$/', '$1', $file) . '.php',
+            APPLICATION_PATH,
+            $content,
+            $override
+        );
+    }
 
-        if (file_exists(APPLICATION_PATH . $file) && !$override) {
-            return '<error>file already exists: ' . $file . '</error>';
-        }
+    public function createMigration($file, $content, $override)
+    {
+        return $this->createFile(
+            '/config/migrations/' . time() . '_' . $file . '.php',
+            APPLICATION_PATH,
+            $content,
+            $override
+        );
+    }
 
-        $result = @file_put_contents(APPLICATION_PATH . $file, $this->fillPlaceholders(file_get_contents($template), $replacements));
-
-        if ($result === false) {
-            return '<error>file could not be written: ' . $file . '</error>';
-        }
-
-        return '<info>file created: ' . $file . '</info>';
+    public function createView($file, $content, $override)
+    {
+        return $this->createFile(
+            '/' . preg_replace('/Bare(\w+)$/', '$1', $file) . '.tpl',
+            VIEWS_PATH,
+            $content,
+            $override
+        );
     }
 
     public function findTemplateForAction($name)
@@ -38,7 +55,12 @@ class Filesystem
 
     public function findTemplateForDomain($name)
     {
-        return TEMPLATE_REPOSITORY . '/Module/Domain/' . $name . '.php.tpl';
+        return $this->findTemplate('Module/Domain/', $name);
+    }
+
+    public function findTemplateForMigration($name)
+    {
+        return $this->findTemplate('Migration/', $name);
     }
 
     public function findTemplateForResponder($name)
@@ -46,12 +68,17 @@ class Filesystem
         return $this->findTemplate('Module/Responder/', $name);
     }
 
-    public function makeDirectory($module, $folder)
+    public function findTemplateForView($name)
+    {
+        return $this->findTemplate('View/', $name);
+    }
+
+    public function makeDirectory($module, $folder, $override)
     {
         $path = '/app/' . $module . '/' . $folder;
 
         if (is_dir(APPLICATION_PATH . $path)) {
-            return '<error>directory already exists: ' . $path . '</error>';
+            return $override ? null : '<error>directory already exists: ' . $path . '</error>';
         }
 
         mkdir(APPLICATION_PATH . $path, 0777, true);
@@ -59,20 +86,34 @@ class Filesystem
         return '<info>directory created: ' . $path . '</info>';
     }
 
-    public function snakeCase($string)
+    protected function createFile($file, $path, $content, $override)
     {
-        return preg_replace_callback('/([A-Z])/', function ($match) {
-            return '-' . strtolower($match[1]);
-        }, lcfirst($string));
-    }
+        if (file_exists($path . $file) && !$override) {
+            return '<error>file already exists: ' . $file . '</error>';
+        }
 
-    protected function fillPlaceholders($content, $replacements)
-    {
-        return str_replace(array_keys($replacements), array_values($replacements), $content);
+        $result = @file_put_contents($path . $file, $content);
+
+        if ($result === false) {
+            return '<error>file could not be written: ' . $file . '</error>';
+        }
+
+        return '<info>file created: ' . $file . '</info>';
     }
 
     protected function findTemplate($path, $name)
     {
-        return TEMPLATE_REPOSITORY . '/' . $path . (file_exists($path . $name . '.php.tpl') ? $name : 'Generic') . '.php.tpl';
+        $file        = TEMPLATE_REPOSITORY . '/' . $path . $name;
+        $genericFile = TEMPLATE_REPOSITORY . '/' . $path . 'Generic';
+
+        if (file_exists($file)) {
+            return $file;
+        }
+
+        if (file_exists($genericFile)) {
+            return $genericFile;
+        }
+
+        throw new \Exception('neither "' . $file . '" nor "' . $genericFile . '" could be found!');
     }
 }

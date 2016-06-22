@@ -1,0 +1,18 @@
+<?php
+namespace App\{{MODULE}};
+
+use Mopsis\Components\Domain\AbstractService;
+use Mopsis\FormBuilder\RulesProvider;
+
+class Service extends AbstractService
+{
+    protected $instanceKey   = '{{INSTANCE}}';
+    protected $collectionKey = '{{COLLECTION}}';
+
+    public function __construct(Filter $facade, RulesProvider $rules, $uploader = null)
+    {
+        $this->facade   = $facade;
+        $this->rules    = $rules;
+        $this->uploader = $uploader;
+    }
+}

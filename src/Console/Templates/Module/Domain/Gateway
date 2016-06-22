@@ -1,0 +1,8 @@
+<?php
+namespace App\{{MODULE}};
+
+use Mopsis\Components\Domain\AbstractGateway;
+
+class Gateway extends AbstractGateway
+{
+}
