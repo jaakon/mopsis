@@ -31,12 +31,25 @@ class DbCreate extends Command
     {
         $keys     = $this->identifyAction($input->getArgument('migration'));
         $template = $this->filesystem->findTemplateForMigration($keys['module']);
+        $override = !!$input->getOption('override');
+
+        $file = $this->filesystem->findMigration($keys['module']);
+
+        if ($file !== null) {
+            if (!$override) {
+                $output->writeln('<error>file already exists: ' . $file . '</error>');
+
+                return;
+            }
+
+            unlink($file);
+        }
 
         $output->writeln(
             $this->filesystem->createMigration(
                 $keys['module'],
                 $this->stringHelper->fillTemplate($template, $keys),
-                $input->getOption('override')
+                $override
             )
         );
     }

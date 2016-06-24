@@ -16,7 +16,7 @@ class DbRefresh extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $files = glob(APPLICATION_PATH . '/config/migrations/*.php');
+        $files = glob(MIGRATIONS_PATH . '/*.php');
 
         foreach ($files as $file) {
             $migration = $this->getMigration($file);

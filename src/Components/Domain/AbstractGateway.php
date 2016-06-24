@@ -2,7 +2,6 @@
 namespace Mopsis\Components\Domain;
 
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Mopsis\Extensions\Eloquent\Model;
 
 /**
  * @property Model $model
@@ -10,11 +9,6 @@ use Mopsis\Extensions\Eloquent\Model;
 abstract class AbstractGateway
 {
     protected $model;
-
-    public function __construct(Model $model)
-    {
-        $this->model = $model;
-    }
 
     public function create(Model $instance, $data)
     {

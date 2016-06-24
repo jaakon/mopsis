@@ -1,8 +1,13 @@
 <?php
 namespace App\{{MODULE}};
 
+use App\{{MODULE}}\Model;
 use Mopsis\Components\Domain\AbstractGateway;
 
 class Gateway extends AbstractGateway
 {
+    public function __construct(Model $model)
+    {
+        $this->model = $model;
+    }
 }

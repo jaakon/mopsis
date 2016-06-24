@@ -1,18 +1,20 @@
 <?php
 namespace App\{{MODULE}};
 
+use App\{{MODULE}}\Filter;
+use App\{{MODULE}}\Gateway;
 use Mopsis\Components\Domain\AbstractService;
-use Mopsis\FormBuilder\RulesProvider;
+use Mopsis\Components\Domain\PayloadFactory;
 
 class Service extends AbstractService
 {
     protected $instanceKey   = '{{INSTANCE}}';
     protected $collectionKey = '{{COLLECTION}}';
 
-    public function __construct(Filter $facade, RulesProvider $rules, $uploader = null)
+    public function __construct(Filter $filter, Gateway $gateway, PayloadFactory $payload)
     {
-        $this->facade   = $facade;
-        $this->rules    = $rules;
-        $this->uploader = $uploader;
+        $this->filter  = $filter;
+        $this->gateway = $gateway;
+        $this->payload = $payload;
     }
 }

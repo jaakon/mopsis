@@ -2,7 +2,6 @@
 namespace Mopsis\Components\Domain;
 
 use Exception;
-use Mopsis\Components\Domain\PayloadFactory;
 use Mopsis\Security\Token;
 
 /**
@@ -21,13 +20,6 @@ abstract class AbstractService
     protected $instanceKey = 'instance';
 
     protected $payload;
-
-    public function __construct(Filter $filter, Gateway $gateway, PayloadFactory $payload)
-    {
-        $this->filter  = $filter;
-        $this->gateway = $gateway;
-        $this->payload = $payload;
-    }
 
     public function create($formId, array $data = null)
     {

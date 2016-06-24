@@ -413,5 +413,8 @@ return [
 
     Translator::class
     => object(Illuminate\Translation\Translator::class)
-        ->constructorParameter('locale', dot('translator.locale'))
+        ->constructorParameter('locale', dot('translator.locale')),
+
+    Xml::class
+    => object(Mopsis\Extensions\SimpleXML\SimpleXMLElement::class)
 ];

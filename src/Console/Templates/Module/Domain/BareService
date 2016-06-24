@@ -1,6 +1,7 @@
 <?php
 namespace App\{{MODULE}};
 
+use App\{{MODULE}}\Filter;
 use Mopsis\Components\Domain\AbstractService;
 use Mopsis\Components\Domain\PayloadFactory;
 

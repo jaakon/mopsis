@@ -16,6 +16,10 @@ class Filesystem
         if (!defined('VIEWS_PATH')) {
             define('VIEWS_PATH', realpath(APPLICATION_PATH . '/resources/views'));
         }
+
+        if (!defined('MIGRATIONS_PATH')) {
+            define('MIGRATIONS_PATH', realpath(APPLICATION_PATH . '/config/migrations'));
+        }
     }
 
     public function createClass($file, $content, $override)
@@ -31,8 +35,8 @@ class Filesystem
     public function createMigration($file, $content, $override)
     {
         return $this->createFile(
-            '/config/migrations/' . time() . '_' . $file . '.php',
-            APPLICATION_PATH,
+            '/' . time() . '_' . $file . '.php',
+            MIGRATIONS_PATH,
             $content,
             $override
         );
@@ -46,6 +50,14 @@ class Filesystem
             $content,
             $override
         );
+    }
+
+    public function findMigration($name)
+    {
+        $files = glob(MIGRATIONS_PATH . '/*.php');
+        $file  = preg_grep('/\/\d+_' . preg_quote($name, '/') . '\.php$/', $files);
+
+        return array_pop($file);
     }
 
     public function findTemplateForAction($name)
