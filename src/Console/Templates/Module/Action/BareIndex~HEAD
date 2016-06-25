@@ -1,12 +1,13 @@
 <?php
-namespace App\{ {MODULE }}\Action;
+namespace App\{{MODULE}}\Action;
 
+use App\{{MODULE}}\{{MODULE}}Service as Service;
+use App\{{MODULE}}\Responder\IndexResponder as Responder;
 use Aura\Web\Request;
 use Mopsis\Components\Action\AbstractAction;
 
-class
+class IndexAction extends AbstractAction
 {
-}IndexAction extends AbstractAction {
     public function __construct(Request $request, Service $service, Responder $responder)
     {
         $this->request   = $request;
