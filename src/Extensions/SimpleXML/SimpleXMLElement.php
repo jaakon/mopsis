@@ -66,13 +66,12 @@ class SimpleXMLElement
         return new SimpleXMLElementArray($this->xpath($path) ?: []);
     }
 
-    public function attr($name, $namespace = null)
+    public function attr($name, $type = 'string', $namespace = null)
     {
-        $isPrefix       = ($namespace !== null);
-        $attributes     = $this->element->attributes($namespace, $isPrefix);
-        $attributeValue = $attributes->$name;
+        $isPrefix   = ($namespace !== null);
+        $attributes = $this->element->attributes($namespace, $isPrefix);
 
-        return $attributeValue !== null ? (string) $attributeValue : null;
+        return cast($attributes->$name, $type, true);
     }
 
     public function attributes($namespace = null)

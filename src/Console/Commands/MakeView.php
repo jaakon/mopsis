@@ -33,7 +33,7 @@ class MakeView extends Command
 
         $output->writeln(
             $this->filesystem->createView(
-                $module . '/' . $action . '.tpl',
+                $module . '/' . $this->stringHelper->snakeCase($action) . '.twig',
                 $this->filesystem->findTemplateForView($action),
                 [
                     '{{MODULE}}'   => $module,

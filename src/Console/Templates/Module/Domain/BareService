@@ -5,7 +5,7 @@ use App\{{MODULE}}\{{MODULE}}Filter as Filter;
 use Mopsis\Components\Domain\AbstractService;
 use Mopsis\Components\Domain\PayloadFactory;
 
-class Service extends AbstractService
+class {{MODULE}}Service extends AbstractService
 {
     public function __construct(Filter $filter, PayloadFactory $payload)
     {

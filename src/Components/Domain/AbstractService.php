@@ -190,6 +190,11 @@ abstract class AbstractService
         }
     }
 
+    public function fetchById($id)
+    {
+        return $this->fetchByAttributes(['id' => $id]);
+    }
+
     public function fetchBySlug($slug)
     {
         return $this->fetchByAttributes(['slug' => $slug]);

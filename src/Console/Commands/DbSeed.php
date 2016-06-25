@@ -32,20 +32,18 @@ class DbSeed extends Command
         $file      = $this->filesystem->findMigration($input->getArgument('migration'));
         $migration = $this->getMigration($file);
         $override  = !!$input->getOption('override');
-        $table     = null;
 
-        if ($table !== null) {
-            if (!$override) {
-                $output->writeln('<error>table already exists: ' . $table . '</error>');
-
-                return;
-            }
-
+        if ($override) {
             $migration->down();
         }
 
-        $output->write('migrating ' . get_class($migration) . '... ');
-        $migration->up();
-        $output->writeln('ok');
+        try {
+            $output->write('migrating ' . get_class($migration) . '... ');
+            $migration->up();
+            $output->writeln('ok');
+        } catch (\PDOException $e) {
+            $table = preg_replace("/.*Table '(.+?)' already exists.*/", '$1', $e->getMessage());
+            $output->writeln('<error>table "' . $table . '" already exists</error>');
+        }
     }
 }
