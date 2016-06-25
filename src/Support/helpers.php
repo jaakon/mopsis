@@ -55,6 +55,11 @@ function between($value, $min, $max)
     return MiscHelpers::between($value, $min, $max);
 }
 
+function cast($object, $type, $preserveNullValue = false)
+{
+    return ObjectHelpers::cast($object, $type, $preserveNullValue);
+}
+
 function config($key = null, $default = null)
 {
     return LaravelHelpers::config($key, $default);
