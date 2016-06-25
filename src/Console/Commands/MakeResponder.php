@@ -29,20 +29,13 @@ class MakeResponder extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        list($module, $domain, $action) = explode('\\', $input->getArgument('responder'));
+        $keys     = $this->identifyAction($input->getArgument('responder'));
+        $template = $this->filesystem->findTemplateForResponder($keys['action']);
 
         $output->writeln(
-            $this->filesystem->createFile(
-                $module . '/Responder/' . $domain . $action . 'Responder.php',
-                $this->filesystem->findTemplateForResponder($action),
-                [
-                    '{{MODULE}}'     => $module,
-                    '{{DOMAIN}}'     => $domain,
-                    '{{ACTION}}'     => $action,
-                    '{{TEMPLATE}}'   => $this->filesystem->snakeCase($action),
-                    '{{COLLECTION}}' => strtolower($module),
-                    '{{INSTANCE}}'   => strtolower($domain)
-                ],
+            $this->filesystem->createClass(
+                $keys['module'] . '/Responder/' . $keys['action'] . 'Responder',
+                $this->stringHelper->fillTemplate($template, $keys),
                 $input->getOption('override')
             )
         );

@@ -4,6 +4,7 @@ namespace Mopsis\Console\Commands;
 use Mopsis\Console\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class DbSeed extends Command
@@ -12,25 +13,39 @@ class DbSeed extends Command
     {
         $this
             ->setName('db:seed')
-            ->setDescription('seed')
+            ->setDescription('Run a database migration')
             ->addArgument(
-                'class',
-                InputArgument::OPTIONAL,
-                'glglgl'
+                'migration',
+                InputArgument::REQUIRED,
+                'What is the name of the migration?'
+            )
+            ->addOption(
+                'override',
+                null,
+                InputOption::VALUE_NONE,
+                'If set, existing classes will be overridden'
             );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $class = $input->getArgument('class');
-        $file  = APPLICATION_PATH . '/config/migrations/' . $class . '.php';
+        $file      = $this->filesystem->findMigration($input->getArgument('migration'));
+        $migration = $this->getMigration($file);
+        $override  = !!$input->getOption('override');
+        $table     = null;
 
-        $output->write('migrating ' . $class . '... ');
+        if ($table !== null) {
+            if (!$override) {
+                $output->writeln('<error>table already exists: ' . $table . '</error>');
 
-        require_once $file;
-        $migration = new $class();
+                return;
+            }
+
+            $migration->down();
+        }
+
+        $output->write('migrating ' . get_class($migration) . '... ');
         $migration->up();
-
         $output->writeln('ok');
     }
 }

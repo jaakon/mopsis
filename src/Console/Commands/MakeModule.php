@@ -24,30 +24,41 @@ class MakeModule extends Command
                 'crud',
                 null,
                 InputOption::VALUE_NONE,
-                'If set, classes afor CRUD operations will be included'
-            );
-    }
+                'If set, classes for CRUD operations will be included'
+            )
+            ->addOption(
+                'override',
+                null,
+                InputOption::VALUE_NONE,
+                'If set, existing files will be overridden'
+            );}
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $path = explode('\\', $input->getArgument('module'));
+        $module   = $input->getArgument('module');
+        $override = !!$input->getOption('override');
 
         foreach (['Action', 'Responder'] as $directory) {
-            $output->writeln($this->filesystem->makeDirectory($path[0], $directory));
+            $output->writeln($this->filesystem->makeDirectory(
+                $module,
+                $directory,
+                $override
+            ));
         }
 
         $config = !!$input->getOption('crud')
-            ? $this->getCrudConfig($input->getArgument('module'))
-            : $this->getBaseConfig($input->getArgument('module'));
+            ? $this->getCrudConfig($module)
+            : $this->getBaseConfig($module);
 
-        $this->generateClasses($config, $output);
+        $this->generateClasses($config, $output, $override);
     }
 
-    protected function generateClasses($config, OutputInterface $output)
+    protected function generateClasses($config, OutputInterface $output, $override)
     {
         foreach ($config as $parameters) {
-            $command = $this->getApplication()->find($parameters['command']);
-            $input   = new ArrayInput($parameters);
+            $command                  = $this->getApplication()->find($parameters['command']);
+            $parameters['--override'] = $override;
+            $input                    = new ArrayInput($parameters);
 
             $command->run($input, $output);
         }
@@ -100,15 +111,7 @@ class MakeModule extends Command
             ],
             [
                 'command' => 'make:domain',
-                'domain'  => $module . '\\Entity'
-            ],
-            [
-                'command' => 'make:domain',
                 'domain'  => $module . '\\Filter'
-            ],
-            [
-                'command' => 'make:domain',
-                'domain'  => $module . '\\Gateway'
             ],
             [
                 'command' => 'make:domain',

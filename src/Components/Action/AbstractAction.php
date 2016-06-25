@@ -40,6 +40,8 @@ abstract class AbstractAction
 
     public function init()
     {
-        $this->checkAccess();
+        if (Auth::isEnabled()) {
+            $this->checkAccess();
+        }
     }
 }

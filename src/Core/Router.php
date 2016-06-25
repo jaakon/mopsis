@@ -70,7 +70,7 @@ class Router
             return studly_case($m[$placeholder[1]]);
         }, $path);
 
-        if (preg_match('/^\w+\\\\\w+\\\\\w+$/', $path)) {
+        if (preg_match('/^\w+\\\\\w+$/', $path)) {
             try {
                 $class  = App::build('Action', $path);
                 $method = '__invoke';

@@ -1,23 +1,23 @@
 <?php
 namespace Mopsis\Console\Commands;
 
-use Mopsis\Console\Command;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class MakeDomain extends Command
+class __CLASS__Command extends Command
 {
     protected function configure()
     {
         $this
-            ->setName('make:domain')
-            ->setDescription('Create a new domain class')
+            ->setName('__NAME__')
+            ->setDescription('Create a default action class')
             ->addArgument(
-                'domain',
+                'action',
                 InputArgument::REQUIRED,
-                'What is the name of the domain?'
+                'What is the name of the action?'
             )
             ->addOption(
                 'override',
@@ -29,15 +29,8 @@ class MakeDomain extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $keys     = $this->identifyAction($input->getArgument('domain'));
-        $template = $this->filesystem->findTemplateForDomain($keys['action']);
-
         $output->writeln(
-            $this->filesystem->createClass(
-                $keys['module'] . '/' . $keys['module'] . $keys['action'],
-                $this->stringHelper->fillTemplate($template, $keys),
-                $input->getOption('override')
-            )
+            $input->getOption('override')
         );
     }
 }

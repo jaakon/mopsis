@@ -7,17 +7,17 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class MakeDomain extends Command
+class MakeView extends Command
 {
     protected function configure()
     {
         $this
-            ->setName('make:domain')
-            ->setDescription('Create a new domain class')
+            ->setName('make:view')
+            ->setDescription('Create a new view for an action')
             ->addArgument(
-                'domain',
+                'action',
                 InputArgument::REQUIRED,
-                'What is the name of the domain?'
+                'What is the name of the action?'
             )
             ->addOption(
                 'override',
@@ -29,13 +29,18 @@ class MakeDomain extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $keys     = $this->identifyAction($input->getArgument('domain'));
-        $template = $this->filesystem->findTemplateForDomain($keys['action']);
+        list($module, $domain, $action) = explode('\\', $input->getArgument('action'));
 
         $output->writeln(
-            $this->filesystem->createClass(
-                $keys['module'] . '/' . $keys['module'] . $keys['action'],
-                $this->stringHelper->fillTemplate($template, $keys),
+            $this->filesystem->createView(
+                $module . '/' . $action . '.tpl',
+                $this->filesystem->findTemplateForView($action),
+                [
+                    '{{MODULE}}'   => $module,
+                    '{{DOMAIN}}'   => $domain,
+                    '{{ACTION}}'   => $action,
+                    '{{INSTANCE}}' => strtolower($domain)
+                ],
                 $input->getOption('override')
             )
         );

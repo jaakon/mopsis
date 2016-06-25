@@ -19,14 +19,14 @@ return [
     'config' => object(Mopsis\Core\Config::class),
 
     'classFormats' => [
-        'Action'     => 'App\\{{MODULE}}\\Action\\{{DOMAIN}}{{SUBTYPE}}Action',
-        'Collection' => 'App\\{{MODULE}}\\{{DOMAIN}}Collection',
+        'Action'     => 'App\\{{MODULE}}\\Action\\{{SUBTYPE}}Action',
+        'Collection' => 'App\\{{MODULE}}\\Collection',
         'Controller' => 'App\\{{MODULE}}\\Controller',
-        'Domain'     => 'App\\{{MODULE}}\\{{DOMAIN}}{{SUBTYPE}}',
-        'Gateway'    => 'App\\{{MODULE}}\\{{DOMAIN}}Gateway',
-        'Model'      => 'App\\{{MODULE}}\\{{DOMAIN}}Model',
-        'Observer'   => 'App\\{{MODULE}}\\{{DOMAIN}}Observer',
-        'Responder'  => 'App\\{{MODULE}}\\Responder\\{{DOMAIN}}{{SUBTYPE}}Responder',
+        'Domain'     => 'App\\{{MODULE}}\\{{SUBTYPE}}',
+        'Gateway'    => 'App\\{{MODULE}}\\Gateway',
+        'Model'      => 'App\\{{MODULE}}\\Model',
+        'Observer'   => 'App\\{{MODULE}}\\Observer',
+        'Responder'  => 'App\\{{MODULE}}\\Responder\\{{SUBTYPE}}Responder',
         'View'       => '{{MODULE}}\\{{SUBTYPE}}'
     ],
 
@@ -218,6 +218,9 @@ return [
         ]);
     },
 
+    Illuminate\Contracts\Events\Dispatcher::class
+    => object(Illuminate\Events\Dispatcher::class),
+
     Illuminate\Translation\LoaderInterface::class
     => object(Illuminate\Translation\FileLoader::class)
         ->constructorParameter('path', dot('translator.path')),
@@ -316,7 +319,7 @@ return [
             }
         }
 
-        $manager->setEventDispatcher(new Illuminate\Events\Dispatcher());
+//        $manager->setEventDispatcher(new Illuminate\Events\Dispatcher());
         $manager->bootEloquent();
         $manager->setAsGlobal();
 
@@ -413,5 +416,8 @@ return [
 
     Translator::class
     => object(Illuminate\Translation\Translator::class)
-        ->constructorParameter('locale', dot('translator.locale'))
+        ->constructorParameter('locale', dot('translator.locale')),
+
+    Xml::class
+    => object(Mopsis\Extensions\SimpleXML\SimpleXMLElement::class)
 ];

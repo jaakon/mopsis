@@ -7,17 +7,17 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class MakeDomain extends Command
+class DbCreate extends Command
 {
     protected function configure()
     {
         $this
-            ->setName('make:domain')
-            ->setDescription('Create a new domain class')
+            ->setName('db:create')
+            ->setDescription('Create a database migration')
             ->addArgument(
-                'domain',
+                'migration',
                 InputArgument::REQUIRED,
-                'What is the name of the domain?'
+                'What is the name of the migration?'
             )
             ->addOption(
                 'override',
@@ -29,14 +29,27 @@ class MakeDomain extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $keys     = $this->identifyAction($input->getArgument('domain'));
-        $template = $this->filesystem->findTemplateForDomain($keys['action']);
+        $keys     = $this->identifyAction($input->getArgument('migration'));
+        $template = $this->filesystem->findTemplateForMigration($keys['module']);
+        $override = !!$input->getOption('override');
+
+        $file = $this->filesystem->findMigration($keys['module']);
+
+        if ($file !== null) {
+            if (!$override) {
+                $output->writeln('<error>file already exists: ' . $file . '</error>');
+
+                return;
+            }
+
+            unlink($file);
+        }
 
         $output->writeln(
-            $this->filesystem->createClass(
-                $keys['module'] . '/' . $keys['module'] . $keys['action'],
+            $this->filesystem->createMigration(
+                $keys['module'],
                 $this->stringHelper->fillTemplate($template, $keys),
-                $input->getOption('override')
+                $override
             )
         );
     }

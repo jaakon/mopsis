@@ -1,0 +1,8 @@
+<?php
+namespace App\{{MODULE}};
+
+use Mopsis\Components\Domain\AbstractFilter;
+
+class {{MODULE}}Filter extends AbstractFilter
+{
+}
