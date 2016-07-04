@@ -24,6 +24,7 @@ abstract class Model implements ModelInterface
 
         if ($id === null) {
             $this->data = $this->config['defaults'];
+
             return;
         }
 
@@ -320,9 +321,9 @@ abstract class Model implements ModelInterface
             }
 
             if (preg_match('/^(\w+)Id$/', $key, $m) && is_object($import[$m[1]])) {
-                $this->{$m[1]}
-                = $import[$m[1]];
-                unset($import[$m[1]]);
+                $property        = $m[1];
+                $this->$property = $import[$property];
+                unset($import[$property]);
                 continue;
             }
         }
@@ -331,6 +332,10 @@ abstract class Model implements ModelInterface
             if ($value !== null && method_exists($this, 'set' . ucfirst($key) . 'Attribute')) {
                 $this->$key = $value;
             }
+        }
+
+        foreach ($this->data as $key => $value) {
+            $this->data[$key] = TypeFactory::cast($value, $this->config['types'][$key]);
         }
 
         return $this;
