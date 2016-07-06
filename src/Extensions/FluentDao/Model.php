@@ -18,6 +18,8 @@ abstract class Model implements ModelInterface
 
     protected $stringifier;
 
+    protected $table;
+
     public function __construct($id = null)
     {
         $this->config = ModelFactory::getConfig(get_called_class());
@@ -178,9 +180,16 @@ abstract class Model implements ModelInterface
     public static function findAll($query = null, $values = [], $orderBy = null)
     {
         list($query, $values) = Sql::expandQuery($query, $values);
-        $collection           = str_replace('Models', 'Collections', get_called_class());
+        $collection           = static::getCollectionClass();
 
-        return $collection::loadRawData(Sql::db()->getAll(Sql::buildQuery(static::_getDefaultQuery('*', $query, $orderBy)), $values));
+        return $collection::loadRawData(
+            Sql::db()->getAll(
+                Sql::buildQuery(
+                    static::_getDefaultQuery('*', $query, $orderBy)
+                ),
+                $values
+            )
+        );
     }
 
     public static function findOrFail($id)
@@ -238,12 +247,17 @@ abstract class Model implements ModelInterface
                 $result = $class::findAll($connection['query'], (string) $this);
                 break;
             case 'crossbound':
-                $collection = str_replace('Models', 'Collections', ModelFactory::findClass($key));
-                $result     = $collection::load(Sql::db()->getCol(Sql::buildQuery([
-                    'select' => $connection['identifier'],
-                    'from'   => $connection['pivot'],
-                    'where'  => $connection['query']
-                ]), $this->id));
+                $collection = static::getCollectionClass(ModelFactory::findClass($key));
+                $result     = $collection::load(
+                    Sql::db()->getCol(
+                        Sql::buildQuery([
+                            'select' => $connection['identifier'],
+                            'from'   => $connection['pivot'],
+                            'where'  => $connection['query']
+                        ]),
+                        $this->id
+                    )
+                );
                 break;
             default:
                 throw new \Exception('connection type [' . $connection['type'] . '] is invalid');
@@ -266,9 +280,6 @@ abstract class Model implements ModelInterface
 
     public function getSortOrder()
     {
-        /**
-         * @noinspection PhpParamsInspection
-         */
         if (isset($this->orderBy) && is_array($this->orderBy) && count($this->orderBy)) {
             return implode(',', $this->orderBy);
         }
@@ -571,5 +582,10 @@ abstract class Model implements ModelInterface
     protected static function _stringToClass($value, $class)
     {
         return $value instanceof $class ? $value : new $class($value);
+    }
+
+    protected function getCollectionClass($class = null)
+    {
+        return str_replace('Model', 'Collection', $class ?: get_called_class());
     }
 }

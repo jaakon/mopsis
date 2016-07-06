@@ -96,7 +96,9 @@ class Bootstrap
         }
 
         if ($flushMode === 'all' || $flushMode === 'app') {
-            App::get('CacheTool')->opcache_reset();
+            if (App::has('CacheTool')) {
+                App::get('CacheTool')->opcache_reset();
+            }
         }
 
         if ($flushMode === 'all' || $flushMode === 'assets') {

@@ -1,12 +1,11 @@
 <?php
 namespace Mopsis\Extensions\FluentDao;
 
+use Mopsis\Core\App;
 use Mopsis\Core\Cache;
 
 abstract class ModelFactory
 {
-    const NS_MODELS = '\\App\\Models\\';
-
     protected static $models = [];
 
     public static function findClass($table)
@@ -46,10 +45,9 @@ abstract class ModelFactory
 
 // ----- OUTBOUND -----
             foreach (Sql::db()->getOutboundReferences($table, ['id']) as $attribute => $data) {
-                $refClass                                      = class_basename(ModelFactory::findClass($data['table']));
                 $result[preg_replace('/Id$/', '', $attribute)] = [
                     'type'      => 'outbound',
-                    'class'     => $refClass,
+                    'class'     => ModelFactory::findClass($data['table']),
                     'attribute' => $attribute
                 ];
             }
@@ -95,7 +93,6 @@ abstract class ModelFactory
     public static function load($class, $id, $useCache = true)
     {
         $model = class_basename($class);
-        $class = self::NS_MODELS . $model;
 
         if (!is_array(self::$models[$model])) {
             self::$models[$model] = [];
@@ -143,7 +140,11 @@ abstract class ModelFactory
                     throw new \Exception('identifier could not be set (table [' . $table['table_name'] . '] has no primary key)');
                 }
 
-                $index[ltrim(self::NS_MODELS, '\\') . $m[1]] = $table['table_name'];
+                try {
+                    $index[App::build('Model', $m[1])] = $table['table_name'];
+                } catch (\DomainException $e) {
+                    $index[App::build('Model', $m[1] . 's')] = $table['table_name'];
+                }
             }
 
             if (!count($index)) {
