@@ -19,14 +19,14 @@ return [
     'config' => object(Mopsis\Core\Config::class),
 
     'classFormats' => [
-        'Action'     => 'App\\{{MODULE}}\\Action\\{{SUBTYPE}}Action',
-        'Collection' => 'App\\{{MODULE}}\\Collection',
+        'Action'     => 'App\\{{MODULE}}\\Action\\{{DOMAIN}}{{SUBTYPE}}Action',
+        'Collection' => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}Collection',
         'Controller' => 'App\\{{MODULE}}\\Controller',
-        'Domain'     => 'App\\{{MODULE}}\\{{SUBTYPE}}',
-        'Gateway'    => 'App\\{{MODULE}}\\Gateway',
-        'Model'      => 'App\\{{MODULE}}\\Model',
-        'Observer'   => 'App\\{{MODULE}}\\Observer',
-        'Responder'  => 'App\\{{MODULE}}\\Responder\\{{SUBTYPE}}Responder',
+        'Domain'     => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}{{SUBTYPE}}',
+        'Gateway'    => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}Gateway',
+        'Model'      => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}Model',
+        'Observer'   => 'App\\{{MODULE}}\\Domain\\{{DOMAIN}}Observer',
+        'Responder'  => 'App\\{{MODULE}}\\Responder\\{{DOMAIN}}{{SUBTYPE}}Responder',
         'View'       => '{{MODULE}}\\{{SUBTYPE}}'
     ],
 
@@ -310,10 +310,8 @@ return [
     => function () {
         $manager = new Illuminate\Database\Capsule\Manager();
 
-        if (is_array(config('connections'))) {
-            foreach (config('connections') as $name => $config) {
-                $manager->addConnection($config, $name);
-            }
+        foreach (config('connections') as $name => $config) {
+            $manager->addConnection($config, $name);
         }
 
         $manager->setEventDispatcher(new Illuminate\Events\Dispatcher());
@@ -413,8 +411,5 @@ return [
 
     Translator::class
     => object(Illuminate\Translation\Translator::class)
-        ->constructorParameter('locale', dot('translator.locale')),
-
-    Xml::class
-    => object(Mopsis\Extensions\SimpleXML\SimpleXMLElement::class)
+        ->constructorParameter('locale', dot('translator.locale'))
 ];

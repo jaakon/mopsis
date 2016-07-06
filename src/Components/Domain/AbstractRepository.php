@@ -1,68 +1,134 @@
 <?php
 namespace Mopsis\Components\Domain;
 
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Mopsis\Contracts\Model;
 
+/**
+ * @property Model $model
+ */
 abstract class AbstractRepository
 {
-    protected $baseQuery;
+    protected $model;
 
-    protected $query;
-
-    protected $relation;
-
-    public function __call($method, $parameters)
+    public function create(Model $instance, $data)
     {
-        if (method_exists($this, $scope = 'scope' . ucfirst($method))) {
-            return $this->callScope($scope, $parameters);
+        return $instance->fill($this->getAcceptedData($instance, $this->getRestructuredData($data)))->save() ? $instance : false;
+    }
+
+    public function delete(Model $instance)
+    {
+        return $instance->delete();
+    }
+
+    public function fetchAll()
+    {
+        return $this->model->all();
+    }
+
+    public function fetchById($id)
+    {
+        return $this->model->find($id);
+    }
+
+    public function fetchByToken($token)
+    {
+        return $this->model->unpack($token);
+    }
+
+    public function find($sql, array $bindings)
+    {
+        return $this->model->whereRaw($sql, $bindings);
+    }
+
+    public function findMany($sql, array $bindings = [], $offset = 0, $length = null)
+    {
+        $query = $this->find(...$this->expandQuery($sql, $bindings));
+
+        if ($offset > 0) {
+            $query = $query->skip($offset);
         }
 
-        if (method_exists($this->relation, $method)) {
-            return $this->relation->$method(...$parameters);
+        if ($length > 0) {
+            $query = $query->take($length);
         }
 
-        if (method_exists($this->query, $method)) {
-            $result = $this->query->$method(...$parameters);
+        return $query->get();
+    }
 
-            if ($result instanceof Builder) {
-                return $this;
+    public function findOne($sql, array $bindings = [])
+    {
+        return $this->find(...$this->expandQuery($sql, $bindings))->first();
+    }
+
+    public function newEntity(array $attributes = []): Model
+    {
+        return $this->model->newInstance($attributes);
+    }
+
+    public function newRepository(Relation $relation)
+    {
+        return new Repository($relation);
+    }
+
+    public function set(Model $instance, $key, $value)
+    {
+        $instance->setAttribute($key, $value);
+        $instance->save();
+
+        return $instance;
+    }
+
+    public function update(Model $instance, $data)
+    {
+        return $instance->update($this->getAcceptedData($instance, $this->getRestructuredData($data))) ? $instance : false;
+    }
+
+    protected function expandQuery($sql, array $bindings)
+    {
+        if (!is_array($sql)) {
+            return [
+                $sql,
+                $bindings
+            ];
+        }
+
+        return [
+            '`' . implode('`=? AND `', array_keys($sql)) . '`=?',
+            array_values($sql)
+        ];
+    }
+
+    protected function getAcceptedData(Model $instance, $data)
+    {
+        foreach ($data as $key => $value) {
+            unset($data[$key]);
+            $data[snake_case($key)] = $value;
+        }
+
+        return array_intersect_key($data, array_flip($instance->getFillableAttributes()));
+    }
+
+    protected function getRestructuredData($data)
+    {
+        foreach ($data as $key => $value) {
+            if (!preg_match('/^(\w+)\.(\w+)$/', $key, $match)) {
+                continue;
             }
 
-            $this->newQuery();
+            unset($data[$key]);
 
-            return $result;
+            if (isset($data[$match[1]]) && !is_array($data[$match[1]])) {
+                exit('CARCRASH!!');
+            }
+
+            if (!is_array($data[$match[1]])) {
+                $data[$match[1]] = [];
+            }
+
+            $data[$match[1]][$match[2]] = $value;
         }
 
-        return;
-    }
-
-    public function __clone()
-    {
-        $this->baseQuery = clone $this->baseQuery;
-        $this->query     = clone $this->baseQuery;
-    }
-
-    public function __construct(Relation $relation)
-    {
-        $this->relation  = $relation;
-        $this->baseQuery = clone $relation->getQuery();
-        $this->query     = clone $this->baseQuery;
-    }
-
-    protected function callScope($scope, $parameters)
-    {
-        $that = clone $this;
-        $that->$scope($that->baseQuery, ...$parameters);
-        $that->query = clone $that->baseQuery;
-
-        return $that;
-    }
-
-    protected function newQuery()
-    {
-        $this->query = clone $this->baseQuery;
-
-        return $this;
+        return $data;
     }
 }

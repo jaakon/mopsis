@@ -285,6 +285,10 @@ abstract class Model extends EloquentModel implements ModelInterface
             return App::make('Json', ['body' => $value]);
         }
 
+        if ($this->getCastType($key) === 'xml') {
+            return App::make('Xml', ['xmlData' => $value]);
+        }
+
         return parent::castAttribute($key, $value);
     }
 

@@ -1,0 +1,8 @@
+<?php
+namespace App\{{MODULE}};
+
+use Mopsis\Components\Domain\AbstractRepository;
+
+class {{MODULE}}Repository extends AbstractRepository
+{
+}

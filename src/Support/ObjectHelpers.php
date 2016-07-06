@@ -5,6 +5,25 @@ use stdClass;
 
 class ObjectHelpers
 {
+    protected static $castTypes = ['bool', 'int', 'float', 'string', 'array', 'object', 'null'];
+
+    public static function cast($object, $type, $preserveNullValue)
+    {
+        if (!in_array($type, static::$castTypes)) {
+            throw new \Exception('invalid type "' . $type . '" for convertion');
+        }
+
+        if ($preserveNullValue && $object === null) {
+            return;
+        }
+
+        if (settype($object, $type)) {
+            return $object;
+        }
+
+        throw new \Exception('cannot cast ' . gettype($object) . ' to ' . $type);
+    }
+
     public static function merge(stdClass $baseObject, stdClass...$objects)
     {
         $result = clone $baseObject;
