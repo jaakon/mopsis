@@ -43,7 +43,7 @@ abstract class AbstractService
             }
 
             if (!$this->repository->create($instance, $this->filter->getResult())) {
-                return new $this->payload->notCreated([
+                return $this->payload->notCreated([
                     'instance' => $instance,
                     'formId'   => $formId
                 ]);
@@ -97,7 +97,7 @@ abstract class AbstractService
             $instance->$relation()->associate($ancestor);
 
             if (!$this->repository->create($instance, $this->filter->getResult())) {
-                return new $this->payload->notCreated([
+                return $this->payload->notCreated([
                     'instance'      => $instance,
                     'formId'        => $formId,
                     'ancestorToken' => $ancestorToken
