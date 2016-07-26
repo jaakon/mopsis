@@ -1,5 +1,5 @@
 <?php
-namespace Mopsis\Extensions\Eloquent;
+namespace Mopsis\Core\Eloquent;
 
 use Mopsis\Extensions\Stringifier;
 

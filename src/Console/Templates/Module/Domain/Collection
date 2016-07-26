@@ -1,7 +1,7 @@
 <?php
 namespace App\{{MODULE}};
 
-use Mopsis\Extensions\Eloquent\Collection;
+use Mopsis\Core\Eloquent\Collection;
 
 class {{MODULE}}Collection extends Collection
 {

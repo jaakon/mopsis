@@ -1,8 +1,7 @@
 <?php
-namespace Mopsis\Extensions\FluentDao;
+namespace Mopsis\Core\FluentDao;
 
 use Mopsis\Contracts\Model as ModelContract;
-use Mopsis\Core\App;
 
 class TypeFactory
 {
@@ -54,15 +53,9 @@ class TypeFactory
                     return $value;
                 }
 
-                if (preg_match('/^([a-z]+):(\d+)$/i', $value, $m)) {
+                if (preg_match('/^([a-z\\\\]+):(\d+)$/i', $value, $m)) {
                     try {
-                        $model = App::build('Model', $m[1]);
-                    } catch (\DomainException $e) {
-                        $model = App::build('Model', $m[1] . 's');
-                    }
-
-                    try {
-                        return ModelFactory::load($model, $m[2]);
+                        return ModelFactory::load($m[1], $m[2]);
                     } catch (\LengthException $e) {
                         throw new \Exception('reference "' . $value . '" is invalid');
                     }

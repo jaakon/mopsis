@@ -1,5 +1,5 @@
 <?php
-namespace Mopsis\Extensions\FluentDao;
+namespace Mopsis\Core\FluentDao;
 
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Mopsis\Contracts\Model as ModelInterface;
@@ -448,22 +448,26 @@ abstract class Model implements ModelInterface
             if ($type === 'model') {
                 switch (gettype($value)) {
                     case 'object':
-                        $baseClass = __CLASS__;
-
-                        if (!($value instanceof $baseClass) || !in_array(class_basename($value), $this->config['values'][$key]) || !$value->exists) {
-                            throw new \Exception('given object is not an allowed instance: [' . implode(', ', $this->config['values'][$key]) . ']');
+                        if (
+                            $value instanceof ModelInterface &&
+                            in_array(class_basename($value), $this->config['values'][$key]) &&
+                            $value->exists
+                        ) {
+                            break;
                         }
 
-                        break;
+                        throw new \Exception('given object is not an allowed instance: [' . implode(', ', $this->config['values'][$key]) . ']');
                     case 'string':
-                        if (!preg_match('/^([a-z]+):(\d+)$/i', $value, $m) || !in_array($m[1], $this->config['values'][$key])) {
-                            throw new \Exception('"' . $value . '" is an invalid value for property [' . $key . ']');
+                        if (
+                            preg_match('/^([a-z\\\\]+):(\d+)$/i', $value, $m) &&
+                            in_array($m[1], $this->config['values'][$key])
+                        ) {
+                            break;
                         }
 
-                        break;
+                        throw new \Exception('"' . $value . '" is an invalid value for property [' . $key . ']');
                     default:
                         throw new \Exception('"' . gettype($value) . '" is not an valid type for property [' . $key . ']');
-                        break;
                 }
             }
 
@@ -485,9 +489,9 @@ abstract class Model implements ModelInterface
                 throw new \Exception('required property [' . $key . '] cannot be set to null');
             }
 
+            $attribute         = $connection['attribute'];
+            $this->$attribute  = null;
             $this->cache[$key] = null;
-            $this->{$connection['attribute']}
-            = null;
 
             return true;
         }
@@ -500,15 +504,13 @@ abstract class Model implements ModelInterface
             throw new \Exception('connection types other than "outbound" are not supported');
         }
 
-        $model = '\\App\\Models\\' . $connection['class'];
-
-        if (!($value instanceof $model)) {
-            throw new \Exception('given object is not an instance of ' . $model);
+        if (!($value instanceof $connection['class'])) {
+            throw new \Exception('given object is not an instance of ' . $connection['class']);
         }
 
+        $attribute         = $connection['attribute'];
+        $this->$attribute  = $value->id;
         $this->cache[$key] = $value;
-        $this->{$connection['attribute']}
-        = $value->id;
 
         return true;
     }

@@ -1,7 +1,7 @@
 <?php
 namespace App\{{MODULE}};
 
-use Mopsis\Extensions\Eloquent\Model;
+use Mopsis\Core\Eloquent\Model;
 
 abstract class Entity extends Model
 {

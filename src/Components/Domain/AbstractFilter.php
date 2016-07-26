@@ -1,7 +1,9 @@
 <?php
 namespace Mopsis\Components\Domain;
 
+use Aura\Filter\SubjectFilter as Filter;
 use Mopsis\Core\App;
+use Mopsis\FormBuilder\RulesProvider;
 use Mopsis\Security\Csrf;
 
 abstract class AbstractFilter
@@ -25,6 +27,12 @@ abstract class AbstractFilter
     protected $validatorRulesLoaded = false;
 
     //    public function __construct(Filter $facade, RulesProvider $rules, FileUploadAggregator $uploader)
+    public function __construct(Filter $facade, RulesProvider $rules, $uploader = null)
+    {
+        $this->facade   = $facade;
+        $this->rules    = $rules;
+        $this->uploader = $uploader;
+    }
 
     public function addRule($field, array $rule, $isRequired = true)
     {

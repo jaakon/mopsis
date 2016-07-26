@@ -1,5 +1,5 @@
 <?php
-namespace Mopsis\Extensions\FluentDao;
+namespace Mopsis\Core\FluentDao;
 
 use PDO;
 

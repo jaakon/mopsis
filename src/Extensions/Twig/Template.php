@@ -5,7 +5,7 @@ use BadMethodCallException;
 use Exception;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Mopsis\Extensions\Eloquent\Model;
+use Mopsis\Core\Eloquent\Model;
 
 abstract class Template extends \Twig_Template
 {

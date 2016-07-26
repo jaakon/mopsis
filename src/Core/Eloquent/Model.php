@@ -1,5 +1,5 @@
 <?php
-namespace Mopsis\Extensions\Eloquent;
+namespace Mopsis\Core\Eloquent;
 
 use DomainException;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
@@ -264,8 +264,8 @@ abstract class Model extends EloquentModel implements ModelInterface
     }
 
     /**
-     * @param  string                              $token
-     * @return \Mopsis\Extensions\Eloquent\Model
+     * @param  string                        $token
+     * @return \Mopsis\Core\Eloquent\Model
      */
     public static function unpack($token)
     {

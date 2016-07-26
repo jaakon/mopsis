@@ -2,7 +2,7 @@
 namespace Mopsis\Components\Controller;
 
 use Mopsis\Contracts\Model;
-use Mopsis\Extensions\Eloquent\Model as Eloquent;
+use Mopsis\Core\Eloquent\Model as Eloquent;
 
 abstract class AbstractCrudController extends AbstractController
 {

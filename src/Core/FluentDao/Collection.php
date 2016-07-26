@@ -1,5 +1,5 @@
 <?php
-namespace Mopsis\Extensions\FluentDao;
+namespace Mopsis\Core\FluentDao;
 
 use Mopsis\Contracts\User;
 use Mopsis\Extensions\Stringifier;
