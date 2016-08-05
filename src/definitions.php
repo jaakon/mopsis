@@ -243,6 +243,9 @@ return array_merge($definitions, [
         ]);
     },
 
+    Illuminate\Contracts\Events\Dispatcher::class
+    => object(Illuminate\Events\Dispatcher::class),
+
     Illuminate\Translation\LoaderInterface::class
     => object(Illuminate\Translation\FileLoader::class)
         ->constructorParameter('path', dot('translator.path')),

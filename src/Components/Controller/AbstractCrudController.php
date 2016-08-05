@@ -20,7 +20,7 @@ abstract class AbstractCrudController extends AbstractController
             $instance->ancestor()->associate($ancestor);
             $instance->fill($this->filter->getResult())->save();
         } else {
-            $instance->set(strtolower(class_basename($ancestor)), $ancestor);
+            $instance->associateAncestor($ancestor);
             $instance->update($this->filter->getResult());
         }
 
