@@ -63,7 +63,7 @@ abstract class Model implements ModelInterface
             return $this->cache[$key];
         }
 
-        return $this->getAttribute($key);
+        return $this->get($key);
     }
 
     public function __invoke($key, $value = null)
@@ -174,7 +174,7 @@ abstract class Model implements ModelInterface
     {
         list($query, $values) = Sql::expandQuery($query, $values);
 
-        return ModelFactory::load(get_called_class(), (ctype_digit((string) $query) ? $query : static::get('id', $query, $values, $orderBy)), $useCache);
+        return ModelFactory::load(get_called_class(), (ctype_digit((string) $query) ? $query : static::getValue('id', $query, $values, $orderBy)), $useCache);
     }
 
     public static function findAll($query = null, $values = [], $orderBy = null)
@@ -203,20 +203,7 @@ abstract class Model implements ModelInterface
         throw new ModelNotFoundException();
     }
 
-    public static function get($attribute, $query = null, $values = [], $orderBy = null)
-    {
-        list($query, $values) = Sql::expandQuery($query, $values);
-
-        return TypeFactory::cast(
-            Sql::db()->getValue(
-                Sql::buildQuery(static::_getDefaultQuery($attribute, $query, $orderBy)),
-                $values
-            ),
-            ModelFactory::getConfig(get_called_class())['types'][$attribute]
-        );
-    }
-
-    public function getAttribute($key)
+    public function get($key)
     {
         if (array_key_exists($key, $this->data)) {
             return $this->data[$key];
@@ -290,6 +277,19 @@ abstract class Model implements ModelInterface
     public function getTokenAttribute()
     {
         return new Token($this, session_id());
+    }
+
+    public static function getValue($attribute, $query = null, $values = [], $orderBy = null)
+    {
+        list($query, $values) = Sql::expandQuery($query, $values);
+
+        return TypeFactory::cast(
+            Sql::db()->getValue(
+                Sql::buildQuery(static::_getDefaultQuery($attribute, $query, $orderBy)),
+                $values
+            ),
+            ModelFactory::getConfig(get_called_class())['types'][$attribute]
+        );
     }
 
     public static function getValuesFor($attribute)
