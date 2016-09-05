@@ -1,5 +1,5 @@
 <?php
-namespace Mopsis\Extensions\FluentDao;
+namespace Mopsis\Core\FluentDao;
 
 use Mopsis\Contracts\User;
 use Mopsis\Extensions\Stringifier;
@@ -68,11 +68,11 @@ class Collection extends \Illuminate\Support\Collection
     public static function load(array $ids)
     {
         $collection = new static();
-        $class      = str_replace('Collections\\', 'Models\\', get_called_class());
+        $model      = static::getModelClass();
 
         foreach ($ids as $id) {
             try {
-                $collection[] = ModelFactory::load($class, $id);
+                $collection[] = ModelFactory::load($model, $id);
             } catch (\LengthException $e) {
             }
         }
@@ -83,10 +83,10 @@ class Collection extends \Illuminate\Support\Collection
     public static function loadRawData(array $data)
     {
         $collection = new static();
-        $class      = str_replace('Collections\\', 'Models\\', get_called_class());
+        $model      = static::getModelClass();
 
         foreach ($data as $entry) {
-            ModelFactory::put($collection[] = (new $class())->inject($entry));
+            ModelFactory::put($collection[] = (new $model())->inject($entry));
         }
 
         return $collection;
@@ -108,6 +108,11 @@ class Collection extends \Illuminate\Support\Collection
     public function stringify()
     {
         return $this->stringifier ?: $this->stringifier = new Stringifier($this);
+    }
+
+    protected function getModelClass()
+    {
+        return str_replace('Collection', 'Model', get_called_class());
     }
 
     protected function hasGetMutator($key)

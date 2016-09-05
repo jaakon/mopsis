@@ -15,11 +15,13 @@ class Json implements JsonSerializable
 
     public function __construct($body = null, $prettyPrint = false)
     {
-        if (is_array($body) || null === $body || is_bool($body) || is_numeric($body)) {
+        if (is_array($body)) {
             $this->body     = $body;
             $this->bodyType = 'array';
+        } elseif (null === $body || is_bool($body) || is_numeric($body)) {
+            $this->body     = [$body];
+            $this->bodyType = 'array';
         } elseif (filter_var($body, FILTER_VALIDATE_URL) !== false) {
-            // valid url is passed in
             $content = file_get_contents($body);
             $this->parseStringJson($content);
         } elseif (is_string($body)) {

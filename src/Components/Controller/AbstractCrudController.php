@@ -2,7 +2,7 @@
 namespace Mopsis\Components\Controller;
 
 use Mopsis\Contracts\Model;
-use Mopsis\Extensions\Eloquent\Model as Eloquent;
+use Mopsis\Core\Eloquent\Model as Eloquent;
 
 abstract class AbstractCrudController extends AbstractController
 {
@@ -20,7 +20,7 @@ abstract class AbstractCrudController extends AbstractController
             $instance->ancestor()->associate($ancestor);
             $instance->fill($this->filter->getResult())->save();
         } else {
-            $instance->set(strtolower(class_basename($ancestor)), $ancestor);
+            $instance->associateAncestor($ancestor);
             $instance->update($this->filter->getResult());
         }
 

@@ -1,5 +1,5 @@
 <?php
-namespace Mopsis\Extensions\FluentDao;
+namespace Mopsis\Core\FluentDao;
 
 use Mopsis\Contracts\Model as ModelContract;
 
@@ -14,6 +14,11 @@ class TypeFactory
         return self::castValueToType($value, $type);
     }
 
+    public static function create($type, $value = null)
+    {
+        return $value instanceof $type ? $value : new $type($value);
+    }
+
     protected static function castNullToType($type)
     {
         switch ($type) {
@@ -21,7 +26,7 @@ class TypeFactory
                 return self::create('\Mopsis\Extensions\Json');
         }
 
-        return null;
+        return;
     }
 
     protected static function castValueToType($value, $type)
@@ -48,7 +53,7 @@ class TypeFactory
                     return $value;
                 }
 
-                if (preg_match('/^([a-z]+):(\d+)$/i', $value, $m)) {
+                if (preg_match('/^([a-z\\\\]+):(\d+)$/i', $value, $m)) {
                     try {
                         return ModelFactory::load($m[1], $m[2]);
                     } catch (\LengthException $e) {
@@ -58,10 +63,5 @@ class TypeFactory
         }
 
         return $value;
-    }
-
-    public static function create($type, $value = null)
-    {
-        return $value instanceof $type ? $value : new $type($value);
     }
 }

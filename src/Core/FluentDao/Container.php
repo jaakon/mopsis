@@ -1,5 +1,5 @@
 <?php
-namespace Mopsis\Extensions\FluentDao;
+namespace Mopsis\Core\FluentDao;
 
 /**
  * @property  properties
@@ -10,7 +10,22 @@ abstract class Container
 
     protected $data = null;
 
-    //=== PUBLIC METHODS ===========================================================
+    /*
+    public function __get($key)
+    {
+    return $this->hasGetMutator($key) ? $this->{'get' . studly_case($key) . 'Attribute'}() : null;
+    }
+
+    public function __isset($key)
+    {
+    return $this->hasGetMutator($key);
+    }
+
+    public function __set($key, $value)
+    {
+    return $this->hasSetMutator($key) ? $this->{'set' . studly_case($key) . 'Attribute'}($value) : null;
+    }
+     */
 
     public function __construct($criteria = null)
     {
@@ -97,5 +112,17 @@ abstract class Container
         }
 
         throw new \Exception('property [' . $key . '] is undefined');
+    }
+
+    //=== PUBLIC METHODS ===========================================================
+
+    protected function hasGetMutator($key)
+    {
+        return method_exists($this, 'get' . studly_case($key) . 'Attribute');
+    }
+
+    protected function hasSetMutator($key)
+    {
+        return method_exists($this, 'set' . studly_case($key) . 'Attribute');
     }
 }

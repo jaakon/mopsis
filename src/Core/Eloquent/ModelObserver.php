@@ -1,5 +1,5 @@
 <?php
-namespace Mopsis\Extensions\Eloquent;
+namespace Mopsis\Core\Eloquent;
 
 use Cviebrock\EloquentSluggable\SluggableInterface;
 use Mopsis\Contracts\Loggable;

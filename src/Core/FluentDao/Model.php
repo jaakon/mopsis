@@ -1,5 +1,5 @@
 <?php
-namespace Mopsis\Extensions\FluentDao;
+namespace Mopsis\Core\FluentDao;
 
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Mopsis\Contracts\Model as ModelInterface;
@@ -18,12 +18,15 @@ abstract class Model implements ModelInterface
 
     protected $stringifier;
 
+    protected $table;
+
     public function __construct($id = null)
     {
         $this->config = ModelFactory::getConfig(get_called_class());
 
         if ($id === null) {
             $this->data = $this->config['defaults'];
+
             return;
         }
 
@@ -60,7 +63,7 @@ abstract class Model implements ModelInterface
             return $this->cache[$key];
         }
 
-        return $this->getAttribute($key);
+        return $this->get($key);
     }
 
     public function __invoke($key, $value = null)
@@ -171,15 +174,22 @@ abstract class Model implements ModelInterface
     {
         list($query, $values) = Sql::expandQuery($query, $values);
 
-        return ModelFactory::load(get_called_class(), (ctype_digit((string) $query) ? $query : static::get('id', $query, $values, $orderBy)), $useCache);
+        return ModelFactory::load(get_called_class(), (ctype_digit((string) $query) ? $query : static::getValue('id', $query, $values, $orderBy)), $useCache);
     }
 
     public static function findAll($query = null, $values = [], $orderBy = null)
     {
         list($query, $values) = Sql::expandQuery($query, $values);
-        $collection           = str_replace('Models', 'Collections', get_called_class());
+        $collection           = static::getCollectionClass();
 
-        return $collection::loadRawData(Sql::db()->getAll(Sql::buildQuery(static::_getDefaultQuery('*', $query, $orderBy)), $values));
+        return $collection::loadRawData(
+            Sql::db()->getAll(
+                Sql::buildQuery(
+                    static::_getDefaultQuery('*', $query, $orderBy)
+                ),
+                $values
+            )
+        );
     }
 
     public static function findOrFail($id)
@@ -193,20 +203,7 @@ abstract class Model implements ModelInterface
         throw new ModelNotFoundException();
     }
 
-    public static function get($attribute, $query = null, $values = [], $orderBy = null)
-    {
-        list($query, $values) = Sql::expandQuery($query, $values);
-
-        return TypeFactory::cast(
-            Sql::db()->getValue(
-                Sql::buildQuery(static::_getDefaultQuery($attribute, $query, $orderBy)),
-                $values
-            ),
-            ModelFactory::getConfig(get_called_class())['types'][$attribute]
-        );
-    }
-
-    public function getAttribute($key)
+    public function get($key)
     {
         if (array_key_exists($key, $this->data)) {
             return $this->data[$key];
@@ -237,12 +234,17 @@ abstract class Model implements ModelInterface
                 $result = $class::findAll($connection['query'], (string) $this);
                 break;
             case 'crossbound':
-                $collection = str_replace('Models', 'Collections', ModelFactory::findClass($key));
-                $result     = $collection::load(Sql::db()->getCol(Sql::buildQuery([
-                    'select' => $connection['identifier'],
-                    'from'   => $connection['pivot'],
-                    'where'  => $connection['query']
-                ]), $this->id));
+                $collection = static::getCollectionClass(ModelFactory::findClass($key));
+                $result     = $collection::load(
+                    Sql::db()->getCol(
+                        Sql::buildQuery([
+                            'select' => $connection['identifier'],
+                            'from'   => $connection['pivot'],
+                            'where'  => $connection['query']
+                        ]),
+                        $this->id
+                    )
+                );
                 break;
             default:
                 throw new \Exception('connection type [' . $connection['type'] . '] is invalid');
@@ -265,9 +267,6 @@ abstract class Model implements ModelInterface
 
     public function getSortOrder()
     {
-        /**
-         * @noinspection PhpParamsInspection
-         */
         if (isset($this->orderBy) && is_array($this->orderBy) && count($this->orderBy)) {
             return implode(',', $this->orderBy);
         }
@@ -278,6 +277,19 @@ abstract class Model implements ModelInterface
     public function getTokenAttribute()
     {
         return new Token($this, session_id());
+    }
+
+    public static function getValue($attribute, $query = null, $values = [], $orderBy = null)
+    {
+        list($query, $values) = Sql::expandQuery($query, $values);
+
+        return TypeFactory::cast(
+            Sql::db()->getValue(
+                Sql::buildQuery(static::_getDefaultQuery($attribute, $query, $orderBy)),
+                $values
+            ),
+            ModelFactory::getConfig(get_called_class())['types'][$attribute]
+        );
     }
 
     public static function getValuesFor($attribute)
@@ -320,9 +332,9 @@ abstract class Model implements ModelInterface
             }
 
             if (preg_match('/^(\w+)Id$/', $key, $m) && is_object($import[$m[1]])) {
-                $this->{$m[1]}
-                = $import[$m[1]];
-                unset($import[$m[1]]);
+                $property        = $m[1];
+                $this->$property = $import[$property];
+                unset($import[$property]);
                 continue;
             }
         }
@@ -331,6 +343,10 @@ abstract class Model implements ModelInterface
             if ($value !== null && method_exists($this, 'set' . ucfirst($key) . 'Attribute')) {
                 $this->$key = $value;
             }
+        }
+
+        foreach ($this->data as $key => $value) {
+            $this->data[$key] = TypeFactory::cast($value, $this->config['types'][$key]);
         }
 
         return $this;
@@ -432,22 +448,26 @@ abstract class Model implements ModelInterface
             if ($type === 'model') {
                 switch (gettype($value)) {
                     case 'object':
-                        $baseClass = __CLASS__;
-
-                        if (!($value instanceof $baseClass) || !in_array(class_basename($value), $this->config['values'][$key]) || !$value->exists) {
-                            throw new \Exception('given object is not an allowed instance: [' . implode(', ', $this->config['values'][$key]) . ']');
+                        if (
+                            $value instanceof ModelInterface &&
+                            in_array(class_basename($value), $this->config['values'][$key]) &&
+                            $value->exists
+                        ) {
+                            break;
                         }
 
-                        break;
+                        throw new \Exception('given object is not an allowed instance: [' . implode(', ', $this->config['values'][$key]) . ']');
                     case 'string':
-                        if (!preg_match('/^([a-z]+):(\d+)$/i', $value, $m) || !in_array($m[1], $this->config['values'][$key])) {
-                            throw new \Exception('"' . $value . '" is an invalid value for property [' . $key . ']');
+                        if (
+                            preg_match('/^([a-z\\\\]+):(\d+)$/i', $value, $m) &&
+                            in_array($m[1], $this->config['values'][$key])
+                        ) {
+                            break;
                         }
 
-                        break;
+                        throw new \Exception('"' . $value . '" is an invalid value for property [' . $key . ']');
                     default:
                         throw new \Exception('"' . gettype($value) . '" is not an valid type for property [' . $key . ']');
-                        break;
                 }
             }
 
@@ -469,9 +489,9 @@ abstract class Model implements ModelInterface
                 throw new \Exception('required property [' . $key . '] cannot be set to null');
             }
 
+            $attribute         = $connection['attribute'];
+            $this->$attribute  = null;
             $this->cache[$key] = null;
-            $this->{$connection['attribute']}
-            = null;
 
             return true;
         }
@@ -484,15 +504,13 @@ abstract class Model implements ModelInterface
             throw new \Exception('connection types other than "outbound" are not supported');
         }
 
-        $model = '\\App\\Models\\' . $connection['class'];
-
-        if (!($value instanceof $model)) {
-            throw new \Exception('given object is not an instance of ' . $model);
+        if (!($value instanceof $connection['class'])) {
+            throw new \Exception('given object is not an instance of ' . $connection['class']);
         }
 
+        $attribute         = $connection['attribute'];
+        $this->$attribute  = $value->id;
         $this->cache[$key] = $value;
-        $this->{$connection['attribute']}
-        = $value->id;
 
         return true;
     }
@@ -566,5 +584,10 @@ abstract class Model implements ModelInterface
     protected static function _stringToClass($value, $class)
     {
         return $value instanceof $class ? $value : new $class($value);
+    }
+
+    protected function getCollectionClass($class = null)
+    {
+        return str_replace('Model', 'Collection', $class ?: get_called_class());
     }
 }

@@ -92,7 +92,7 @@ abstract class AbstractController
     protected function setTemplate($page)
     {
         $class    = App::identify($this);
-        $template = App::getFullyQualifiedName('View', $class[0] . '\\' . $class[1] . '\\' . $page);
+        $template = App::getFullyQualifiedName('View', $class[0] . '\\' . $page);
 
         $this->view->setTemplate($template);
     }

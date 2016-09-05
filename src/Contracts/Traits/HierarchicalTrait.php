@@ -1,23 +1,21 @@
 <?php
 namespace Mopsis\Contracts\Traits;
 
+use Mopsis\Contracts\Model;
+
 trait HierarchicalTrait
 {
-    public function getAncestorAttribute()
+    public function ancestor()
     {
-        return isset($this->ancestor) ? $this->{$this->ancestor} : false;
+        $property = $this->ancestorProperty;
+
+        return $this->$property;
     }
 
-    public function getUriRecursive()
+    public function associateAncestor(Model $instance)
     {
-        if ($this->exists && isset($this->uri)) {
-            return $this->uri;
-        }
+        $property = $this->ancestorProperty;
 
-        if ($this->ancestor) {
-            return $this->ancestor->getUriRecursive();
-        }
-
-        return;
+        $this->$property = $instance;
     }
 }
