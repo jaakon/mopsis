@@ -14,7 +14,8 @@ trait HierarchicalTrait
 
     public function associateAncestor(Model $instance)
     {
-        $this->{$this->ancestorProperty}
-        = $instance;
+        $property = $this->ancestorProperty;
+
+        $this->$property = $instance;
     }
 }
