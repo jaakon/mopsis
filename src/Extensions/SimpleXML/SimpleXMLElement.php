@@ -97,6 +97,11 @@ class SimpleXMLElement
         return $children;
     }
 
+    public function count(string $path)
+    {
+        return count($this->xpath($path));
+    }
+
     public function first($path)
     {
         $elements = $this->xpath($path);
