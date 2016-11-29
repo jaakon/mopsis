@@ -4,11 +4,11 @@ namespace Mopsis\Extensions;
 class Pager
 {
     protected $args = [
-        'cycle' => false
+        'infinite' => false
     ];
 
     protected $options = [
-        'cycle',
+        'infinite',
         'delimiter',
         'directoryRendering',
         'directoryRenderingSelected',
@@ -22,47 +22,22 @@ class Pager
         'nextNotAvailable'
     ];
 
-    protected $result = [
-        'data',
-        'pos',
-        'pages',
-        'directory',
-        'first',
-        'last',
-        'previous',
-        'next'
-    ];
+    protected $result = [];
 
     public function __construct(array $data, $pageSize, $currentPage, array $args)
     {
-        $this->result['pages'] = ceil(count($data) / $pageSize);
-        $this->result['pos']   = min(max($currentPage, 1), $this->result['pages']);
+        $this->setArguments($args);
 
-        foreach ($this->options as $option) {
-            if (isset($args[$option])) {
-                $this->args[$option] = $args[$option];
-            }
-        }
+        $firstPage   = 1;
+        $lastPage    = ceil(count($data) / $pageSize);
+        $currentPage = min(max($currentPage, 1), $lastPage);
 
-        $this->result['first'] = $this->getHtml($this->result['pos'] > 1 ? 'firstAvailable' : 'firstNotAvailable', 1);
-        $this->result['last']  = $this->getHtml($this->result['pos'] < $this->result['pages'] ? 'lastAvailable' : 'lastNotAvailable', $this->result['pages']);
+        $this->result = $this->getArgForPage($currentPage, $firstPage, $lastPage, $this->args['infinite']);
 
-        if ($this->args['cycle']) {
-            $this->result['previous'] = $this->getHtml('previousAvailable', $this->result['pos'] > 1 ? $this->result['pos'] - 1 : $this->result['pages']);
-            $this->result['next']     = $this->getHtml('nextAvailable', $this->result['pos'] < $this->result['pages'] ? $this->result['pos'] + 1 : 1);
-        } else {
-            $this->result['previous'] = $this->getHtml($this->result['pos'] > 1 ? 'previousAvailable' : 'previousNotAvailable', $this->result['pos'] - 1);
-            $this->result['next']     = $this->getHtml($this->result['pos'] < $this->result['pages'] ? 'nextAvailable' : 'nextNotAvailable', $this->result['pos'] + 1);
-        }
-
-        $directory = [];
-
-        foreach (range(1, $this->result['pages']) as $pos) {
-            $directory[] = $this->getHtml($pos == $this->result['pos'] ? 'directoryRenderingSelected' : 'directoryRendering', $pos);
-        }
-
-        $this->result['directory'] = implode($this->args['delimiter'], $directory);
-        $this->result['data']      = array_slice($data, ($this->result['pos'] - 1) * $pageSize, $pageSize);
+        $this->result['pages']     = $lastPage;
+        $this->result['pos']       = $currentPage;
+        $this->result['directory'] = getDirectory($currentPage, $firstPage, $lastPage, $this->args['delimiter']);
+        $this->result['data']      = array_slice($data, ($currentPage - 1) * $pageSize, $pageSize);
     }
 
     public function __get($key)
@@ -74,8 +49,72 @@ class Pager
         return $this->result[$key];
     }
 
-    protected function getHtml($option, $pos)
+    public function getDirectory($currentPage, $firstPage, $lastPage, $delimiter)
     {
-        return str_replace(['{PAGE}'], [$pos], $this->args[$option]);
+        $directory = [];
+
+        foreach (range($firstPage, $lastPage) as $page) {
+            $directory[] = $this->getArg($page == $currentPage ? 'directoryRenderingSelected' : 'directoryRendering', $page);
+        }
+
+        return implode($delimiter, $directory);
+    }
+
+    protected function getArg($option, $pos = null)
+    {
+        return str_replace('{PAGE}', $pos, $this->args[$option]);
+    }
+
+    protected function getArgForFirstPage($currentPage, $firstPage, $lastPage, bool $infinite)
+    {
+        return [
+            'first'    => $this->getArg('firstNotAvailable', $firstPage),
+            'last'     => $this->getArg('lastAvailable', $lastPage),
+            'previous' => $this->getArg($infinite ? 'previousAvailable' : 'previousNotAvailable', $lastPage),
+            'next'     => $this->getArg('nextAvailable', $currentPage + 1)
+        ];
+    }
+
+    protected function getArgForLastPage($currentPage, $firstPage, $lastPage, bool $infinite)
+    {
+        return [
+            'first'    => $this->getArg('firstAvailable', $firstPage),
+            'last'     => $this->getArg('lastNotAvailable', $lastPage),
+            'previous' => $this->getArg('previousAvailable', $currentPage - 1),
+            'next'     => $this->getArg($infinite ? 'nextAvailable' : 'nextNotAvailable', $firstPage)
+        ];
+    }
+
+    protected function getArgForMiddlePage($currentPage, $firstPage, $lastPage)
+    {
+        return [
+            'first'    => $this->getArg('firstAvailable', $firstPage),
+            'last'     => $this->getArg('lastAvailable', $lastPage),
+            'previous' => $this->getArg('previousAvailable', $currentPage - 1),
+            'next'     => $this->getArg('nextAvailable', $currentPage + 1)
+        ];
+    }
+
+    protected function getArgForPage($currentPage, $firstPage, $lastPage, bool $infinite)
+    {
+        switch ($currentPage) {
+            case $firstPage:
+                return $this->getArgForFirstPage($currentPage, $firstPage, $lastPage, $infinite);
+                break;
+            case $lastPage:
+                return $this->getArgForLastPage($currentPage, $firstPage, $lastPage, $infinite);
+                break;
+            default:
+                return $this->getArgForMiddlePage($currentPage, $firstPage, $lastPage);
+        }
+    }
+
+    protected function setArguments(array $args)
+    {
+        foreach ($this->options as $option) {
+            if (isset($args[$option])) {
+                $this->args[$option] = $args[$option];
+            }
+        }
     }
 }
