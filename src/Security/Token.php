@@ -37,7 +37,7 @@ class Token
         try {
             $class = App::build('Domain', $m[1] . '\\' . $m[1] . 'Model');
         } catch (\DomainException $e) {
-            $class = App::build('Model', $m[1]);
+            return false;
         }
 
         try {

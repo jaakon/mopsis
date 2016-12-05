@@ -3,7 +3,6 @@
 use Mopsis\Core\App;
 use Mopsis\Core\Bootstrap;
 use Mopsis\Support\ArrayHelpers;
-use Mopsis\Support\ClassHelpers;
 use Mopsis\Support\LaravelHelpers;
 use Mopsis\Support\MiscHelpers;
 use Mopsis\Support\ObjectHelpers;
@@ -70,11 +69,6 @@ function closestMatch($input, $words)
     return StringHelpers::getClosestMatch($input, $words);
 }
 
-function controller($className)
-{
-    return ClassHelpers::controller($className);
-}
-
 function debug(...$args)
 {
     MiscHelpers::debug(...$args);
@@ -118,11 +112,6 @@ function kickstart($flushMode = null)
 function logger($message = null)
 {
     return MiscHelpers::logger($message);
-}
-
-function model($className)
-{
-    return ClassHelpers::model($className);
 }
 
 function objectMerge(stdClass $baseObject, stdClass...$objects)

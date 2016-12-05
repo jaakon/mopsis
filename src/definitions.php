@@ -52,7 +52,6 @@ return array_merge($definitions, [
     'classFormats' => [
         'Action'     => 'App\\{{MODULE}}\\Action\\{{SUBTYPE}}Action',
         'Collection' => 'App\\{{MODULE}}\\Collection',
-        'Controller' => 'App\\{{MODULE}}\\Controller',
         'Domain'     => 'App\\{{MODULE}}\\{{SUBTYPE}}',
         'Gateway'    => 'App\\{{MODULE}}\\Gateway',
         'Model'      => 'App\\{{MODULE}}\\Model',
