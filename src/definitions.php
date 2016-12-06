@@ -242,8 +242,16 @@ return array_merge($definitions, [
         ]);
     },
 
+    Illuminate\Container\Container::class
+    => object()
+        ->method('singleton', Illuminate\Contracts\Debug\ExceptionHandler::class, Mopsis\Extensions\Illuminate\Debug\ExceptionHandler::class),
+
     Illuminate\Contracts\Events\Dispatcher::class
     => object(Illuminate\Events\Dispatcher::class),
+
+    Illuminate\Database\Capsule\Manager::class
+    => object()
+        ->constructor(get(Illuminate\Container\Container::class)),
 
     Illuminate\Translation\LoaderInterface::class
     => object(Illuminate\Translation\FileLoader::class)
@@ -327,8 +335,8 @@ return array_merge($definitions, [
     => object(CodeZero\Cookie\VanillaCookie::class),
 
     Database::class
-    => function () {
-        $manager = new Illuminate\Database\Capsule\Manager();
+    => function (ContainerInterface $c) {
+        $manager = $c->get(Illuminate\Database\Capsule\Manager::class);
 
         if (is_array(config('connections'))) {
             foreach (config('connections') as $name => $config) {

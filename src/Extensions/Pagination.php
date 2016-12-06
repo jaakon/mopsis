@@ -78,7 +78,7 @@ class Pagination
 
     protected function getHtml($rendering, $page = null)
     {
-        return str_replace('{PAGE}', $page, $this->settings[$rendering]);
+        return str_replace('#PAGE#', $page, $this->settings[$rendering]);
     }
 
     protected function getLinkToFirstPage()
