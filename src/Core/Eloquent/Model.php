@@ -23,8 +23,6 @@ abstract class Model extends EloquentModel implements ModelInterface
 
     protected $orderBy;
 
-    protected $sluggable = ['on_update' => true];
-
     protected $stringifier;
 
     // @Override

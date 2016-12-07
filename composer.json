@@ -39,7 +39,8 @@
 		"asm89/twig-cache-extension":  "Cache fragments of templates directly within Twig",
 		"erusev/parsedown":            "Parser for Markdown",
 		"gordalina/cachetool":         "Manage your opcode & apc through the cli",
-		"jschaedl/iban":               "validate and generate IBANs"
+		"jschaedl/iban":               "validate and generate IBANs",
+		"spatie/laravel-sluggable":    "Generate slugs when saving Eloquent models"
     },
 	"autoload": {
 		"psr-4": {
