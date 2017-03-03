@@ -1,8 +1,0 @@
-<?php
-namespace App\{{MODULE}};
-
-use Mopsis\Core\Eloquent\Collection;
-
-class {{MODULE}}Collection extends Collection
-{
-}

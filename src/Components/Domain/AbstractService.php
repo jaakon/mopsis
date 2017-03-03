@@ -5,9 +5,9 @@ use Exception;
 use Mopsis\Security\Token;
 
 /**
- * @property AbstractFilter     $filter
- * @property AbstractRepository $repository
- * @property PayloadFactory     $payload
+ * @property AbstractFilter  $filter
+ * @property AbstractGateway $gateway
+ * @property PayloadFactory  $payload
  */
 abstract class AbstractService
 {
@@ -15,16 +15,16 @@ abstract class AbstractService
 
     protected $filter;
 
+    protected $gateway;
+
     protected $instanceKey = 'instance';
 
     protected $payload;
 
-    protected $repository;
-
     public function create($formId, array $data = null)
     {
         try {
-            $instance = $this->repository->newEntity();
+            $instance = $this->gateway->newEntity();
 
             if ($data === null) {
                 return $this->payload->newEntity([
@@ -42,8 +42,8 @@ abstract class AbstractService
                 ]);
             }
 
-            if (!$this->repository->create($instance, $this->filter->getResult())) {
-                return $this->payload->notCreated([
+            if (!$this->gateway->create($instance, $this->filter->getResult())) {
+                return new $this->payload->notCreated([
                     'instance' => $instance,
                     'formId'   => $formId
                 ]);
@@ -68,7 +68,7 @@ abstract class AbstractService
                 return $this->payload->notFound(['token' => $ancestorToken]);
             }
 
-            $instance  = $this->repository->newEntity();
+            $instance  = $this->gateway->newEntity();
             $relations = $instance->findRelations($ancestor);
 
             if (count($relations) !== 1) {
@@ -96,8 +96,8 @@ abstract class AbstractService
             $relation = array_pop($relations);
             $instance->$relation()->associate($ancestor);
 
-            if (!$this->repository->create($instance, $this->filter->getResult())) {
-                return $this->payload->notCreated([
+            if (!$this->gateway->create($instance, $this->filter->getResult())) {
+                return new $this->payload->notCreated([
                     'instance'      => $instance,
                     'formId'        => $formId,
                     'ancestorToken' => $ancestorToken
@@ -118,13 +118,13 @@ abstract class AbstractService
     public function delete($token)
     {
         try {
-            $instance = $this->repository->fetchByToken($token);
+            $instance = $this->gateway->fetchByToken($token);
 
             if (!$instance) {
                 return $this->payload->notFound(['token' => $token]);
             }
 
-            if (!$this->repository->delete($instance)) {
+            if (!$this->gateway->delete($instance)) {
                 return $this->payload->notDeleted(['instance' => $instance]);
             }
 
@@ -140,7 +140,7 @@ abstract class AbstractService
     public function fetch($token)
     {
         try {
-            $instance = $this->repository->fetchByToken($token);
+            $instance = $this->gateway->fetchByToken($token);
 
             if (!$instance) {
                 return $this->payload->notFound(['token' => $token]);
@@ -158,7 +158,7 @@ abstract class AbstractService
     public function fetchAll()
     {
         try {
-            $collection = $this->repository->fetchAll();
+            $collection = $this->gateway->fetchAll();
 
             if (!$collection) {
                 return $this->payload->notFound();
@@ -175,7 +175,7 @@ abstract class AbstractService
     public function fetchByAttributes($attributes)
     {
         try {
-            $instance = $this->repository->findOne($attributes);
+            $instance = $this->gateway->findOne($attributes);
 
             if (!$instance->exists) {
                 return $this->payload->notFound($attributes);
@@ -188,11 +188,6 @@ abstract class AbstractService
                 'attributes' => $attributes
             ]);
         }
-    }
-
-    public function fetchById($id)
-    {
-        return $this->fetchByAttributes(['id' => $id]);
     }
 
     public function fetchBySlug($slug)
@@ -214,13 +209,13 @@ abstract class AbstractService
     public function setAttribute($token, $key, $value)
     {
         try {
-            $instance = $this->repository->fetchByToken($token);
+            $instance = $this->gateway->fetchByToken($token);
 
             if (!$instance) {
                 return $this->payload->notFound(['token' => $token]);
             }
 
-            if (!$this->repository->set($instance, $key, $value)) {
+            if (!$this->gateway->set($instance, $key, $value)) {
                 return $this->payload->notUpdated(['instance' => $instance]);
             }
 
@@ -238,7 +233,7 @@ abstract class AbstractService
     public function update($token, $formId, array $data = null)
     {
         try {
-            $instance = $this->repository->fetchByToken($token);
+            $instance = $this->gateway->fetchByToken($token);
 
             if (!$instance) {
                 return $this->payload->notFound(['token' => $token]);
@@ -260,7 +255,7 @@ abstract class AbstractService
                 ]);
             }
 
-            if (!$this->repository->update($instance, $this->filter->getResult())) {
+            if (!$this->gateway->update($instance, $this->filter->getResult())) {
                 return $this->payload->notUpdated([
                     'instance' => $instance,
                     'formId'   => $formId

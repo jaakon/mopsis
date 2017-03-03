@@ -27,6 +27,7 @@ abstract class AbstractFilter
     protected $validatorRulesLoaded = false;
 
     //    public function __construct(Filter $facade, RulesProvider $rules, FileUploadAggregator $uploader)
+
     public function __construct(Filter $facade, RulesProvider $rules, $uploader = null)
     {
         $this->facade   = $facade;

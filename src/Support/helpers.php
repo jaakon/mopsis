@@ -1,8 +1,8 @@
 <?php
 
 use Mopsis\Core\App;
-use Mopsis\Core\Bootstrap;
 use Mopsis\Support\ArrayHelpers;
+use Mopsis\Support\ClassHelpers;
 use Mopsis\Support\LaravelHelpers;
 use Mopsis\Support\MiscHelpers;
 use Mopsis\Support\ObjectHelpers;
@@ -54,11 +54,6 @@ function between($value, $min, $max)
     return MiscHelpers::between($value, $min, $max);
 }
 
-function cast($object, $type, $preserveNullValue = false)
-{
-    return ObjectHelpers::cast($object, $type, $preserveNullValue);
-}
-
 function config($key = null, $default = null)
 {
     return LaravelHelpers::config($key, $default);
@@ -67,6 +62,11 @@ function config($key = null, $default = null)
 function closestMatch($input, $words)
 {
     return StringHelpers::getClosestMatch($input, $words);
+}
+
+function controller($className)
+{
+    return ClassHelpers::controller($className);
 }
 
 function debug(...$args)
@@ -104,14 +104,14 @@ function isUtf8($string)
     return StringHelpers::isUtf8($string);
 }
 
-function kickstart($flushMode = null)
-{
-    return (new Bootstrap())->kickstart($flushMode);
-}
-
 function logger($message = null)
 {
     return MiscHelpers::logger($message);
+}
+
+function model($className)
+{
+    return ClassHelpers::model($className);
 }
 
 function objectMerge(stdClass $baseObject, stdClass...$objects)

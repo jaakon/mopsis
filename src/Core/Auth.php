@@ -69,17 +69,6 @@ class Auth
         throw new Exception('user has no "' . $permission . '" permission for model "' . $model . '"');
     }
 
-    public static function isEnabled()
-    {
-        try {
-            App::get('User');
-        } catch (Exception $e) {
-            return false;
-        }
-
-        return true;
-    }
-
     public static function login(User $user, $remember = false)
     {
         static::$user     = $user;

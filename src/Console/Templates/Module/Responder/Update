@@ -1,8 +1,0 @@
-<?php
-namespace App\{{MODULE}}\Responder;
-
-use App\AbstractUpdateResponder;
-
-class UpdateResponder extends AbstractUpdateResponder
-{
-}

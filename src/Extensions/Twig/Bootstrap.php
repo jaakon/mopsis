@@ -126,12 +126,12 @@ class Bootstrap extends \Twig_Extension
                 'haspopup' => 'true',
                 'expanded' => 'false'
             ]
-        ])->addClass($this->getButtonClasses($button))->addClass('dropdown-toggle .dropdown-menu-right')->html($text . '&emsp;<span class="caret"></span>');
+        ])->addClass($this->getButtonClasses($button))->addClass('dropdown-toggle')->html($text . '&emsp;<span class="caret"></span>');
     }
 
     protected function getDropdownList(array $links)
     {
-        return TagBuilder::create('ul')->addClass('dropdown-menu dropdown-menu-right')->html(array_reduce($this->prepareLinks($links), function ($html, $link) {
+        return TagBuilder::create('ul')->addClass('dropdown-menu')->html(array_reduce($this->prepareLinks($links), function ($html, $link) {
             return $html . ($link === '--' ? '<li class="divider"></li>' : '<li>' . $link . '</li>');
         }));
     }

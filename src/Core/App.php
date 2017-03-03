@@ -44,10 +44,11 @@ class App
             throw new \UnexpectedValueException('unknown type "' . $type . '" for entity "' . $name . '"');
         }
 
-        list($module, $subtype) = explode('\\', $name);
+        list($module, $domain, $subtype) = explode('\\', $name);
 
         $replacements = array_filter([
             '{{MODULE}}'  => $module,
+            '{{DOMAIN}}'  => $domain,
             '{{SUBTYPE}}' => $subtype
         ]);
 

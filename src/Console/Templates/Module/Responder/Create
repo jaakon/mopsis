@@ -1,8 +1,0 @@
-<?php
-namespace App\{{MODULE}}\Responder;
-
-use App\AbstractCreateResponder;
-
-class CreateResponder extends AbstractCreateResponder
-{
-}

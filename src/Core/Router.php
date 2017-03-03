@@ -29,7 +29,7 @@ class Router
 
         $validRules = '/^(' . $requestMethod . '|\*)\s+(?<path>\/(?:\{[^}]+\}|' . preg_quote(preg_replace('/^\/([^\/]+).*/', '$1', $this->route), '/') . ')\S*)\s+(.+)\n?$/i';
 
-        foreach (preg_grep($validRules, file(APPLICATION_PATH . '/config/routes')) as $line) {
+        foreach (preg_grep($validRules, file('config/routes')) as $line) {
             if (!preg_match($validRules, $line, $rule)) {
                 throw new \Exception('invalid route: ' . $line);
             }
@@ -42,46 +42,75 @@ class Router
             }
 
             $m['method'] = $requestMethod;
-            $class       = $this->getClass($rule[3], $m);
+            $result      = $this->getClassMethod($rule[3], $m);
 
-            if ($class === false) {
+            if ($result === false) {
                 continue;
             }
 
-            $reflectionClass = new \ReflectionClass($class);
-            $funcArgs        = $this->getFunctionArguments($reflectionClass->getMethod('__invoke'), $m);
+            list($class, $method) = $result;
+            $reflectionClass      = new \ReflectionClass($class);
+            $funcArgs             = $this->getFunctionArguments($reflectionClass->getMethod($method), $m);
 
             if ($funcArgs === false) {
                 continue;
             }
 
-            $this->logger->debug($this->route . ' ==> ' . $class);
+            $this->logger->debug($this->route . ' ==> ' . $class . '->' . $method);
 
-            return App::get($class)->__invoke(...$funcArgs);
+            return App::get($class)->$method(...$funcArgs);
         }
 
         return false;
     }
 
-    protected function getClass($path, $m)
+    protected function getClassMethod($path, $m)
     {
         $path = preg_replace_callback('/\{(.+?)\}/', function ($placeholder) use ($m) {
             return studly_case($m[$placeholder[1]]);
         }, $path);
 
-        if (!preg_match('/^\w+\\\\\w+$/', $path)) {
-            $this->logger->debug('Cannot parse "' . $path . '"');
+        if (preg_match('/^\w+\\\\\w+\\\\\w+$/', $path)) {
+            try {
+                $class  = App::build('Action', $path);
+                $method = '__invoke';
+            } catch (\DomainException $e) {
+                $this->logger->debug($path . ' => ' . $e->getMessage() . ' [' . $this->route . ']');
 
-            return false;
+                return false;
+            }
+
+            return [
+                $class,
+                $method
+            ];
         }
 
-        try {
-            return App::build('Action', $path);
-        } catch (\DomainException $e) {
-            $this->logger->debug($path . ' => ' . $e->getMessage() . ' [' . $this->route . ']');
+        if (preg_match('/^(\w+\\\\\w+)\.(\w+)$/', $path, $parts)) {
+            try {
+                $class  = App::build('Controller', $parts[1]);
+                $method = lcfirst($parts[2]);
+            } catch (\DomainException $e) {
+                $this->logger->debug($path . ' => ' . $e->getMessage() . ' [' . $this->route . ']');
 
-            return false;
+                return false;
+            }
+
+            if (!method_exists($class, $method)) {
+                $this->logger->debug($path . ' => method "' . $method . '" not found [' . $this->route . ']');
+
+                return false;
+            }
+
+            return [
+                $class,
+                $method
+            ];
         }
+
+        $this->logger->debug('Cannot parse "' . $path . '"');
+
+        return false;
     }
 
     protected function getFunctionArguments(\ReflectionMethod $method, $m)

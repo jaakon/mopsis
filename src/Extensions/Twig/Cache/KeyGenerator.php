@@ -2,7 +2,7 @@
 namespace Mopsis\Extensions\Twig\Cache;
 
 use Asm89\Twig\CacheExtension\CacheStrategy\KeyGeneratorInterface;
-use Mopsis\Core\Eloquent\Model;
+use Mopsis\Extensions\Eloquent\Model;
 
 class KeyGenerator implements KeyGeneratorInterface
 {

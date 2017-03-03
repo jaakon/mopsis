@@ -1,9 +1,0 @@
-<?php
-namespace App\{{MODULE}};
-
-use Mopsis\Core\Eloquent\Model;
-
-class {{MODULE}}Model extends Model
-{
-    protected $table = '{{COLLECTION}}';
-}

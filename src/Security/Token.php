@@ -35,9 +35,9 @@ class Token
         }
 
         try {
-            $class = App::build('Domain', $m[1] . '\\' . $m[1] . 'Model');
+            $class = App::build('Domain', str_plural($m[1]) . '\\' . $m[1] . '\\Model');
         } catch (\DomainException $e) {
-            return false;
+            $class = App::build('Model', str_plural($m[1]) . '\\' . $m[1]);
         }
 
         try {

@@ -47,11 +47,6 @@ class SimpleXMLElement
         throw new XMLProcessingException('Unknown xmlData given to Mopsis\SimpleXMLElement. Expected a XML String or a SimpleXMLElement object.');
     }
 
-    public function __get($name)
-    {
-        return $this->first($name);
-    }
-
     public function __toString()
     {
         return strval($this->element);
@@ -63,15 +58,16 @@ class SimpleXMLElement
      */
     public function all(string $path)
     {
-        return new SimpleXMLElementArray($this->xpath($path) ?: []);
+        return $this->xpath($path) ?: [];
     }
 
-    public function attr($name, $type = 'string', $namespace = null)
+    public function attr($name, $namespace = null)
     {
-        $isPrefix   = ($namespace !== null);
-        $attributes = $this->element->attributes($namespace, $isPrefix);
+        $isPrefix       = ($namespace !== null);
+        $attributes     = $this->element->attributes($namespace, $isPrefix);
+        $attributeValue = $attributes->$name;
 
-        return cast($attributes->$name, $type, true);
+        return $attributeValue !== null ? (string) $attributeValue : null;
     }
 
     public function attributes($namespace = null)
@@ -95,11 +91,6 @@ class SimpleXMLElement
         }
 
         return $children;
-    }
-
-    public function count(string $path)
-    {
-        return count($this->xpath($path));
     }
 
     public function first($path)

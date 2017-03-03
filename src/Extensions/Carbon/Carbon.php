@@ -5,6 +5,32 @@ use Carbon\Carbon as CarbonLib;
 
 class Carbon extends CarbonLib
 {
+    /*
+    public function __construct($time = 'now', $timezone = null)
+    {
+    if (preg_match('/^(\d{1,2})\.(\d{1,2})\.(\d{2}?\d{2})$/', $time, $m)) {
+    $time = $m[3] . '-' . $m[2] . '-' . $m[1];
+    }
+
+    parent::__construct($time, $timezone ?: new \DateTimeZone(date_default_timezone_get() ?: 'Europe/Berlin'));
+    }
+
+    public function add($interval)
+    {
+    return parent::add($interval instanceof \DateInterval ? $interval : \DateInterval::createFromDateString($interval));
+    }
+
+    public static function create($time = 'now', $timezone = null)
+    {
+    return new static($time, $timezone);
+    }
+
+    public function equals(DateTime $date, $accuracy = '%a')
+    {
+    return !$this->diff($date)->format($accuracy);
+    }
+     */
+
     const ISO8601 = 'Y-m-d';
 
     private $dateToStrftime = [
@@ -72,11 +98,6 @@ class Carbon extends CarbonLib
         }
 
         return $result . parent::format($format);
-    }
-
-    public function formatLocalized($format)
-    {
-        return utf8_encode(parent::formatLocalized($format));
     }
 
     public function startOfInterval($size)
