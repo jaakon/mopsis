@@ -18,7 +18,7 @@
 		"aura/web":                    "^2.0",
 		"codezero/cookie":             "^1.0",
 		"filp/whoops":                 "^2.0",
-		"fluentdom/fluentdom":         "^5.3",
+		"fluentdom/fluentdom":         "^6.0",
 		"FluentDOM/Selectors-Symfony": "^2.0",
 		"illuminate/config":           "^5.1",
 		"illuminate/database":         "^5.1",
@@ -32,7 +32,7 @@
 		"swiftmailer/swiftmailer":     "^5.4",
 		"symfony/var-dumper":          "^3.1",
 		"tedivm/stash":                "^0.14",
-		"twig/twig":                   "^1.20"
+		"twig/twig":                   "^2.0"
 	},
 	"suggest": {
 		"aptoma/twig-markdown":        "Twig extension to work with Markdown content",
