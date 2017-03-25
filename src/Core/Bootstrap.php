@@ -10,7 +10,7 @@ class Bootstrap
     public function initializeApplication()
     {
         $builder = new ContainerBuilder();
-        $builder->addDefinitions(__DIR__ . '/../definitions.php');
+        $builder->addDefinitions(FRAMEWORK_PATH . '/definitions.php');
         $builder->addDefinitions(APPLICATION_PATH . '/config/definitions.php');
 
         App::initialize($builder->build());
@@ -34,6 +34,10 @@ class Bootstrap
         ]);
 
         session_start();
+
+        if (!defined('FRAMEWORK_PATH')) {
+            define('FRAMEWORK_PATH', realpath(__DIR__ . '/..'));
+        }
 
         if (!defined('APPLICATION_PATH')) {
             define('APPLICATION_PATH', realpath(__DIR__ . '/../../../../..'));

@@ -31,11 +31,11 @@ return [
     'monolog.lineformat' => "[%datetime%] %level_name%: %message% %context% %extra%\n",
 
     'static-pages' => [
-        400 => __DIR__ . '/Resources/static-pages/bad-request-error',
-        404 => __DIR__ . '/Resources/static-pages/not-found-error',
-        500 => __DIR__ . '/Resources/static-pages/internal-server-error',
-        502 => __DIR__ . '/Resources/static-pages/bad-gateway',
-        503 => __DIR__ . '/Resources/static-pages/service-unavailable-error'
+        400 => FRAMEWORK_PATH . '/Resources/static-pages/bad-request-error',
+        404 => FRAMEWORK_PATH . '/Resources/static-pages/not-found-error',
+        500 => FRAMEWORK_PATH . '/Resources/static-pages/internal-server-error',
+        502 => FRAMEWORK_PATH . '/Resources/static-pages/bad-gateway',
+        503 => FRAMEWORK_PATH . '/Resources/static-pages/service-unavailable-error'
     ],
 
     'translator' => [
