@@ -18,7 +18,7 @@ class SimpleXMLElement
     public function __construct($xmlData)
     {
         if (gettype($xmlData) === 'string') {
-            if (is_file($xmlData)) {
+            if (strpos($xmlData, '<?xml') === false && is_file($xmlData)) {
                 $xmlData = file_get_contents($xmlData);
             }
 

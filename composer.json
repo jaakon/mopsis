@@ -49,8 +49,5 @@
 	},
 	"bin": [
 		"bin/mopsis"
-	],
-	"config": {
-		"bin-dir": "./"
-	}
+	]
 }
