@@ -15,8 +15,9 @@ abstract class AbstractResponder
     protected $accept;
 
     protected $available = [
-        'text/html'        => '.twig',
-        'application/json' => '.json'
+        'text/html'        => 'html',
+        'application/json' => 'json',
+        'application/xml'  => 'xml'
     ];
 
     protected $payload;
@@ -124,10 +125,28 @@ abstract class AbstractResponder
     protected function renderView($template = null)
     {
         $contentType = $this->response->content->getType();
-        $extension   = $contentType ? $this->available[$contentType] : '.twig';
 
-        $this->view->setTemplate($this->getViewPath() . ($template ?: $this->template) . $extension)->assign($this->payload->get());
+        switch ($this->available[$contentType]) {
+            case 'html':
+                return $this->renderViewForHtml($template);
+            case 'json':
+                return $this->renderViewForJson();
+            case 'xml':
+                return $this->renderViewForXml();
+            default:
+                return $this->renderViewForText();
+        }
+    }
+
+    protected function renderViewForHtml($template = null)
+    {
+        $this->view->setTemplate($this->getViewPath() . ($template ?: $this->template) . '.twig')->assign($this->payload->get());
 
         $this->response->content->set($this->view->__invoke());
+    }
+
+    protected function renderViewForJson()
+    {
+        $this->response->content->set(json_encode($this->payload->get()));
     }
 }

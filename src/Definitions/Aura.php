@@ -5,6 +5,15 @@ use function DI\object;
 use Interop\Container\ContainerInterface as ContainerInterface;
 
 return [
+    Aura\Accept\Accept::class
+    => function (ContainerInterface $c) {
+        return $c->get(Aura\Accept\AcceptFactory::class)->newInstance();
+    },
+
+    Aura\Accept\AcceptFactory::class
+    => object()
+        ->constructorParameter('server', $_SERVER),
+
     Aura\Filter\FilterFactory::class
     => object()
         ->constructorParameter('validate_factories', [
@@ -105,5 +114,4 @@ return [
             '_SERVER' => $_SERVER
         ]);
     }
-
 ];

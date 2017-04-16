@@ -9,6 +9,8 @@ abstract class SluggableModel extends EloquentModel
 {
     use HasSlug;
 
+    protected $hidden = ['slug'];
+
     protected $sluggable = [
         'source' => 'name',
         'target' => 'slug'
