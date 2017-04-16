@@ -53,6 +53,11 @@ class PayloadFactory
         return new Payload\NotValid($payload);
     }
 
+    public function seeOther(array $payload = [])
+    {
+        return new Payload\SeeOther($payload);
+    }
+
     public function updated(array $payload = [])
     {
         return new Payload\Updated($payload);
