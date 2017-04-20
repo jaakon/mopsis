@@ -10,7 +10,7 @@ return [
         'forms'           => APPLICATION_PATH . '/config/forms.xml',
         'error_log'       => APPLICATION_PATH . '/storage/logs/error.log',
         'application_log' => APPLICATION_PATH . '/storage/logs/application.log',
-        'views'           => ['resources/views', 'resources/templates']
+        'views'           => ['resources/html/pages', 'resources/html']
     ],
 
     'config' => object(Mopsis\Core\Config::class),
@@ -42,7 +42,6 @@ return [
         'locale' => 'de',
         'path'   => APPLICATION_PATH . '/resources/lang/'
     ],
-
 
     League\Flysystem\AdapterInterface::class
     => object(League\Flysystem\Adapter\Local::class)
