@@ -18,8 +18,9 @@ class Bootstrap extends \Twig_Extension
         }
 
         if ($button['icon']) {
-            $attr['title'] = $text;
-            $text          = $this->icon($button['icon']);
+            $attr['title']   = $text;
+            $button['width'] = 'narrow';
+            $text            = $this->icon($button['icon']);
         }
 
         if ($button['tooltip']) {
@@ -60,9 +61,13 @@ class Bootstrap extends \Twig_Extension
         return 'bootstrap';
     }
 
-    public function icon($symbol, $class = null, $library = 'glyphicon')
+    public function icon($symbol, $options = [])
     {
-        return TagBuilder::create('span')->addClass($library . ' ' . $library . '-' . $symbol)->addClass($class);
+        return TagBuilder::create('i')
+            ->addClass('fa fa-'. $symbol)
+            ->addClass(array_reduce($options, function ($classes, $option) {
+                return $classes.' fa-'.$option;
+            }));
     }
 
     public function modal($text, $url, array $button = [], array $options = [])
@@ -75,14 +80,14 @@ class Bootstrap extends \Twig_Extension
                 'title'   => $text,
                 'href'    => $url,
                 'size'    => $options['size'] ?: 'lg',
-                'on-hide' => $options['onHide'],
                 'submit'  => $options['submit']
             ])
         ]);
 
         if ($button['icon']) {
-            $attr['title'] = $text;
-            $text          = $this->icon($button['icon']);
+            $attr['title']   = $text;
+            $button['width'] = 'narrow';
+            $text            = $this->icon($button['icon']);
         }
 
         if ($button['tooltip']) {
@@ -115,42 +120,62 @@ class Bootstrap extends \Twig_Extension
             $classes .= ' btn-' . $button['size'];
         }
 
+        if ($button['width']) {
+            $classes .= ' btn-' . $button['width'];
+        }
+
         return $classes;
     }
 
     protected function getDropdownButton(array $button, $text = null)
     {
-        return TagBuilder::create('button')->attr([
-            'data-' => ['toggle' => 'dropdown'],
-            'aria-' => [
-                'haspopup' => 'true',
-                'expanded' => 'false'
-            ]
-        ])->addClass($this->getButtonClasses($button))->addClass('dropdown-toggle .dropdown-menu-right')->html($text . '&emsp;<span class="caret"></span>');
+        return TagBuilder::create('button')
+            ->attr([
+                'data-' => ['toggle' => 'dropdown'],
+                'aria-' => [
+                    'haspopup' => 'true',
+                    'expanded' => 'false'
+                ]
+            ])
+            ->addClass($this->getButtonClasses($button))
+            ->addClass('dropdown-toggle .dropdown-menu-right')
+            ->html($text . '&emsp;<span class="caret"></span>');
     }
 
     protected function getDropdownList(array $links)
     {
-        return TagBuilder::create('ul')->addClass('dropdown-menu dropdown-menu-right')->html(array_reduce($this->prepareLinks($links), function ($html, $link) {
-            return $html . ($link === '--' ? '<li class="divider"></li>' : '<li>' . $link . '</li>');
-        }));
+        return TagBuilder::create('ul')
+            ->addClass('dropdown-menu dropdown-menu-right')
+            ->html(array_reduce(
+                $this->prepareLinks($links),
+                function ($html, $link) {
+                    return $html . ($link === '--' ? '<li class="divider"></li>' : '<li>' . $link . '</li>');
+                    }
+                )
+            );
     }
 
     protected function getSingleButtonDropdown($text, array $links, array $button, array $attr)
     {
-        return TagBuilder::create('div')->attr($attr)->addClass('btn-group hidden-print')->html([
-            $this->getDropdownButton($button, $text),
-            $this->getDropdownList($links)
-        ]);
+        return TagBuilder::create('div')
+            ->attr($attr)
+            ->addClass('btn-group hidden-print')
+            ->html([
+                $this->getDropdownButton($button, $text),
+                $this->getDropdownList($links)
+            ]);
     }
 
     protected function getSplitButtonDropdown($text, $url, array $links, array $button, array $attr)
     {
-        return TagBuilder::create('div')->attr($attr)->addClass('btn-group btn-group-fixed hidden-print')->html([
-            isHtml((string) $url) ? $url : $this->getButton($text, $url, $button, []),
-            $this->getDropdownButton($button),
-            $this->getDropdownList($links)
-        ]);
+        return TagBuilder::create('div')
+            ->attr($attr)
+            ->addClass('btn-group btn-group-fixed hidden-print')
+            ->html([
+                isHtml((string) $url) ? $url : $this->getButton($text, $url, $button, []),
+                $this->getDropdownButton($button),
+                $this->getDropdownList($links)
+            ]);
     }
 
     protected function prepareLinks($links)
@@ -161,7 +186,10 @@ class Bootstrap extends \Twig_Extension
             }
 
             if (preg_match('/^(?:\[(.+?)\]\((.+?)\)|(.+)\|(.+?))$/', $link, $m)) {
-                $link = TagBuilder::create('a')->attr('href', $m[2] ?: $m[4])->html($m[1] ?: $m[3])->toString();
+                $link = TagBuilder::create('a')
+                    ->attr('href', $m[2] ?: $m[4])
+                    ->html($m[1] ?: $m[3])
+                    ->toString();
             }
         }
 

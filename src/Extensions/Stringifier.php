@@ -56,7 +56,7 @@ class Stringifier
     protected function castObjectToString($object)
     {
         if ($object instanceof DateTime) {
-            return $object->format(config('stringify.datetime'));
+            return $object->format(config('stringify.datetime') ?: 'Y-m-d H:i:s');
         }
 
         if ($object instanceof Json) {

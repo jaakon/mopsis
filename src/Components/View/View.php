@@ -51,8 +51,10 @@ class View
         $this->filters    = [];
         $this->functions  = [];
 
-        if ($this->renderer->hasExtension('formbuilder')) {
-            $this->renderer->getExtension('formbuilder')->setConfigurations($this->forms);
+        if ($this->renderer->hasExtension('Mopsis\Extensions\Twig\FormBuilder')) {
+            $this->renderer
+                ->getExtension('Mopsis\Extensions\Twig\FormBuilder')
+                ->setConfigurations($this->forms);
         }
 
         try {
@@ -195,14 +197,16 @@ class View
             throw new \Exception('formId must not be empty');
         }
 
-        if (!isset($this->forms[$formId])) {
-            $this->forms[$formId] = [
-                'errors'   => [],
-                'options'  => [],
-                'settings' => [],
-                'values'   => []
-            ];
+        if (is_array($this->forms[$formId])) {
+            return;
         }
+
+        $this->forms[$formId] = [
+            'errors'   => [],
+            'options'  => [],
+            'settings' => [],
+            'values'   => []
+        ];
     }
 
     protected function setFormData($key, $formId, array $data)

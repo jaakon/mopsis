@@ -161,13 +161,11 @@ abstract class Model extends EloquentModel implements ModelInterface
     // @Override
     public function getDates()
     {
-        $defaults = [
+        return array_merge($this->dates, [
             static::CREATED_AT,
             static::UPDATED_AT,
             static::DELETED_AT
-        ];
-
-        return array_merge($this->dates, $defaults);
+        ]);
     }
 
     public function getFillableAttributes()

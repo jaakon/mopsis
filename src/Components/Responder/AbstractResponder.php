@@ -94,24 +94,20 @@ abstract class AbstractResponder
 
     protected function negotiateMediaType()
     {
-        if (!$this->available || !$this->accept) {
-            return true;
-        }
-
         $available = array_keys($this->available);
         $media     = $this->accept->negotiateMedia($available);
 
-        if (!$media) {
-            $this->response->status->set(406);
-            $this->response->content->setType('text/plain');
-            $this->response->content->set(implode(',', $available));
+        if ($media) {
+            $this->response->content->setType($media->getValue());
 
-            return false;
+            return true;
         }
 
-        $this->response->content->setType($media->getValue());
+        $this->response->status->set(406);
+        $this->response->content->setType('text/plain');
+        $this->response->content->set(implode(',', $available));
 
-        return true;
+        return false;
     }
 
     protected function notRecognized()
@@ -124,9 +120,11 @@ abstract class AbstractResponder
 
     protected function renderView($template = null)
     {
-        $contentType = $this->response->content->getType();
+        if (!$this->negotiateMediaType()) {
+            return;
+        }
 
-        switch ($this->available[$contentType]) {
+        switch ($this->available[$this->response->content->getType()]) {
             case 'html':
                 return $this->renderViewForHtml($template);
             case 'json':
@@ -143,6 +141,11 @@ abstract class AbstractResponder
         $this->view->setTemplate($this->getViewPath() . ($template ?: $this->template) . '.twig')->assign($this->payload->get());
 
         $this->response->content->set($this->view->__invoke());
+    }
+
+    protected function renderViewForText()
+    {
+        $this->response->content->set(print_r($this->payload->get(), true));
     }
 
     protected function renderViewForJson()
