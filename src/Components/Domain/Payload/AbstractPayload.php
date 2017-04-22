@@ -2,6 +2,7 @@
 namespace Mopsis\Components\Domain\Payload;
 
 use Mopsis\Contracts\Model;
+use Mopsis\Contracts\Hierarchical;
 
 abstract class AbstractPayload implements PayloadInterface
 {
@@ -29,8 +30,14 @@ abstract class AbstractPayload implements PayloadInterface
             return $this->payload[$key];
         }
 
-        if ($key === 'redirect' && isset($this->payload['instance']) && $this->payload['instance'] instanceof Model) {
-            return $this->payload['instance']->getUriRecursive();
+        if ($key === 'redirect' && isset($this->payload['instance'])) {
+            if ($this->payload['instance'] instanceof Hierarchical) {
+                return $this->payload['instance']->getUriRecursive();
+            }
+
+            if ($this->payload['instance'] instanceof Model) {
+                return $this->payload['instance']->uri;
+            }
         }
 
         return;

@@ -20,7 +20,7 @@ class UpdateAction extends AbstractAction
     public function __invoke($token)
     {
         $data    = $this->request->method->isPost() ? $this->request->post->get() : null;
-        $payload = $this->service->update($token, '{{INSTANCE}}', $data);
+        $payload = $this->service->update($token, '{{COLLECTION}}', $data);
         $this->responder->setPayload($payload);
 
         return $this->responder->__invoke();

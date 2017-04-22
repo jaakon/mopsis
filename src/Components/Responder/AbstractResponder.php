@@ -88,8 +88,6 @@ abstract class AbstractResponder
         if (!isset($this->payloadMethods['Payload\Error'])) {
             $this->payloadMethods['Payload\Error'] = 'error';
         }
-
-        $this->response->headers->set('X-Frame-Options', 'SAMEORIGIN');
     }
 
     protected function negotiateMediaType()
