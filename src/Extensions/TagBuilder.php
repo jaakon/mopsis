@@ -36,7 +36,7 @@ class TagBuilder
         return $this->toString(TagRenderMode::NORMAL);
     }
 
-    public function addClass($class)
+    public function addClass(string $class)
     {
         if (empty(trim($class))) {
             return $this;
@@ -51,6 +51,13 @@ class TagBuilder
         $this->attributes->put('class', implode(' ', array_unique($classes)));
 
         return $this;
+    }
+
+    public function addClasses(array $classes, $prefix = '')
+    {
+        return $this->addClass(array_reduce($classes, function ($html, $class) use ($prefix) {
+            return $html . ' ' . $prefix . $class;
+        }));
     }
 
     public function attr($key, $value = null)

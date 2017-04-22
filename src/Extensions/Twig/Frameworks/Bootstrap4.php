@@ -1,9 +1,9 @@
 <?php
-namespace Mopsis\Extensions\Twig;
+namespace Mopsis\Extensions\Twig\Frameworks;
 
 use Mopsis\Extensions\TagBuilder;
 
-class Bootstrap extends \Twig_Extension
+class Bootstrap4 extends \Twig_Extension
 {
     public function button($text, array $links, array $button = [], array $attr = [])
     {
@@ -58,15 +58,15 @@ class Bootstrap extends \Twig_Extension
 
     public function getName()
     {
-        return 'bootstrap';
+        return 'bootstrap4';
     }
 
     public function icon($symbol, $options = [])
     {
         return TagBuilder::create('i')
-            ->addClass('fa fa-'. $symbol)
+            ->addClass('fa fa-' . $symbol)
             ->addClass(array_reduce($options, function ($classes, $option) {
-                return $classes.' fa-'.$option;
+                return $classes . ' fa-' . $option;
             }));
     }
 
@@ -75,12 +75,12 @@ class Bootstrap extends \Twig_Extension
         $attr = array_filter([
             'class' => $options['class'],
             'data-' => array_filter([
-                'toggle'  => 'modal',
-                'target'  => '#modal',
-                'title'   => $text,
-                'href'    => $url,
-                'size'    => $options['size'] ?: 'lg',
-                'submit'  => $options['submit']
+                'toggle' => 'modal',
+                'target' => '#modal',
+                'title'  => $text,
+                'href'   => $url,
+                'size'   => $options['size'] ?: 'lg',
+                'submit' => $options['submit']
             ])
         ]);
 
@@ -138,7 +138,7 @@ class Bootstrap extends \Twig_Extension
                 ]
             ])
             ->addClass($this->getButtonClasses($button))
-            ->addClass('dropdown-toggle .dropdown-menu-right')
+            ->addClass('dropdown-toggle dropdown-menu-right')
             ->html($text . '&emsp;<span class="caret"></span>');
     }
 
@@ -150,9 +150,8 @@ class Bootstrap extends \Twig_Extension
                 $this->prepareLinks($links),
                 function ($html, $link) {
                     return $html . ($link === '--' ? '<li class="divider"></li>' : '<li>' . $link . '</li>');
-                    }
-                )
-            );
+                }
+            ));
     }
 
     protected function getSingleButtonDropdown($text, array $links, array $button, array $attr)

@@ -141,13 +141,13 @@ abstract class AbstractResponder
         $this->response->content->set($this->view->__invoke());
     }
 
-    protected function renderViewForText()
-    {
-        $this->response->content->set(print_r($this->payload->get(), true));
-    }
-
     protected function renderViewForJson()
     {
         $this->response->content->set(json_encode($this->payload->get()));
+    }
+
+    protected function renderViewForText()
+    {
+        $this->response->content->set(print_r($this->payload->get(), true));
     }
 }

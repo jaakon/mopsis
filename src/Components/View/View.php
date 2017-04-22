@@ -53,8 +53,8 @@ class View
 
         if ($this->renderer->hasExtension('Mopsis\Extensions\Twig\FormBuilder')) {
             $this->renderer
-                ->getExtension('Mopsis\Extensions\Twig\FormBuilder')
-                ->setConfigurations($this->forms);
+                 ->getExtension('Mopsis\Extensions\Twig\FormBuilder')
+                 ->setConfigurations($this->forms);
         }
 
         try {
@@ -138,7 +138,7 @@ class View
     public function prefillForm($formId, Filter $filter)
     {
         $messages = $filter->getMessages();
-        $values = [];
+        $values   = [];
 
         foreach ($this->request->post->get() as $key => $value) {
             array_set($values, $key, $value);
