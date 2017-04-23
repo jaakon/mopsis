@@ -107,7 +107,7 @@ class Propeller extends \Twig_Extension
                 $this,
                 'getTagForDropdown'
             ], ['is_safe' => ['html']]),
-            new \Twig_SimpleFunction('form', [
+            new \Twig_SimpleFunction('_form', [
                 $this,
                 'getConfigForForm'
             ], ['is_safe' => ['html']]),
@@ -115,7 +115,7 @@ class Propeller extends \Twig_Extension
                 $this,
                 'getTagForIcon'
             ], ['is_safe' => ['html']]),
-            new \Twig_SimpleFunction('link', [
+            new \Twig_SimpleFunction('_link', [
                 $this,
                 'getConfigForLink'
             ], ['is_safe' => ['html']]),
@@ -123,7 +123,7 @@ class Propeller extends \Twig_Extension
                 $this,
                 'getTagForMenu'
             ], ['is_safe' => ['html']]),
-            new \Twig_SimpleFunction('modal', [
+            new \Twig_SimpleFunction('_modal', [
                 $this,
                 'getConfigForModal'
             ], ['is_safe' => ['html']])
