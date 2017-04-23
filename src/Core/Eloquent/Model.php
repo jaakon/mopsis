@@ -29,7 +29,7 @@ abstract class Model extends EloquentModel implements ModelInterface
     public function __construct(array $attributes = [])
     {
         if (!isset($this->table)) {
-            $this->table = preg_replace('/_model$/', '', $this->getTable());
+            $this->table = preg_replace('/_models$/', '', $this->getTable());
         }
 
         if ($this->guarded !== ['*']) {

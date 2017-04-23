@@ -57,7 +57,7 @@ class TagBuilder
     {
         return $this->addClass(array_reduce($classes, function ($html, $class) use ($prefix) {
             return $html . ' ' . $prefix . $class;
-        }));
+        }, ''));
     }
 
     public function attr($key, $value = null)

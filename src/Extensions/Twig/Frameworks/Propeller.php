@@ -5,138 +5,127 @@ use Mopsis\Extensions\TagBuilder;
 
 class Propeller extends \Twig_Extension
 {
-    /*
-    public function button($text, array $links, array $button = [], array $attr = [])
+    protected $validButtonClasses = [
+        'active'   => 'active',
+        'block'    => 'btn-block',
+        'disabled' => 'disabled',
+        'fab'      => 'pmd-btn-fab',
+        'flat'     => 'pmd-btn-flat',
+        'outline'  => 'pmd-btn-outline'
+    ];
+
+    protected $validButtonContexts = [
+        'default' => 'btn-default',
+        'primary' => 'btn-primary',
+        'success' => 'btn-success',
+        'info'    => 'btn-info',
+        'warning' => 'btn-warning',
+        'danger'  => 'btn-danger',
+        'link'    => 'btn-link'
+    ];
+
+    protected $validButtonSizes = [
+        'large' => 'btn-lg',
+        'lg'    => 'btn-lg',
+        'small' => 'btn-sm',
+        'sm'    => 'btn-sm',
+        'tiny'  => 'btn-xs',
+        'xs'    => 'btn-xs'
+    ];
+
+    protected $validDropdownClasses = [
+        'hover' => 'pmd-dropdown-hover'
+    ];
+
+    protected $validDropdownDirections = [
+        'right'        => 'dropdown-menu-right',
+        'bottom-right' => 'dropdown-menu-right',
+        'top-left'     => 'pmd-dropdown-menu-top-left',
+        'top-right'    => 'pmd-dropdown-menu-top-right'
+    ];
+
+    protected $validIconClasses = [
+        'dark'     => 'md-dark',
+        'light'    => 'md-light',
+        'inactive' => 'md-inactive'
+    ];
+
+    protected $validIconSizes = [
+        'large'  => 'pmd-lg',
+        'lg'     => 'pmd-lg',
+        'medium' => 'pmd-md',
+        'md'     => 'pmd-md',
+        'small'  => 'pmd-sm',
+        'sm'     => 'pmd-sm',
+        'tiny'   => 'pmd-xs',
+        'xs'     => 'pmd-xs'
+    ];
+
+    public function getConfigForForm($link, $attributes = [])
     {
-    $url    = array_shift($links);
-    $hasUrl = $url !== false;
-
-    $links    = array_filter($links);
-    $hasLinks = !!count($links);
-
-    if (!$button['type']) {
-    $button['type'] = 'default';
+        return $this->getConfigObject(
+            [
+                'dataHref'   => $link,
+                'dataTarget' => '#modal',
+                'dataToggle' => 'modal'
+            ],
+            $attributes
+        );
     }
 
-    if ($button['icon']) {
-    $attr['title']   = $text;
-    $button['width'] = 'narrow';
-    $text            = $this->icon($button['icon']);
-    }
-
-    if ($button['tooltip']) {
-    $attr['title'] = $button['tooltip'];
-    }
-
-    if ($hasLinks) {
-    if ($hasUrl) {
-    return $this->getSplitButtonDropdown($text, $url, $links, $button, $attr);
-    }
-
-    return $this->getSingleButtonDropdown($text, $links, $button, $attr);
-    }
-
-    return $this->getButton($text, $url, $button, $attr)->addClass('hidden-print');
-    }
-
-    public function modal($text, $url, array $button = [], array $options = [])
+    public function getConfigForLink($title, $href, $attributes = [])
     {
-    $attr = array_filter([
-    'class' => $options['class'],
-    'data-' => array_filter([
-    'toggle'  => 'modal',
-    'target'  => '#modal',
-    'title'   => $text,
-    'href'    => $url,
-    'size'    => $options['size'] ?: 'lg',
-    'submit'  => $options['submit']
-    ])
-    ]);
-
-    if ($button['icon']) {
-    $attr['title']   = $text;
-    $button['width'] = 'narrow';
-    $text            = $this->icon($button['icon']);
+        return $this->getConfigObject(
+            [
+                'href' => $href,
+                'text' => $title
+            ],
+            $attributes
+        );
     }
 
-    if ($button['tooltip']) {
-    $attr['title'] = $button['tooltip'];
-    }
-
-    if ($button['type']) {
-    return $this->getButton($button['text'] ?: $text, false, $button, $attr);
-    }
-
-    return $this->getButton($button['text'] ?: $text, '#', [], $attr);
-    }
-
-    protected function getButtonClasses(array $button)
+    public function getConfigForModal($selector, $link = null, $attributes = [])
     {
-    if (!$button['type']) {
-    return '';
-    }
-
-    $classes = 'btn btn-' . $button['type'];
-
-    if ($button['size']) {
-    $classes .= ' btn-' . $button['size'];
-    }
-
-    if ($button['width']) {
-    $classes .= ' btn-' . $button['width'];
-    }
-
-    return $classes;
-    }
-
-    protected function getSingleButtonDropdown($text, array $links, array $button, array $attr)
-    {
-    return TagBuilder::create('div')
-    ->attr($attr)
-    ->addClass('btn-group hidden-print')
-    ->html([
-    $this->getDropdownButton($button, $text),
-    $this->getDropdownList($links)
-    ]);
-    }
-
-    protected function getSplitButtonDropdown($text, $url, array $links, array $button, array $attr)
-    {
-    return TagBuilder::create('div')
-    ->attr($attr)
-    ->addClass('btn-group btn-group-fixed hidden-print')
-    ->html([
-    isHtml((string) $url) ? $url : $this->getButton($text, $url, $button, []),
-    $this->getDropdownButton($button),
-    $this->getDropdownList($links)
-    ]);
-    }
-     */
-
-    public function fab($content, array $btnClasses = ['default', 'sm'], array $pmdClasses = [])
-    {
-        return TagBuilder::create('button')
-            ->attr('type', 'button')
-            ->addClass('btn pmd-btn-fab pmd-ripple-effect')
-            ->addClasses($btnClasses, 'btn-')
-            ->addClasses($pmdClasses, 'pmd-btn-')
-            ->html($content);
+        return $this->getConfigObject(
+            [
+                'href'       => $link,
+                'dataTarget' => $selector,
+                'dataToggle' => 'modal'
+            ],
+            $attributes
+        );
     }
 
     public function getFunctions()
     {
         return [
-            new \Twig_SimpleFunction('fab', [
+            new \Twig_SimpleFunction('button', [
                 $this,
-                'fab'
+                'getTagForButton'
+            ], ['is_safe' => ['html']]),
+            new \Twig_SimpleFunction('dropdown', [
+                $this,
+                'getTagForDropdown'
+            ], ['is_safe' => ['html']]),
+            new \Twig_SimpleFunction('form', [
+                $this,
+                'getConfigForForm'
             ], ['is_safe' => ['html']]),
             new \Twig_SimpleFunction('icon', [
                 $this,
-                'icon'
+                'getTagForIcon'
+            ], ['is_safe' => ['html']]),
+            new \Twig_SimpleFunction('link', [
+                $this,
+                'getConfigForLink'
             ], ['is_safe' => ['html']]),
             new \Twig_SimpleFunction('menu', [
                 $this,
-                'menu'
+                'getTagForMenu'
+            ], ['is_safe' => ['html']]),
+            new \Twig_SimpleFunction('modal', [
+                $this,
+                'getConfigForModal'
             ], ['is_safe' => ['html']])
         ];
     }
@@ -146,58 +135,120 @@ class Propeller extends \Twig_Extension
         return 'propeller';
     }
 
-    public function icon($symbol, $size = 'sm', array $mdClasses = [])
+    public function getTagForButton($html, $link, array $attributes = [], array $classes = [])
     {
-        return TagBuilder::create('i')
-            ->addClass('material-icons pmd-' . $size)
-            ->addClasses($mdClasses, 'md-')
-            ->html($symbol);
+        switch (gettype($link)) {
+            case 'array':
+                return $this->getButton($html, $link, $attributes, $classes);
+            case 'object':
+                return $this->getButton($html, null, array_merge(
+                    get_object_vars($link),
+                    $attributes
+                ), $classes);
+        }
+
+        return $this->getButton($html, $link, $attributes, $classes);
     }
 
-    public function menu(array $links, array $btnClasses = ['default', 'sm'], array $pmdClasses = ['flat'])
+    public function getTagForDropdown($html, $links, array $attributes = [], array $classes = [])
     {
         return TagBuilder::create('span')
             ->addClass('dropdown pmd-dropdown clearfix')
             ->html([
-                $this->getDropdownButton($btnClasses, $pmdClasses),
-                $this->getDropdownList($links)
+                $this->getDropdownButton($html, null, $attributes, $classes),
+                $this->getDropdownList($links, $classes)
             ]);
     }
 
-    protected function getButton($text, $url, array $attributes = [], array $classes = [])
+    public function getTagForIcon($symbol, array $classes = [])
     {
-        if ($url !== false) {
-            $tag = TagBuilder::create('a')
-                ->attr('href', $url);
-        } else {
+        return TagBuilder::create('i')
+            ->addClass($this->getIconClasses($classes))
+            ->html($symbol);
+    }
+
+    public function getTagForMenu($links, array $attributes = [], array $classes = [])
+    {
+        return $this->getTagForDropdown(
+            $this->getTagForIcon('more_vert', ['dark']),
+            $links,
+            $attributes,
+            array_merge($classes, ['fab', 'small', 'bottom-right'])
+        );
+    }
+
+    protected function filterMatches($values, $validValues)
+    {
+        return array_diff($values, $validValues, array_keys($validValues));
+    }
+
+    protected function findMatches($values, $validValues, $default = null)
+    {
+        return array_values(array_intersect_key(
+            $validValues,
+            array_flip($values)
+        )) ?: [$default];
+    }
+
+    protected function getButton($html, $link, array $attributes = [], array $classes = [])
+    {
+        if ($link === null) {
             $tag = TagBuilder::create('button')
                 ->attr('type', 'button');
+        } else {
+            $tag = TagBuilder::create('a')
+                ->attr('href', $link);
         }
 
         return $tag
+            ->addClass($this->getButtonClasses($classes))
             ->attr($attributes)
-            ->addClasses($classes)
-            ->html($text);
+            ->html($html);
     }
 
-    protected function getDropdownButton(array $btnClasses = [], array $pmdClasses = [])
+    protected function getButtonClasses($classes)
     {
-        return TagBuilder::create('button')
-            ->attr('type', 'button')
-            ->attr('data-toggle', 'dropdown')
-            ->addClass('btn pmd-btn-fab pmd-ripple-effect')
-            ->addClasses($btnClasses, 'btn-')
-            ->addClasses($pmdClasses, 'pmd-btn-')
-            ->html($this->icon('more_vert'));
+        $context = $this->findMatches($classes, $this->validButtonContexts, 'btn-default')[0];
+        $classes = $this->filterMatches($classes, $this->validButtonContexts);
+
+        $size    = $this->findMatches($classes, $this->validButtonSizes)[0];
+        $classes = $this->filterMatches($classes, $this->validButtonSizes);
+
+        $additions = $this->findMatches($classes, $this->validButtonClasses);
+        $classes   = $this->filterMatches($classes, $this->validButtonClasses);
+
+        return implode(' ', array_filter(
+            array_merge(
+                ['btn', $context, $size, 'pmd-ripple-effect'],
+                $additions,
+                $classes
+            )
+        ));
     }
 
-    protected function getDropdownList(array $links, $direction = 'left', $pmdClasses = [])
+    protected function getConfigObject(...$data)
     {
-        $prefix = $direction !== 'right' ? 'pmd-' : '';
+        return (object) array_filter(array_merge(...$data));
+    }
+
+    protected function getDropdownButton($html, $link, array $attributes = [], array $classes = [])
+    {
+        $additions = $this->findMatches($classes, $this->validDropdownClasses);
+        $classes   = $this->filterMatches($classes, $this->validDropdownClasses);
+        $classes   = $this->filterMatches($classes, $this->validDropdownDirections);
+
+        return $this->getButton($html, null, $attributes, $classes)
+                    ->attr('data-toggle', 'dropdown')
+                    ->addClasses($additions)
+                    ->addClass('dropdown-toggle');
+    }
+
+    protected function getDropdownList(array $links, $classes = [])
+    {
+        $direction = $this->findMatches($classes, $this->validDropdownDirections, '')[0];
 
         return TagBuilder::create('ul')
-            ->addClass('dropdown-menu ' . $prefix . 'dropdown-menu-' . $direction)
-            ->addClasses($pmdClasses, 'pmd-dropdown-')
+            ->addClasses(['dropdown-menu', $direction])
             ->html(array_reduce(
                 $this->prepareLinks($links),
                 function ($html, $link) {
@@ -206,23 +257,45 @@ class Propeller extends \Twig_Extension
             ));
     }
 
+    protected function getIconClasses($classes)
+    {
+        $size    = $this->findMatches($classes, $this->validIconSizes, 'pmd-sm')[0];
+        $classes = $this->filterMatches($classes, $this->validIconSizes);
+
+        $additions = $this->findMatches($classes, $this->validIconClasses);
+        $classes   = $this->filterMatches($classes, $this->validIconClasses);
+
+        return implode(' ', array_filter(
+            array_merge(
+                ['material-icons', $size],
+                $additions,
+                $classes
+            )
+        ));
+    }
+
     protected function prepareLinks(array $links)
     {
-        array_walk($links, function ($link) {
-            if (isHtml($link)) {
-                return;
+        $links = array_map(function ($link) {
+            if (gettype($link) === 'object') {
+                return TagBuilder::create('a')
+                    ->attr('href', '#')
+                    ->attr('tabindex', '-1')
+                    ->attr(get_object_vars($link))
+                    ->html($link->text ?: $link->title)
+                    ->toString();
             }
 
-            if (!preg_match('/^(?:\[(.+?)\]\((.+?)\)|(.+)\|(.+?))$/', $link, $m)) {
-                return;
+            if (isHtml($link) || !preg_match('/^(?:\[(.+?)\]\((.+?)\)|(.+)\|(.+?))$/', $link, $m)) {
+                return $link;
             }
 
-            $link = TagBuilder::create('a')
+            return TagBuilder::create('a')
                 ->attr('href', $m[2] ?: $m[4])
                 ->attr('tabindex', '-1')
                 ->html($m[1] ?: $m[3])
                 ->toString();
-        });
+        }, $links);
 
         return arrayTrim($links, function ($item) {
             return $item !== '--';
