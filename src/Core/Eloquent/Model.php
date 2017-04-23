@@ -28,6 +28,10 @@ abstract class Model extends EloquentModel implements ModelInterface
     // @Override
     public function __construct(array $attributes = [])
     {
+        if (!isset($this->table)) {
+            $this->table = preg_replace('/_model$/', '', $this->getTable());
+        }
+
         if ($this->guarded !== ['*']) {
             $this->guarded = array_merge($this->guarded, [
                 'slug',
