@@ -5,11 +5,12 @@ use App\AbstractBaseResponder;
 
 class DetailsResponder extends AbstractBaseResponder
 {
-    protected $template       = '{{TEMPLATE}}';
     protected $payloadMethods = [
         'Payload\Found'    => 'found',
         'Payload\NotFound' => 'notFound'
     ];
+
+    protected $template = '{{TEMPLATE}}';
 
     public function found()
     {

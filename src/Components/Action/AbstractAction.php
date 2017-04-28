@@ -31,11 +31,13 @@ abstract class AbstractAction
             return true;
         }
 
-        if (!$this->request->method->isGet()) {
+        if (!$this->request->method->isGet() || $this->request->url->get(PHP_URL_PATH) === '/') {
             return redirect($loginPage);
         }
 
-        return redirect($loginPage . '&redirect=' . urlencode($this->request->url->get(PHP_URL_PATH)));
+        $separator = parse_url($loginPage, PHP_URL_QUERY) === null ? '?' : '&';
+
+        return redirect($loginPage . $separator . 'redirect=' . urlencode($this->request->url->get(PHP_URL_PATH)));
     }
 
     public function init()
