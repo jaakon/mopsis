@@ -3,9 +3,23 @@ namespace Mopsis\Core;
 
 class Cache
 {
+    protected static $requests = 0;
+    protected static $misses   = 0;
+
     public static function clear()
     {
         return App::get('Cache')->clear();
+    }
+
+    public static function getStats()
+    {
+        $successes = self::$requests - self::$misses;
+
+        return (object)[
+            'requests'    => self::$requests,
+            'successes'   => $successes,
+            'misses'      => self::$misses
+        ];
     }
 
     public static function delete($key)
@@ -15,17 +29,17 @@ class Cache
 
     public static function get($key, callable $callback = null, $ttl = null)
     {
-        /**
-         * @var \Stash\Item $item
-         */
+        self::$requests++;
+        var_dump($key);
+
         $item  = App::get('Cache')->getItem(static::groupKeyFragments($key));
         $value = $item->get();
 
         if ($item->isMiss() && $callback !== null) {
+            self::$misses++;
+
             $item->lock();
-
             $value = $callback();
-
             $item->set($value);
 
             if ($ttl !== null) {
