@@ -9,7 +9,7 @@ abstract class AbstractAction
 
     const ACCESS_PUBLIC = 'public';
 
-    protected $access = self::ACCESS_PRIVATE;
+    protected $access;
 
     protected $request;
 
@@ -17,18 +17,24 @@ abstract class AbstractAction
 
     protected $service;
 
-    public function checkAccess()
+    public function redirectToLogin()
     {
-        $loginMandatory = is_bool($this->loginMandatory) ? $this->loginMandatory : config('app.login.mandatory');
+        if (!Auth::isEnabled()) {
+            return;
+        }
 
-        if (!$loginMandatory || Auth::check()) {
-            return true;
+        if ($this->access === null && !config('app.login.mandatory')) {
+            return;
+        }
+
+        if ($this->access === self::ACCESS_PUBLIC || Auth::check()) {
+            return;
         }
 
         $loginPage = config('app.login.page');
 
         if ($loginPage === $this->request->url->get(PHP_URL_PATH)) {
-            return true;
+            return;
         }
 
         if (!$this->request->method->isGet() || $this->request->url->get(PHP_URL_PATH) === '/') {
@@ -42,8 +48,5 @@ abstract class AbstractAction
 
     public function init()
     {
-        if (Auth::isEnabled()) {
-            $this->checkAccess();
-        }
     }
 }

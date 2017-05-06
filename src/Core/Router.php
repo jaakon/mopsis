@@ -42,22 +42,24 @@ class Router
             }
 
             $m['method'] = $requestMethod;
-            $class       = $this->getClass($rule[3], $m);
+            $className   = $this->getClass($rule[3], $m);
 
-            if ($class === false) {
+            if ($className === false) {
                 continue;
             }
 
-            $reflectionClass = new \ReflectionClass($class);
+            $reflectionClass = new \ReflectionClass($className);
             $funcArgs        = $this->getFunctionArguments($reflectionClass->getMethod('__invoke'), $m);
 
             if ($funcArgs === false) {
                 continue;
             }
 
-            $this->logger->debug($this->route . ' ==> ' . $class);
+            $this->logger->debug($this->route . ' ==> ' . $className);
 
-            return App::get($class)->__invoke(...$funcArgs);
+            $class = App::get($className);
+
+            return $class->redirectToLogin() ?: $class->__invoke(...$funcArgs);
         }
 
         return false;

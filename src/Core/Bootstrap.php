@@ -95,32 +95,19 @@ class Bootstrap
 
     protected function updateCache($flushMode)
     {
-        if ($flushMode === 'all') {
-            Cache::clear();
-        }
-
         if ($flushMode === 'all' || $flushMode === 'app') {
             if (App::has('CacheTool')) {
                 App::get('CacheTool')->opcache_reset();
             }
         }
 
-        if ($flushMode === 'all' || $flushMode === 'assets') {
-            Cache::delete('css.version');
-            Cache::delete('javascript.version');
+        if ($flushMode === 'all' ||  $flushMode === 'data') {
+            Cache::clear();
         }
 
         if ($flushMode === 'all' || $flushMode === 'views') {
             App::get('Mopsis\Components\View\View')->clearCache();
         }
-
-        Cache::get('css.version', function () {
-            return time();
-        });
-
-        Cache::get('javascript.version', function () {
-            return time();
-        });
     }
 
     private function buildResponse($code, $content)

@@ -126,11 +126,7 @@ abstract class Model extends EloquentModel implements ModelInterface
 
     public function getDataTypes()
     {
-        if (static::$datatypes !== null) {
-            return static::$datatypes;
-        }
-
-        return static::$datatypes = Cache::get([
+        return Cache::get([
             $this->getTable(),
             '@dataTypes'
         ], function () {

@@ -30,7 +30,6 @@ class Cache
     public static function get($key, callable $callback = null, $ttl = null)
     {
         self::$requests++;
-        var_dump($key);
 
         $item  = App::get('Cache')->getItem(static::groupKeyFragments($key));
         $value = $item->get();

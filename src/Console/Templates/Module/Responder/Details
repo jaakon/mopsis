@@ -11,11 +11,4 @@ class DetailsResponder extends AbstractBaseResponder
     ];
 
     protected $template = '{{TEMPLATE}}';
-
-    public function found()
-    {
-        if ($this->negotiateMediaType()) {
-            $this->renderView();
-        }
-    }
 }
