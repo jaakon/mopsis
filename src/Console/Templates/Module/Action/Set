@@ -1,0 +1,34 @@
+<?php
+namespace App\{{MODULE}}\Action;
+
+use App\{{MODULE}}\{{MODULE}}Service as Service;
+use App\{{MODULE}}\Responder\SetResponder as Responder;
+use Aura\Web\Request;
+use Mopsis\Components\Action\AbstractAction;
+
+class SetAction extends AbstractAction
+{
+    public function __construct(Request $request, Service $service, Responder $responder)
+    {
+        $this->request   = $request;
+        $this->service   = $service;
+        $this->responder = $responder;
+
+        $this->init();
+    }
+
+    public function __invoke($token, ...$tuples)
+    {
+        $data = [];
+
+        foreach ($tuples as $tuple) {
+            list($key, $value) = explode('=', $tuple);
+            $data[$key] = $value;
+        }
+
+        $payload = $this->service->setAttributes($token, $data);
+        $this->responder->setPayload($payload);
+
+        return $this->responder->__invoke();
+    }
+}

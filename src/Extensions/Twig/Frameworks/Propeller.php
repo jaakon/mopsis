@@ -11,6 +11,7 @@ class Propeller extends \Twig_Extension
         'disabled' => 'disabled',
         'fab'      => 'pmd-btn-fab',
         'flat'     => 'pmd-btn-flat',
+        'floating' => 'pmd-floating-action',
         'outline'  => 'pmd-btn-outline'
     ];
 

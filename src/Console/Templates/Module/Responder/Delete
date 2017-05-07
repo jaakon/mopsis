@@ -1,8 +1,8 @@
 <?php
 namespace App\{{MODULE}}\Responder;
 
-use App\AbstractDeleteResponder;
+use App\Abstract{{ACTION}}Responder;
 
-class DeleteResponder extends AbstractDeleteResponder
+class {{ACTION}}Responder extends Abstract{{ACTION}}Responder
 {
 }

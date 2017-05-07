@@ -211,6 +211,32 @@ abstract class AbstractService
         }
     }
 
+    public function setAttributes($token, $data)
+    {
+        try {
+            $instance = $this->repository->fetchByToken($token);
+
+            if (!$instance) {
+                return $this->payload->notFound(['token' => $token]);
+            }
+
+            if (!$this->repository->update($instance, $data)) {
+                return $this->payload->notUpdated([
+                    'instance' => $instance,
+                    'data'     => $data
+                ]);
+            }
+
+            return $this->payload->updated(['instance' => $instance]);
+        } catch (Exception $e) {
+            return $this->payload->error([
+                'exception' => $e,
+                'token'     => $token,
+                'data'      => $data
+            ]);
+        }
+    }
+
     public function setAttribute($token, $key, $value)
     {
         try {

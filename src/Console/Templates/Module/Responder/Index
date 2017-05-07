@@ -3,7 +3,7 @@ namespace App\{{MODULE}}\Responder;
 
 use App\AbstractBaseResponder;
 
-class IndexResponder extends AbstractBaseResponder
+class {{ACTION}}Responder extends AbstractBaseResponder
 {
     protected $payloadMethods = [
         'Payload\Found'    => 'found',

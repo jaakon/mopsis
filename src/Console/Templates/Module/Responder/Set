@@ -3,6 +3,6 @@ namespace App\{{MODULE}}\Responder;
 
 use App\Abstract{{ACTION}}Responder;
 
-class {{ACTION}}Responder extends Abstract{{ACTION}}Responder
+class {{ACTION}}Responder extends AbstractBaseResponder
 {
 }
