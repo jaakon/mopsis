@@ -14,6 +14,8 @@ abstract class AbstractResponder
 {
     protected $accept;
 
+    protected $allowHtmlFragments = true;
+
     protected $available = [
         'text/html'        => 'html',
         'application/json' => 'json',
@@ -136,9 +138,16 @@ abstract class AbstractResponder
 
     protected function renderViewForHtml($template = null)
     {
-        $this->view->setTemplate($this->getViewPath() . ($template ?: $this->template) . '.twig')->assign($this->payload->get());
+        $content = $this->view
+                        ->setTemplate($this->getViewPath() . ($template ?: $this->template) . '.twig')
+                        ->assign($this->payload->get())
+                        ->__invoke();
 
-        $this->response->content->set($this->view->__invoke());
+        if ($this->allowHtmlFragments && $this->request->isXhr()) {
+            $content = preg_replace('/.*<body>(.*)<\/body>.*/is', '$1', $content);
+        }
+
+        $this->response->content->set($content);
     }
 
     protected function renderViewForJson()

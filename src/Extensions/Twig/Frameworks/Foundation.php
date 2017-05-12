@@ -63,10 +63,19 @@ class Foundation extends \Twig_Extension
 
     public function getConfigForModal($id, $link = null, $attributes = [])
     {
+        if ($link === null) {
+            return $this->getConfigObject(
+                [
+                    'dataOpen' => $id
+                ],
+                $attributes
+            );
+        }
+
         return $this->getConfigObject(
             [
-                'href'     => $link,
-                'dataOpen' => $id
+                'dataOpenExtended' => $id,
+                'href'             => $link
             ],
             $attributes
         );
@@ -156,12 +165,23 @@ $this,
 
     protected function getButton($html, $link, array $attributes = [], array $classes = [])
     {
+        if (isset($attributes['href'])) {
+            $link = $attributes['href'];
+            unset($attributes['href']);
+        }
+
         if ($link === null) {
             $tag = TagBuilder::create('button')
                 ->attr('type', 'button');
         } else {
             $tag = TagBuilder::create('a')
                 ->attr('href', $link);
+        }
+
+        if (isset($attributes['tooltip'])) {
+            $attributes['title']       = $attributes['tooltip'];
+            $attributes['tooltip']     = null;
+            $attributes['dataTooltip'] = true;
         }
 
         return $tag

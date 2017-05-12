@@ -178,7 +178,7 @@ class FormBuilder
             return $html;
         }
 
-        $dom = \FluentDOM::QueryCss(utf8_decode($html), 'text/html');
+        $dom = \FluentDOM::QueryCss($html, 'html-fragment');
 
         foreach ($dom->find('input,select,textarea')->filter('[name][name!="csrfToken"]') as $node) {
             $field = FieldFactory::create($node);
