@@ -136,15 +136,10 @@ $this,
 
     public function getTagForIcon($symbol, array $classes = [])
     {
-        if (!count($classes)) {
-            return TagBuilder::create('i')
-                ->addClass('material-icons')
-                ->html(str_replace(' ', '_', $symbol));
-        }
-
         return TagBuilder::create('i')
             ->addClass($this->getIconClasses($classes))
-            ->addClass('mdi-' . str_replace(' ', '-', $symbol));
+            ->addClass('material-icons')
+            ->html(str_replace(' ', '_', $symbol));
     }
 
     protected function filterMatches(&$values, $validValues, $default = null)
@@ -316,7 +311,8 @@ $this,
 
         return implode(' ', array_filter(
             array_merge(
-                ['mdi', $size, $rotations, $flips],
+                [$size, $rotations],
+                $flips,
                 $additions,
                 $classes
             )
