@@ -61,24 +61,29 @@ class Foundation extends \Twig_Extension
         '5x' => 'mdi-5x'
     ];
 
-    public function getConfigForModal($id, $link = null, $attributes = [])
+    public function getConfigForConfirmation($title, $text, $link = null, $attributes = [], $id = 'confirmation')
     {
-        if ($link === null) {
-            return $this->getConfigObject(
-                [
-                    'dataOpen' => $id
-                ],
-                $attributes
-            );
-        }
-
         return $this->getConfigObject(
             [
-                'dataOpenExtended' => $id,
+                'dataConfirm'      => $id,
+                'dataConfirmTitle' => $title,
+                'dataConfirmText'  => $text,
                 'href'             => $link
             ],
             $attributes
         );
+    }
+
+    public function getConfigForModal($link = null, $attributes = [], $id = 'modal')
+    {
+        $config = $link === null ? [
+            'dataOpen' => $id
+        ] : [
+            'dataOpenExtended' => $id,
+            'href'             => $link
+        ];
+
+        return $this->getConfigObject($config, $attributes);
     }
 
     public function getFunctions()
@@ -91,6 +96,10 @@ class Foundation extends \Twig_Extension
             new \Twig_SimpleFunction('icon', [
                 $this,
                 'getTagForIcon'
+            ], ['is_safe' => ['html']]),
+            new \Twig_SimpleFunction('_confirm', [
+                $this,
+                'getConfigForConfirmation'
             ], ['is_safe' => ['html']]),
             new \Twig_SimpleFunction('_modal', [
                 $this,
@@ -124,7 +133,7 @@ class Foundation extends \Twig_Extension
     public function getTagForIcon($symbol, array $classes = [])
     {
         return TagBuilder::create('i')
-            ->addClass($this->getIconClasses($classes))
+            ->addClass($this->getClassesForIcon($classes))
             ->addClass('material-icons')
             ->html(str_replace(' ', '_', $symbol));
     }
@@ -167,12 +176,12 @@ class Foundation extends \Twig_Extension
         }
 
         return $tag
-            ->addClass($this->getButtonClasses($classes))
+            ->addClass($this->getClassesForButton($classes))
             ->attr($attributes)
             ->html($html);
     }
 
-    protected function getButtonClasses($classes)
+    protected function getClassesForButton($classes)
     {
         $classes   = explode(' ', implode(' ', $classes));
         $context   = $this->filterMatches($classes, $this->validButtonContexts, 'secondary')[0];
@@ -182,6 +191,24 @@ class Foundation extends \Twig_Extension
         return implode(' ', array_filter(
             array_merge(
                 ['button', $context, $size],
+                $additions,
+                $classes
+            )
+        ));
+    }
+
+    private function getClassesForIcon($classes)
+    {
+        $classes   = explode(' ', implode(' ', $classes));
+        $size      = $this->filterMatches($classes, $this->validIconSizes)[0];
+        $rotations = $this->filterMatches($classes, $this->validIconRotations)[0];
+        $flips     = $this->filterMatches($classes, $this->validIconFlips);
+        $additions = $this->filterMatches($classes, $this->validIconClasses);
+
+        return implode(' ', array_filter(
+            array_merge(
+                [$size, $rotations],
+                $flips,
                 $additions,
                 $classes
             )
@@ -288,22 +315,5 @@ class Foundation extends \Twig_Extension
     private function getConfigObject(...$data)
     {
         return (object) array_filter(array_merge(...$data));
-    }
-
-    private function getIconClasses($classes)
-    {
-        $size      = $this->filterMatches($classes, $this->validIconSizes)[0];
-        $rotations = $this->filterMatches($classes, $this->validIconRotations)[0];
-        $flips     = $this->filterMatches($classes, $this->validIconFlips);
-        $additions = $this->filterMatches($classes, $this->validIconClasses);
-
-        return implode(' ', array_filter(
-            array_merge(
-                [$size, $rotations],
-                $flips,
-                $additions,
-                $classes
-            )
-        ));
     }
 }
