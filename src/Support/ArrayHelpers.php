@@ -56,6 +56,15 @@ class ArrayHelpers
         return $results;
     }
 
+    public static function isAssoc(array $array)
+    {
+        if ([] === $arr) {
+            return false;
+        }
+
+        return array_keys($array) !== range(0, count($array) - 1);
+    }
+
     public static function trim(array $array, callable $callback = null)
     {
         $array = array_reverse(static::filterWithBreakpoint($array, $callback), true);

@@ -34,6 +34,11 @@ function arrayDot($array, $prepend = '')
     return ArrayHelpers::dot($array, $prepend);
 }
 
+function arrayIsAssoc(array $array)
+{
+    return ArrayHelpers::isAssoc($array);
+}
+
 function arrayTrim(array $array, callable $callback = null)
 {
     return ArrayHelpers::trim($array, $callback);

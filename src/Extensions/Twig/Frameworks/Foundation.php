@@ -96,24 +96,6 @@ class Foundation extends \Twig_Extension
                 $this,
                 'getConfigForModal'
             ], ['is_safe' => ['html']])
-/*
-new \Twig_SimpleFunction('dropdown', [
-$this,
-'getTagForDropdown'
-], ['is_safe' => ['html']]),
-new \Twig_SimpleFunction('_form', [
-$this,
-'getConfigForForm'
-], ['is_safe' => ['html']]),
-new \Twig_SimpleFunction('_link', [
-$this,
-'getConfigForLink'
-], ['is_safe' => ['html']]),
-new \Twig_SimpleFunction('menu', [
-$this,
-'getTagForMenu'
-], ['is_safe' => ['html']]),
- */
         ];
     }
 
@@ -124,6 +106,11 @@ $this,
 
     public function getTagForButton($html, $link, array $attributes = [], array $classes = [])
     {
+        if ($classes === [] && !arrayIsAssoc($attributes)) {
+            $classes    = $attributes;
+            $attributes = [];
+        }
+
         if (gettype($link) === 'object') {
             return $this->getButton($html, null, array_merge(
                 get_object_vars($link),
@@ -187,6 +174,7 @@ $this,
 
     protected function getButtonClasses($classes)
     {
+        $classes   = explode(' ', implode(' ', $classes));
         $context   = $this->filterMatches($classes, $this->validButtonContexts, 'secondary')[0];
         $size      = $this->filterMatches($classes, $this->validButtonSizes)[0];
         $additions = $this->filterMatches($classes, $this->validButtonClasses);
