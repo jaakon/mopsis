@@ -79,11 +79,6 @@ function debug(...$args)
     MiscHelpers::debug(...$args);
 }
 
-function dump(...$args)
-{
-    return MiscHelpers::dump(...$args);
-}
-
 function duration($hours)
 {
     return StringHelpers::duration($hours);
