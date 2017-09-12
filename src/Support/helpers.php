@@ -94,11 +94,6 @@ function env($key, $default = null)
     return LaravelHelpers::env($key, $default);
 }
 
-function finalDebug(...$args)
-{
-    MiscHelpers::finalDebug(...$args);
-}
-
 function isHtml($string)
 {
     return StringHelpers::isHtml($string);
@@ -152,6 +147,11 @@ function resolvePath($path)
 function staticPage($code)
 {
     return MiscHelpers::getStaticPage($code);
+}
+
+function stop(...$args)
+{
+    MiscHelpers::stop(...$args);
 }
 
 function stripInvalidChars($string, $charlist = null)

@@ -1,7 +1,6 @@
 <?php
 namespace Mopsis\Support;
 
-use Ladybug\Dumper;
 use Mopsis\Core\App;
 
 class MiscHelpers
@@ -22,28 +21,10 @@ class MiscHelpers
     public static function debug(...$args)
     {
         if (defined('DEBUGGING')) {
-            echo dump(...$args);
+            dump(...$args);
         }
-    }
 
-    public static function dump(...$args)
-    {
-        $ladybug = new Dumper();
-
-        $ladybug->setTheme('modern');
-        $ladybug->setFormat('html');
-        $ladybug->setOption('expanded', false);
-        $ladybug->setOption('helpers', ['debug', 'finalDebug', 'dump']);
-
-        return $ladybug->dump(...$args);
-    }
-
-    public static function finalDebug(...$args)
-    {
-        if (defined('DEBUGGING')) {
-            echo dump(...$args);
-            exit();
-        }
+        return $args;
     }
 
     public static function getStaticPage($code)
@@ -89,5 +70,13 @@ class MiscHelpers
         $response->redirect->to(PathHelpers::addLocation($uri), $code, $phrase);
 
         return $response;
+    }
+
+    public static function stop(...$args)
+    {
+        if (defined('DEBUGGING')) {
+            dump(...$args);
+            exit();
+        }
     }
 }

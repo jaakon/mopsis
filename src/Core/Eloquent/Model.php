@@ -19,13 +19,13 @@ abstract class Model extends EloquentModel implements ModelInterface
 
     const UPDATED_BY = 'updated_by';
 
+    protected static $datatypes;
+
     protected $guarded = ['id'];
 
     protected $orderBy;
 
     protected $stringifier;
-
-    protected static $datatypes;
 
     // @Override
     public function __construct(array $attributes = [])
@@ -283,15 +283,16 @@ abstract class Model extends EloquentModel implements ModelInterface
     // @Override
     protected function castAttribute($key, $value)
     {
-        if ($this->getCastType($key) === 'json') {
-            return App::make('Json', ['body' => $value]);
+        switch ($this->getCastType($key)) {
+            case 'array':
+                return $this->fromJson($value) ?: [];
+            case 'json':
+                return App::make('Json', ['body' => $value]);
+            case 'xml':
+                return App::make('Xml', ['xmlData' => $value]);
+            default:
+                return parent::castAttribute($key, $value);
         }
-
-        if ($this->getCastType($key) === 'xml') {
-            return App::make('Xml', ['xmlData' => $value]);
-        }
-
-        return parent::castAttribute($key, $value);
     }
 
     protected function getCachedAttribute($attribute, callable $callback, $ttl = null)
