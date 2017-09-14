@@ -20,7 +20,7 @@ class MiscHelpers
 
     public static function debug(...$args)
     {
-        if (defined('DEBUGGING')) {
+        if (defined('DEBUGGING') && count($args)) {
             dump(...$args);
         }
 
@@ -74,9 +74,18 @@ class MiscHelpers
 
     public static function stop(...$args)
     {
-        if (defined('DEBUGGING')) {
-            dump(...$args);
-            exit();
+        if (!defined('DEBUGGING')) {
+            return;
         }
+
+        if (count($args)) {
+            dump(...$args);
+        }
+
+        $stack    = debug_backtrace(null, 3);
+        $location = $stack[1]['file'] . ':' . $stack[1]['line'];
+        $link     = 'subl://open?url=file://' . urlencode($stack[1]['file']) . '&line=' . $stack[1]['line'];
+
+        exit('Stopped at [<a href="' . $link . '">' . $location . '</a>]');
     }
 }
