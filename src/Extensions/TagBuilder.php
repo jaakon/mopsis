@@ -36,7 +36,7 @@ class TagBuilder
         return $this->toString(TagRenderMode::NORMAL);
     }
 
-    public function addClass(string $class)
+    public function addClass(string $class = null)
     {
         if (empty(trim($class))) {
             return $this;
