@@ -16,11 +16,7 @@ class Bootstrap
 
         App::initialize($builder->build());
 
-        App::get('config')->load(
-            APPLICATION_PATH . '/config/config.php',
-            APPLICATION_PATH . '/config/credentials.php'
-        );
-
+        App::get('config')->load(APPLICATION_PATH . '/config/config.php');
         App::get('Database');
         App::get('ErrorHandler');
     }
@@ -47,17 +43,9 @@ class Bootstrap
 
         session_start();
 
-        if (!defined('FRAMEWORK_PATH')) {
-            define('FRAMEWORK_PATH', realpath(__DIR__ . '/..'));
-        }
-
-        if (!defined('APPLICATION_PATH')) {
-            define('APPLICATION_PATH', realpath(__DIR__ . '/../../../../..'));
-        }
-
-        if (!defined('DEBUG')) {
-            define('DEBUG', strpos($_SERVER['HTTP_USER_AGENT'], '(DEBUG)') !== false);
-        }
+        define('FRAMEWORK_PATH', realpath(__DIR__ . '/..'));
+        define('APPLICATION_PATH', realpath(__DIR__ . '/../../../../..'));
+        define('DEBUG', strpos($_SERVER['HTTP_USER_AGENT'], '(DEBUG)') !== false);
 
         chdir(APPLICATION_PATH);
     }
