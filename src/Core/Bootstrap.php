@@ -43,8 +43,8 @@ class Bootstrap
             define('APPLICATION_PATH', realpath(__DIR__ . '/../../../../..'));
         }
 
-        if (!defined('DEBUGGING')) {
-            define('DEBUGGING', strpos($_SERVER['HTTP_USER_AGENT'], '(DEBUG)') !== false);
+        if (!defined('DEBUG')) {
+            define('DEBUG', strpos($_SERVER['HTTP_USER_AGENT'], '(DEBUG)') !== false);
         }
 
         chdir(APPLICATION_PATH);
@@ -52,10 +52,6 @@ class Bootstrap
 
     public function kickstart($flushMode = null)
     {
-        if (parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) === '/@info') {
-            return phpinfo();
-        }
-
         $this->initializeFramework();
         $this->initializeApplication();
 

@@ -20,7 +20,7 @@ class MiscHelpers
 
     public static function debug(...$args)
     {
-        if (defined('DEBUGGING') && count($args)) {
+        if (DEBUG && count($args)) {
             dump(...$args);
         }
 
@@ -74,7 +74,7 @@ class MiscHelpers
 
     public static function stop(...$args)
     {
-        if (!defined('DEBUGGING')) {
+        if (!DEBUG) {
             return;
         }
 

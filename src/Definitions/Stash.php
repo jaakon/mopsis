@@ -16,9 +16,9 @@ return [
         'redis'      => [
             'servers' => [
                 [
-                    'server' => '127.0.0.1',
-                    'port'   => '6379',
-                    'ttl'    => 10
+                    'server' => env('REDIS_HOST', '127.0.0.1'),
+                    'port'   => env('REDIS_PORT', '6379'),
+                    'ttl'    => env('REDIS_TTL', 10)
                 ]
             ]
         ],
