@@ -25,7 +25,7 @@ return [
         ]
     ],
 
-    'twig.config' => dot('twig.config.production'),
+    'twig.config' => dot('twig.config.'.env('APP_ENV')),
 
     'twig.extensions' => function (ContainerInterface $c) {
         $extensions = [

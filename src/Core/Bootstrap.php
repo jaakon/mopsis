@@ -14,16 +14,16 @@ class Bootstrap
         $builder->addDefinitions(FRAMEWORK_PATH . '/definitions.php');
         $builder->addDefinitions(APPLICATION_PATH . '/config/definitions.php');
 
+        define('DEBUG',
+            env('APP_DEBUG', false) ||
+            strpos(env('HTTP_USER_AGENT'), '(DEBUG)') !== false
+        );
+
         App::initialize($builder->build());
 
         App::get('config')->load(APPLICATION_PATH . '/config/config.php');
         App::get('Database');
         App::get('ErrorHandler');
-
-        define('DEBUG',
-            env('APP_DEBUG', false) ||
-            strpos(env('HTTP_USER_AGENT'), '(DEBUG)') !== false
-        );
     }
 
     public function initializeEnvironment()
@@ -32,7 +32,7 @@ class Bootstrap
 
         $dotenv->load();
         $dotenv->required(['APP_KEY', 'DB_HOST', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD']);
-        $dotenv->required('APP_ENV')->allowedValues(['local', 'staging', 'production']);
+        $dotenv->required('APP_ENV')->allowedValues(['development', 'staging', 'production']);
 
         $_SERVER = array_diff_key($_SERVER, $_ENV);
     }

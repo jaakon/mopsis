@@ -28,8 +28,6 @@ return [
 
     'flysystem.local.config' => APPLICATION_PATH . '/storage/files',
 
-    'monolog.lineformat' => "[%datetime%] %level_name%: %message% %context% %extra%\n",
-
     'static-pages' => [
         400 => FRAMEWORK_PATH . '/Resources/static-pages/bad-request-error',
         404 => FRAMEWORK_PATH . '/Resources/static-pages/not-found-error',
@@ -46,11 +44,6 @@ return [
     League\Flysystem\AdapterInterface::class
     => object(League\Flysystem\Adapter\Local::class)
         ->constructor(get('flysystem.local.config')),
-
-    Monolog\Formatter\LineFormatter::class
-    => object()
-        ->constructorParameter('format', get('monolog.lineformat'))
-        ->constructorParameter('allowInlineLineBreaks', true),
 
     Psr\Log\LoggerInterface::class
     => get('Logger'),
@@ -82,27 +75,7 @@ return [
     },
 
     ErrorHandler::class
-    => function (ContainerInterface $c) {
-        $whoops = new Whoops\Run();
-
-        $whoops->pushHandler($c->get(Whoops\Handler\PrettyPageHandler::class));
-
-        if (Whoops\Util\Misc::isCommandLine()) {
-            $whoops->pushHandler($c->get(Whoops\Handler\PlainTextHandler::class));
-        }
-
-        if (Whoops\Util\Misc::isAjaxRequest()) {
-            $whoops->pushHandler($c->get(Whoops\Handler\JsonResponseHandler::class));
-        }
-
-        $whoops->pushHandler(function (Throwable $exception) use ($c) {
-            $c->get(Logger::class)->error($exception->getMessage());
-        });
-
-        $whoops->register();
-
-        return $whoops;
-    },
+    => get(Whoops\Run::class),
 
     Filesystem::class
     => object(League\Flysystem\Filesystem::class),
@@ -117,36 +90,11 @@ return [
     => object(Mopsis\Extensions\Json::class),
 
     Logger::class
-    => function (ContainerInterface $c) {
-        $logger = new Monolog\Logger('default');
-
-        $logger->pushHandler(new Monolog\Handler\ChromePHPHandler(Monolog\Logger::INFO));
-        $logger->pushHandler($c->get(MonologNoticeHandler::class));
-        $logger->pushHandler($c->get(MonologErrorHandler::class));
-        $logger->pushHandler(new Monolog\Handler\PushoverHandler(
-            'aw6zvva5hvy67Y1gvnagx7y3GZzEDA',
-            'uF1VyiRtDd1XXnEKA41imF2P88gxJ4',
-            config('project.title'),
-            Monolog\Logger::ERROR,
-            false
-        ));
-
-        return $logger;
-    },
+    => get(Monolog\Logger::class),
 
     Mailgun::class
     => object(Mailgun\Mailgun::class)
         ->constructorParameter('httpClient', get('HttpClient')),
-
-    MonologErrorHandler::class
-    => object(Monolog\Handler\StreamHandler::class)
-        ->constructor(dot('app.error_log'), Monolog\Logger::ERROR, false)
-        ->method('setFormatter', get(Monolog\Formatter\LineFormatter::class)),
-
-    MonologNoticeHandler::class
-    => object(Monolog\Handler\StreamHandler::class)
-        ->constructor(dot('app.application_log'), Monolog\Logger::NOTICE, false)
-        ->method('setFormatter', get(Monolog\Formatter\LineFormatter::class)),
 
     Renderer::class
     => object(Twig_Environment::class),
