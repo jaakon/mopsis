@@ -19,6 +19,11 @@ class Bootstrap
         App::get('config')->load(APPLICATION_PATH . '/config/config.php');
         App::get('Database');
         App::get('ErrorHandler');
+
+        define('DEBUG',
+            env('APP_DEBUG', false) ||
+            strpos(env('HTTP_USER_AGENT'), '(DEBUG)') !== false
+        );
     }
 
     public function initializeEnvironment()
@@ -45,7 +50,6 @@ class Bootstrap
 
         define('FRAMEWORK_PATH', realpath(__DIR__ . '/..'));
         define('APPLICATION_PATH', realpath(__DIR__ . '/../../../../..'));
-        define('DEBUG', strpos($_SERVER['HTTP_USER_AGENT'], '(DEBUG)') !== false);
 
         chdir(APPLICATION_PATH);
     }
