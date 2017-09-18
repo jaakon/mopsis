@@ -37,7 +37,7 @@ class LaravelHelpers
 
     public static function env($key, $default = null)
     {
-        $value = getenv($key);
+        $value = getenv($key, true) ?: getenv($key);
 
         if ($value === false) {
             return value($default);

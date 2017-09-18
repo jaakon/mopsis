@@ -3,6 +3,7 @@ namespace Mopsis\Core;
 
 use Aura\Web\Response;
 use DI\ContainerBuilder;
+use Dotenv\Dotenv;
 use Mopsis\Extensions\Aura\Web\ResponseSender;
 
 class Bootstrap
@@ -22,6 +23,17 @@ class Bootstrap
 
         App::get('Database');
         App::get('ErrorHandler');
+    }
+
+    public function initializeEnvironment()
+    {
+        $dotenv = new Dotenv(APPLICATION_PATH);
+
+        $dotenv->load();
+        $dotenv->required(['APP_KEY', 'DB_HOST', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD']);
+        $dotenv->required('APP_ENV')->allowedValues(['local', 'staging', 'production']);
+
+        $_SERVER = array_diff_key($_SERVER, $_ENV);
     }
 
     public function initializeFramework()
@@ -53,6 +65,7 @@ class Bootstrap
     public function kickstart($flushMode = null)
     {
         $this->initializeFramework();
+        $this->initializeEnvironment();
         $this->initializeApplication();
 
         if (php_sapi_name() === 'cli') {
