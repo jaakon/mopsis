@@ -26,6 +26,11 @@ abstract class AbstractRepository
         return $this->model->all();
     }
 
+    public function updateOrCreate(array $attributes, array $values = [])
+    {
+        return $this->model->updateOrCreate($attributes, $this->getAcceptedData($this->model, $values));
+    }
+
     public function fetchById($id)
     {
         return $this->model->find($id);
