@@ -18,8 +18,14 @@ abstract class SluggableModel extends EloquentModel
 
     public function getSlugOptions() : SlugOptions
     {
-        return SlugOptions::create()
+        $options = SlugOptions::create()
             ->generateSlugsFrom($this->sluggable['source'])
             ->saveSlugsTo($this->sluggable['target']);
+
+        if ($this->sluggable['generateUniqueSlugs'] === false) {
+            $options->allowDuplicateSlugs();
+        }
+
+        return $options;
     }
 }
