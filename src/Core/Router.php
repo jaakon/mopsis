@@ -100,7 +100,9 @@ class Router
                 $funcArgs[] = urldecode($m[$param->name]);
             } elseif (count($m['params'])) {
                 $funcArgs[] = urldecode(array_shift($m['params']));
-            } elseif (!$param->isOptional()) {
+            } elseif ($param->isOptional()) {
+                $funcArgs[] = null;
+            } else {
                 $this->logger->debug($method->name . ' => missing parameter "' . $param->name . '" [' . $this->route . ']');
 
                 return false;
