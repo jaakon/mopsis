@@ -8,7 +8,7 @@ class LaravelHelpers
     public static function app($name = null, array $parameters = null)
     {
         if ($name === null) {
-            return App::getInstance();
+            return new App(); //::getInstance();
         }
 
         if (preg_match('/^(\w+):(\w+\\\\\w+)$/', $name, $m)) {
@@ -59,5 +59,10 @@ class LaravelHelpers
         }
 
         return $value;
+    }
+
+    public static function event($event)
+    {
+        return;
     }
 }

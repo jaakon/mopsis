@@ -59,6 +59,10 @@ return [
 
     Database::class
     => function (ContainerInterface $c) {
+        \Illuminate\Database\Connection::resolverFor('mysql', function (...$args) {
+            return new \Mopsis\Extensions\Illuminate\Database\MariaDbConnection(...$args);
+        });
+
         $manager = $c->get(Illuminate\Database\Capsule\Manager::class);
 
         if (is_array(config('connections'))) {

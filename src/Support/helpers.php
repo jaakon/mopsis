@@ -89,6 +89,11 @@ function env($key, $default = null)
     return LaravelHelpers::env($key, $default);
 }
 
+function event($event)
+{
+    return LaravelHelpers::event($event);
+}
+
 function isHtml($string)
 {
     return StringHelpers::isHtml($string);

@@ -15,18 +15,6 @@ class App
         return static::getInstance()->$method(...$args);
     }
 
-    public static function environment($toCheckAgainst = null)
-    {
-        switch (gettype($toCheckAgainst)) {
-            case 'string':
-                return env('APP_ENV') === $toCheckAgainst;
-            case 'array':
-                return in_array(env('APP_ENV'), $toCheckAgainst, true);
-            default:
-                return env('APP_ENV');
-        }
-    }
-
     public static function build($type, $name)
     {
         $class = static::getFullyQualifiedName($type, $name);
@@ -41,6 +29,18 @@ class App
     public static function create($type, $name, array $parameters = [])
     {
         return static::getInstance()->make(static::build($type, $name), $parameters);
+    }
+
+    public static function environment($toCheckAgainst = null)
+    {
+        switch (gettype($toCheckAgainst)) {
+            case 'string':
+                return env('APP_ENV') === $toCheckAgainst;
+            case 'array':
+                return in_array(env('APP_ENV'), $toCheckAgainst, true);
+            default:
+                return env('APP_ENV');
+        }
     }
 
     public static function get(...$args)
@@ -75,6 +75,11 @@ class App
     public static function getInstance(): Container
     {
         return static::$container;
+    }
+
+    public static function getLocale()
+    {
+        return config('app.locale');
     }
 
     public static function has(...$args)
