@@ -7,9 +7,6 @@ use Aura\Web\Response;
 use Mopsis\Components\Domain\Payload\PayloadInterface;
 use Mopsis\Components\View\View;
 
-/**
- * @property PayloadInterface $payload
- */
 abstract class AbstractResponder
 {
     protected $accept;
@@ -25,8 +22,6 @@ abstract class AbstractResponder
     protected $payload;
 
     protected $payloadData;
-
-    protected $payloadMethods = [];
 
     protected $request;
 
@@ -48,11 +43,7 @@ abstract class AbstractResponder
 
     public function __invoke()
     {
-        if ($this->payload === null) {
-            return $this->notFound();
-        }
-
-        $method = $this->payloadMethods[$this->payload->getName()] ?: 'notRecognized';
+        $method = $this->payload ? $this->payload->getMethod() : 'notFound';
 
         $this->$method();
 
@@ -61,7 +52,7 @@ abstract class AbstractResponder
 
     public function setPayload(PayloadInterface $payload)
     {
-        $this->payload = $this->payloadData ? $this->addPayloadData($payload) : $payload;
+        $this->payload = $this->payloadData ? $payload->newInstance($this->payloadData) : $payload;
 
         return $this;
     }
@@ -73,25 +64,12 @@ abstract class AbstractResponder
         return $this;
     }
 
-    protected function addPayloadData(PayloadInterface $payload)
-    {
-        $class = get_class($payload);
-
-        return new $class(array_merge($this->payloadData, $payload->get()));
-    }
-
     protected function getViewPath()
     {
-        return preg_replace('/^\w+\\\(\w+)\\\.+$/', '$1/', get_called_class());
+        return explode('\\', get_called_class())[1] . DIRECTORY_SEPARATOR;
     }
 
-    protected function init()
-    {
-        if (!isset($this->payloadMethods['Payload\Error'])) {
-            $this->payloadMethods['Payload\Error'] = 'error';
-        }
-    }
-
+    protected function init() {}
     protected function negotiateMediaType()
     {
         $available = array_keys($this->available);
@@ -108,14 +86,6 @@ abstract class AbstractResponder
         $this->response->content->set(implode(',', $available));
 
         return false;
-    }
-
-    protected function notRecognized()
-    {
-        $this->response->status->set(500);
-        $this->response->content->set('Unknown domain payload status: "' . get_class($this->payload) . '"');
-
-        return $this->response;
     }
 
     protected function renderView($template = null)
@@ -144,7 +114,7 @@ abstract class AbstractResponder
                         ->__invoke();
 
         if ($this->allowHtmlFragments && $this->request->isXhr()) {
-            $content = preg_replace('/.*<body>(.*)<\/body>.*/is', '$1', $content);
+            $content = preg_replace('/.*<body[^>]*>(.*)<\/body>.*/is', '$1', $content);
         }
 
         $this->response->content->set($content);

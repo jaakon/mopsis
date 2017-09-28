@@ -1,21 +1,23 @@
 <?php
 namespace Mopsis\Components\Domain\Payload;
 
-use Mopsis\Contracts\Model;
 use Mopsis\Contracts\Hierarchical;
+use Mopsis\Contracts\Model;
 
 abstract class AbstractPayload implements PayloadInterface
 {
-    protected $payload = [];
+    protected $data = [];
 
-    public function __construct(array $payload)
+    protected $method;
+
+    public function __construct(array $data)
     {
-        $this->payload = $payload;
+        $this->data = $data;
     }
 
     public function add(array $data)
     {
-        $this->payload = array_merge($this->payload, $data);
+        $this->data = array_merge($this->data, $data);
 
         return $this;
     }
@@ -23,28 +25,42 @@ abstract class AbstractPayload implements PayloadInterface
     public function get($key = null)
     {
         if ($key === null) {
-            return $this->payload;
+            return $this->data;
         }
 
-        if (isset($this->payload[$key])) {
-            return $this->payload[$key];
+        if (isset($this->data[$key])) {
+            return $this->data[$key];
         }
 
-        if ($key === 'redirect' && isset($this->payload['instance'])) {
-            if ($this->payload['instance'] instanceof Hierarchical) {
-                return $this->payload['instance']->getUriRecursive();
+        if ($key === 'redirect' && isset($this->data['instance'])) {
+            if ($this->data['instance'] instanceof Hierarchical) {
+                return $this->data['instance']->getUriRecursive();
             }
 
-            if ($this->payload['instance'] instanceof Model) {
-                return $this->payload['instance']->uri;
+            if ($this->data['instance'] instanceof Model) {
+                return $this->data['instance']->uri;
             }
         }
 
         return;
     }
 
-    public function getName()
+    public function getMethod()
     {
-        return implode('\\', array_slice(explode('\\', get_class($this)), -2));
+        if ($this->method === null) {
+            $this->method = lcfirst(array_pop(explode('\\', get_class($this))));
+        }
+
+        return $this->method;
+    }
+
+    public function newInstance(array $data)
+    {
+        return (new static($data))->add($this->get());
+    }
+
+    public function setMethod($method)
+    {
+        $this->method = $method;
     }
 }

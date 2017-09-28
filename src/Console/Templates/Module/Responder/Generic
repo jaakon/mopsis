@@ -5,10 +5,5 @@ use App\AbstractBaseResponder;
 
 class {{ACTION}}Responder extends AbstractBaseResponder
 {
-    protected $payloadMethods = [
-        'Payload\Found'    => 'found',
-        'Payload\NotFound' => 'notFound'
-    ];
-
     protected $template = '{{TEMPLATE}}';
 }

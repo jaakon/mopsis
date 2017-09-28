@@ -7,5 +7,7 @@ interface PayloadInterface
 
     public function get($key = null);
 
-    public function getName();
+    public function getMethod();
+
+    public function setMethod($method);
 }
