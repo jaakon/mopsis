@@ -4,12 +4,14 @@ namespace Mopsis\Components\Domain;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Mopsis\Contracts\Model;
 
-/**
- * @property Model $model
- */
 abstract class AbstractRepository
 {
     protected $model;
+
+    public function all()
+    {
+        return $this->model->all();
+    }
 
     public function create(Model $instance, $data)
     {
@@ -21,29 +23,19 @@ abstract class AbstractRepository
         return $instance->delete();
     }
 
-    public function fetchAll()
+    public function find($sql, array $bindings)
     {
-        return $this->model->all();
+        return $this->model->whereRaw($sql, $bindings);
     }
 
-    public function updateOrCreate(array $attributes, array $values = [])
-    {
-        return $this->model->updateOrCreate($attributes, $this->getAcceptedData($this->model, $values));
-    }
-
-    public function fetchById($id)
+    public function findById($id)
     {
         return $this->model->find($id);
     }
 
-    public function fetchByToken($token)
+    public function findByToken($token)
     {
         return $this->model->unpack($token);
-    }
-
-    public function find($sql, array $bindings)
-    {
-        return $this->model->whereRaw($sql, $bindings);
     }
 
     public function findMany($sql, array $bindings = [], $offset = 0, $length = null)
@@ -66,7 +58,7 @@ abstract class AbstractRepository
         return $this->find(...$this->expandQuery($sql, $bindings))->first();
     }
 
-    public function newEntity(array $attributes = []): Model
+    public function newInstance(array $attributes = []): Model
     {
         return $this->model->newInstance($attributes);
     }
@@ -87,6 +79,11 @@ abstract class AbstractRepository
     public function update(Model $instance, $data)
     {
         return $instance->update($this->getAcceptedData($instance, $this->getRestructuredData($data))) ? $instance : false;
+    }
+
+    public function updateOrCreate(array $attributes, array $values = [])
+    {
+        return $this->model->updateOrCreate($attributes, $this->getAcceptedData($this->model, $values));
     }
 
     protected function expandQuery($sql, array $bindings)

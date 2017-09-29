@@ -102,12 +102,12 @@ class Bootstrap
             }
         }
 
-        if ($flushMode === 'all' ||  $flushMode === 'data') {
+        if ($flushMode === 'all' || $flushMode === 'data') {
             Cache::clear();
         }
 
         if ($flushMode === 'all' || $flushMode === 'views') {
-            App::get('Mopsis\Components\View\View')->clearCache();
+            App::get('Mopsis\Components\View')->clearCache();
         }
     }
 

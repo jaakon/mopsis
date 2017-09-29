@@ -19,7 +19,7 @@ class IndexAction extends AbstractAction
 
     public function __invoke()
     {
-        $payload = $this->service->fetchAll();
+        $payload = $this->service->all();
         $this->responder->setPayload($payload);
 
         return $this->responder->__invoke();

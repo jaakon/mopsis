@@ -15,9 +15,6 @@ class CacheAdapter implements CacheProviderInterface
 
     public function fetch($key)
     {
-        /**
-         * @noinspection PhpMethodParametersCountMismatchInspection
-         */
         $item = $this->cache->getItem($key);
         $data = $item->get();
 
@@ -26,9 +23,6 @@ class CacheAdapter implements CacheProviderInterface
 
     public function save($key, $value, $ttl = 0)
     {
-        /**
-         * @noinspection PhpMethodParametersCountMismatchInspection
-         */
         $this->cache->getItem($key)->set($value, $ttl ?: null);
     }
 }

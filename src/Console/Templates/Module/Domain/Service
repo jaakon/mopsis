@@ -4,17 +4,17 @@ namespace App\{{MODULE}};
 use App\{{MODULE}}\{{MODULE}}Filter as Filter;
 use App\{{MODULE}}\{{MODULE}}Repository as Repository;
 use Mopsis\Components\Domain\AbstractService;
-use Mopsis\Components\Domain\PayloadFactory;
+use Mopsis\Components\PayloadFactory;
 
 class {{MODULE}}Service extends AbstractService
 {
-    protected $instanceKey   = '{{INSTANCE}}';
-    protected $collectionKey = '{{COLLECTION}}';
-
     public function __construct(Filter $filter, Repository $repository, PayloadFactory $payload)
     {
         $this->filter     = $filter;
         $this->repository = $repository;
         $this->payload    = $payload;
+
+        $this->payload->setAlias('{{INSTANCE}}', 'instance');
+        $this->payload->setAlias('{{COLLECTION}}', 'collection');
     }
 }

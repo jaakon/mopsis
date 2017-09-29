@@ -1,5 +1,5 @@
 <?php
-namespace Mopsis\Components\Domain\Payload;
+namespace Mopsis\Components\Payload;
 
 class NotUpdated extends AbstractPayload
 {

@@ -1,5 +1,5 @@
 <?php
-namespace Mopsis\Components\View;
+namespace Mopsis\Components;
 
 use Aura\Web\Request;
 use Mopsis\Components\Domain\AbstractFilter as Filter;

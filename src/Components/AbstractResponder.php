@@ -1,11 +1,10 @@
 <?php
-namespace Mopsis\Components\Responder;
+namespace Mopsis\Components;
 
 use Aura\Accept\Accept;
 use Aura\Web\Request;
 use Aura\Web\Response;
-use Mopsis\Components\Domain\Payload\PayloadInterface;
-use Mopsis\Components\View\View;
+use Mopsis\Contracts\Payload;
 
 abstract class AbstractResponder
 {
@@ -29,7 +28,7 @@ abstract class AbstractResponder
 
     protected $view;
 
-    public function __construct(Accept $accept, Request $request, Response $response, View $view, PayloadInterface $payload)
+    public function __construct(Accept $accept, Request $request, Response $response, View $view, Payload $payload)
     {
         $this->accept   = $accept;
         $this->request  = $request;
@@ -48,9 +47,9 @@ abstract class AbstractResponder
         return $this->response;
     }
 
-    public function setPayload(PayloadInterface $payload)
+    public function setPayload(Payload $payload)
     {
-        $this->payload = $payload->override($this->payload);
+        $this->payload = $payload->dissolve($this->payload);
 
         return $this;
     }

@@ -5,18 +5,18 @@ use function DI\get;
 use function DI\object;
 
 return [
+    Mopsis\Components\View::class
+    => object()
+        ->constructorParameter('extensions', get('twig.extensions')),
+
     Mopsis\Contracts\User::class
     => function () {
         return Mopsis\Core\Auth::user();
     },
 
-    Mopsis\Components\Domain\Payload\PayloadInterface::class
-    => object(Mopsis\Components\Domain\Payload\NotImplemented::class)
-        ->constructor([]),
-
-    Mopsis\Components\View\View::class
-    => object()
-        ->constructorParameter('extensions', get('twig.extensions')),
+    Mopsis\Contracts\Payload::class
+    => object(Mopsis\Components\Payload\NotImplemented::class)
+        ->constructor(),
 
     Mopsis\FormBuilder\FormBuilder::class
     => object()

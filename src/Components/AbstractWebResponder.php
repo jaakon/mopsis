@@ -1,5 +1,5 @@
 <?php
-namespace Mopsis\Components\Responder;
+namespace Mopsis\Components;
 
 use Mopsis\Core\App;
 
