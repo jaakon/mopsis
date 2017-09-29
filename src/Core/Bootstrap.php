@@ -68,7 +68,7 @@ class Bootstrap
         include APPLICATION_PATH . '/app/initialize.php';
 
         $response = $this->executeRoute();
-        (new ResponseSender($response))->__invoke();
+        (new ResponseSender($response))();
 
         return true;
     }

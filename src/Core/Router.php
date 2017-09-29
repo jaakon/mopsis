@@ -59,7 +59,7 @@ class Router
 
             $class = App::get($className);
 
-            return $class->redirectToLogin() ?: $class->__invoke(...$funcArgs);
+            return $class->redirectToLogin() ?: $class(...$funcArgs);
         }
 
         return false;

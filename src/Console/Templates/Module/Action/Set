@@ -29,6 +29,6 @@ class SetAction extends AbstractAction
         $payload = $this->service->setAttributes($token, $data);
         $this->responder->setPayload($payload);
 
-        return $this->responder->__invoke();
+        return ($this->responder)();
     }
 }

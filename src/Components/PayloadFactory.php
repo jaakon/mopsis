@@ -60,11 +60,6 @@ class PayloadFactory
         return (new Payload\NotValid($data))->setAliases($this->aliases);
     }
 
-    public function seeOther(array $data = [])
-    {
-        return (new Payload\SeeOther($data))->setAliases($this->aliases);
-    }
-
     public function setAlias($link, $target)
     {
         if ($link === $target) {

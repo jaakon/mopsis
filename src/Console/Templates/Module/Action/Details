@@ -22,6 +22,6 @@ class DetailsAction extends AbstractAction
         $payload = $this->service->find($token);
         $this->responder->setPayload($payload);
 
-        return $this->responder->__invoke();
+        return ($this->responder)();
     }
 }
