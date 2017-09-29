@@ -53,7 +53,12 @@ abstract class AbstractRepository
         return $query->get();
     }
 
-    public function findOne($sql, array $bindings = [])
+    public function findOrCreate(array $attributes, array $values = [])
+    {
+        return $this->model->firstOrCreate($attributes, $this->getAcceptedData($this->model, $values));
+    }
+
+    public function first($sql, array $bindings = [])
     {
         return $this->find(...$this->expandQuery($sql, $bindings))->first();
     }

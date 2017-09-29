@@ -166,7 +166,7 @@ abstract class AbstractService
     public function findByAttributes($attributes)
     {
         try {
-            $instance = $this->repository->findOne($attributes);
+            $instance = $this->repository->first($attributes);
 
             if (!$instance->exists) {
                 return $this->payload->notFound($attributes);
