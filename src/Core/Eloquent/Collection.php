@@ -38,8 +38,7 @@ class Collection extends \Illuminate\Database\Eloquent\Collection
     {
         return $this->filter(function ($item) use ($map) {
             foreach ($map as $key => $value) {
-                if ($item->{$key}
-                    !== $value) {
+                if ($item->$key !== $value) {
                     return false;
                 }
             }
@@ -69,8 +68,8 @@ class Collection extends \Illuminate\Database\Eloquent\Collection
 
     protected function mutateAttribute($key)
     {
-        return $this->{'get' . studly_case($key) . 'Attribute'}
+        $method = 'get' . studly_case($key) . 'Attribute';
 
-        ();
+        return $this->$method();
     }
 }

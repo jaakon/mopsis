@@ -17,13 +17,10 @@ return [
 
     'classFormats' => [
         'Action'     => 'App\\{{MODULE}}\\Action\\{{SUBTYPE}}Action',
-        'Collection' => 'App\\{{MODULE}}\\Collection',
-        'Domain'     => 'App\\{{MODULE}}\\{{SUBTYPE}}',
-        'Gateway'    => 'App\\{{MODULE}}\\Gateway',
-        'Model'      => 'App\\{{MODULE}}\\Model',
-        'Observer'   => 'App\\{{MODULE}}\\Observer',
         'Responder'  => 'App\\{{MODULE}}\\Responder\\{{SUBTYPE}}Responder',
-        'View'       => '{{MODULE}}\\{{SUBTYPE}}'
+        'Model'      => 'App\\{{MODULE}}\\{{MODULE}}Model',
+        'Collection' => 'App\\{{MODULE}}\\{{MODULE}}Collection',
+        'Observer'   => 'App\\{{MODULE}}\\{{MODULE}}Observer'
     ],
 
     'flysystem.local.config' => APPLICATION_PATH . '/storage/files',

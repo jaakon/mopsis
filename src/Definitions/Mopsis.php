@@ -10,6 +10,10 @@ return [
         return Mopsis\Core\Auth::user();
     },
 
+    Mopsis\Components\Domain\Payload\PayloadInterface::class
+    => object(Mopsis\Components\Domain\Payload\Preparation::class)
+        ->constructor([]),
+
     Mopsis\Components\View\View::class
     => object()
         ->constructorParameter('extensions', get('twig.extensions')),

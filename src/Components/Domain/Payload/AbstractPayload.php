@@ -54,9 +54,9 @@ abstract class AbstractPayload implements PayloadInterface
         return $this->method;
     }
 
-    public function newInstance(array $data)
+    public function override(PayloadInterface $payload)
     {
-        return (new static($data))->add($this->get());
+        return (new static($payload->get()))->add($this->get());
     }
 
     public function setMethod($method)

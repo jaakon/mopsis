@@ -21,8 +21,6 @@ abstract class AbstractResponder
 
     protected $payload;
 
-    protected $payloadData;
-
     protected $request;
 
     protected $response;
@@ -31,12 +29,13 @@ abstract class AbstractResponder
 
     protected $view;
 
-    public function __construct(Accept $accept, Request $request, Response $response, View $view)
+    public function __construct(Accept $accept, Request $request, Response $response, View $view, PayloadInterface $payload)
     {
         $this->accept   = $accept;
         $this->request  = $request;
         $this->response = $response;
         $this->view     = $view;
+        $this->payload  = $payload;
 
         $this->init();
     }
@@ -52,7 +51,7 @@ abstract class AbstractResponder
 
     public function setPayload(PayloadInterface $payload)
     {
-        $this->payload = $this->payloadData ? $payload->newInstance($this->payloadData) : $payload;
+        $this->payload = $payload->override($this->payload);
 
         return $this;
     }
@@ -86,6 +85,14 @@ abstract class AbstractResponder
         $this->response->content->set(implode(',', $available));
 
         return false;
+    }
+
+    protected function notRecognized()
+    {
+        $this->response->status->set(500);
+        $this->response->content->set('Unknown domain payload status: "' . get_class($this->payload) . '"');
+
+        return $this->response;
     }
 
     protected function renderView($template = null)
