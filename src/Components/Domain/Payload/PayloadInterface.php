@@ -7,7 +7,15 @@ interface PayloadInterface
 
     public function get($key = null);
 
-    public function getMethod();
+    public function getName();
 
-    public function setMethod($method);
+    public function getRedirect();
+
+    public function getStatus();
+
+    public function override(PayloadInterface $payload);
+
+    public function setRedirect($value);
+
+    public function setStatus($value);
 }

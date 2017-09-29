@@ -11,7 +11,7 @@ return [
     },
 
     Mopsis\Components\Domain\Payload\PayloadInterface::class
-    => object(Mopsis\Components\Domain\Payload\Preparation::class)
+    => object(Mopsis\Components\Domain\Payload\NotImplemented::class)
         ->constructor([]),
 
     Mopsis\Components\View\View::class

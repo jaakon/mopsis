@@ -42,9 +42,8 @@ abstract class AbstractResponder
 
     public function __invoke()
     {
-        $method = $this->payload ? $this->payload->getMethod() : 'notFound';
-
-        $this->$method();
+        $this->setStatus();
+        $this->resolvePayload();
 
         return $this->response;
     }
@@ -63,36 +62,9 @@ abstract class AbstractResponder
         return $this;
     }
 
-    protected function getViewPath()
+    protected function init()
     {
-        return explode('\\', get_called_class())[1] . DIRECTORY_SEPARATOR;
-    }
-
-    protected function init() {}
-    protected function negotiateMediaType()
-    {
-        $available = array_keys($this->available);
-        $media     = $this->accept->negotiateMedia($available);
-
-        if ($media) {
-            $this->response->content->setType($media->getValue());
-
-            return true;
-        }
-
-        $this->response->status->set(406);
-        $this->response->content->setType('text/plain');
-        $this->response->content->set(implode(',', $available));
-
-        return false;
-    }
-
-    protected function notRecognized()
-    {
-        $this->response->status->set(500);
-        $this->response->content->set('Unknown domain payload status: "' . get_class($this->payload) . '"');
-
-        return $this->response;
+        // to be used to prefill the payload
     }
 
     protected function renderView($template = null)
@@ -113,7 +85,48 @@ abstract class AbstractResponder
         }
     }
 
-    protected function renderViewForHtml($template = null)
+    protected function resolvePayload()
+    {
+        $resolver = $this->payload->getName();
+
+        if (method_exists($this, $resolver)) {
+            $this->$resolver();
+
+            return;
+        }
+
+        throw new \Exception('Missing resolver for "' . $resolver . '"');
+    }
+
+    protected function setStatus()
+    {
+        $this->response->status->set($this->payload->getStatus());
+    }
+
+    private function getViewPath()
+    {
+        return explode('\\', get_called_class())[1] . DIRECTORY_SEPARATOR;
+    }
+
+    private function negotiateMediaType()
+    {
+        $available = array_keys($this->available);
+        $media     = $this->accept->negotiateMedia($available);
+
+        if ($media) {
+            $this->response->content->setType($media->getValue());
+
+            return true;
+        }
+
+        $this->response->status->set(406);
+        $this->response->content->setType('text/plain');
+        $this->response->content->set(implode(',', $available));
+
+        return false;
+    }
+
+    private function renderViewForHtml($template = null)
     {
         $content = $this->view
                         ->setTemplate($this->getViewPath() . ($template ?: $this->template) . '.twig')
@@ -127,12 +140,12 @@ abstract class AbstractResponder
         $this->response->content->set($content);
     }
 
-    protected function renderViewForJson()
+    private function renderViewForJson()
     {
         $this->response->content->set(json_encode($this->payload->get()));
     }
 
-    protected function renderViewForText()
+    private function renderViewForText()
     {
         $this->response->content->set(print_r($this->payload->get(), true));
     }

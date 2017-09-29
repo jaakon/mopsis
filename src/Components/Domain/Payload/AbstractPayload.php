@@ -8,7 +8,9 @@ abstract class AbstractPayload implements PayloadInterface
 {
     protected $data = [];
 
-    protected $method;
+    protected $redirect;
+
+    protected $status = 501;
 
     public function __construct(array $data)
     {
@@ -45,13 +47,19 @@ abstract class AbstractPayload implements PayloadInterface
         return;
     }
 
-    public function getMethod()
+    public function getName()
     {
-        if ($this->method === null) {
-            $this->method = lcfirst(array_pop(explode('\\', get_class($this))));
-        }
+        return lcfirst(array_pop(explode('\\', get_class($this))));
+    }
 
-        return $this->method;
+    public function getRedirect()
+    {
+        return $this->redirect;
+    }
+
+    public function getStatus()
+    {
+        return $this->status;
     }
 
     public function override(PayloadInterface $payload)
@@ -59,8 +67,13 @@ abstract class AbstractPayload implements PayloadInterface
         return (new static($payload->get()))->add($this->get());
     }
 
-    public function setMethod($method)
+    public function setRedirect($value)
     {
-        $this->method = $method;
+        $this->redirect = $value;
+    }
+
+    public function setStatus($value)
+    {
+        $this->status = $value;
     }
 }
