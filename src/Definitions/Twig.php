@@ -1,31 +1,26 @@
 <?php
 
-use function DI\dot;
+use function DI\autowire;
 use function DI\get;
-use function DI\object;
-use Interop\Container\ContainerInterface as ContainerInterface;
+use Psr\Container\ContainerInterface;
 
 return [
-    'twig' => [
-        'config' => [
-            'development' => [
-                'base_template_class' => 'Mopsis\Extensions\Twig\Template',
-                'debug'               => true,
-                'cache'               => false,
-                'auto_reload'         => true,
-                'strict_variables'    => true
-            ],
-            'production'  => [
-                'base_template_class' => 'Mopsis\Extensions\Twig\Template',
-                'debug'               => false,
-                'cache'               => APPLICATION_PATH . '/storage/cache/twig/',
-                'auto_reload'         => false,
-                'strict_variables'    => false
-            ]
-        ]
+    'twig.config.development' => [
+        'base_template_class' => 'Mopsis\Extensions\Twig\Template',
+        'debug'               => true,
+        'cache'               => false,
+        'auto_reload'         => true,
+        'strict_variables'    => true
+    ],
+    'twig.config.production'  => [
+        'base_template_class' => 'Mopsis\Extensions\Twig\Template',
+        'debug'               => false,
+        'cache'               => APPLICATION_PATH . '/storage/cache/twig/',
+        'auto_reload'         => false,
+        'strict_variables'    => false
     ],
 
-    'twig.config' => dot('twig.config.'.env('APP_ENV')),
+    'twig.config' => get('twig.config.' . env('APP_ENV')),
 
     'twig.extensions' => function (ContainerInterface $c) {
         $extensions = [
@@ -52,10 +47,10 @@ return [
     },
 
     Twig_Environment::class
-    => object()
+    => autowire()
         ->constructor(get(Twig_LoaderInterface::class), get('twig.config')),
 
     Twig_LoaderInterface::class
-    => object(Twig_Loader_Filesystem::class)
-        ->constructor(dot('app.views'))
+    => autowire(Twig_Loader_Filesystem::class)
+        ->constructor(get('app.views'))
 ];

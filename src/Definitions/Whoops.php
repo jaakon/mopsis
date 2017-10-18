@@ -1,20 +1,21 @@
 <?php
 
+use function DI\autowire;
+use function DI\create;
 use function DI\get;
-use function DI\object;
-use Interop\Container\ContainerInterface as ContainerInterface;
+use Psr\Container\ContainerInterface;
 
 return [
     Whoops\Handler\JsonResponseHandler::class
-    => object()
+    => autowire()
         ->method('addTraceToOutput', true),
 
     Whoops\Handler\PlainTextHandler::class
-    => object()
+    => create()
         ->constructor(get('Logger')),
 
     Whoops\Handler\PrettyPageHandler::class
-    => object()
+    => create()
         ->method('setEditor', 'sublime'),
 
     Whoops\Run::class
@@ -38,6 +39,7 @@ return [
         if (env('APP_ENV') === 'production' && !DEBUG) {
             $whoops->pushHandler(function (Throwable $exception) use ($c) {
                 echo staticPage(502);
+
                 return Whoops\Handler\Handler::QUIT;
             });
         }
@@ -46,4 +48,5 @@ return [
 
         return $whoops;
     }
+
 ];

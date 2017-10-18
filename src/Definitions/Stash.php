@@ -1,58 +1,55 @@
 <?php
 
-use function DI\dot;
+use function DI\create;
 use function DI\get;
-use function DI\object;
 
 return [
-    'stash' => [
-        'apc'        => [
-            'ttl'       => 3600,
-            'namespace' => md5($_SERVER['HTTP_HOST'])
-        ],
-        'filesystem' => [
-            'path' => APPLICATION_PATH . '/storage/cache/stash/'
-        ],
-        'redis'      => [
-            'servers' => [
-                [
-                    'server' => env('REDIS_HOST', '127.0.0.1'),
-                    'port'   => env('REDIS_PORT', '6379'),
-                    'ttl'    => env('REDIS_TTL', 10)
-                ]
-            ]
-        ],
-        'sqlite'     => ['path' => APPLICATION_PATH . '/storage/cache/']
+    'stash.apc'        => [
+        'ttl'       => 3600,
+        'namespace' => md5($_SERVER['HTTP_HOST'])
     ],
+    'stash.filesystem' => [
+        'path' => APPLICATION_PATH . '/storage/cache/stash/'
+    ],
+    'stash.redis'      => [
+        'servers' => [
+            [
+                'server' => env('REDIS_HOST', '127.0.0.1'),
+                'port'   => env('REDIS_PORT', '6379'),
+                'ttl'    => env('REDIS_TTL', 10)
+            ]
+        ]
+    ],
+    'stash.sqlite'     => ['path' => APPLICATION_PATH . '/storage/cache/'],
 
     Stash\Interfaces\PoolInterface::class
     => get('Cache'),
 
     Stash\Driver\Apc::class
-    => object()
-        ->constructor(dot('stash.apc')),
+    => create()
+        ->constructor(get('stash.apc')),
 
     Stash\Driver\FileSystem::class
-    => object()
-        ->constructor(dot('stash.filesystem')),
+    => create()
+        ->constructor(get('stash.filesystem')),
 
     Stash\Driver\Redis::class
-    => object()
-        ->constructor(dot('stash.redis')),
+    => create()
+        ->constructor(get('stash.redis')),
 
     Stash\Driver\Sqlite::class
-    => object()
-        ->constructor(dot('stash.sqlite')),
+    => create()
+        ->constructor(get('stash.sqlite')),
 
     StashDriver::class
-    => object(
+    => get(
         array_shift(
             array_filter(
                 [
-                    'redis'    => \Stash\Driver\Redis::class,
-                    'apcu'     => \Stash\Driver\Apc::class,
-                    'sqlite3'  => \Stash\Driver\Sqlite::class,
-                    'standard' => \Stash\Driver\FileSystem::class
+                    'redis'    => Stash\Driver\Redis::class,
+                    'apcu'     => Stash\Driver\Apc::class,
+                    'sqlite3'  => Stash\Driver\Sqlite::class,
+                    'standard' => Stash\Driver\FileSystem::class
                 ],
                 function ($name) {
                     return extension_loaded($name);

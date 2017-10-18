@@ -1,8 +1,8 @@
 <?php
 
+use function DI\autowire;
 use function DI\get;
-use function DI\object;
-use Interop\Container\ContainerInterface as ContainerInterface;
+use Psr\Container\ContainerInterface;
 
 return [
     Aura\Accept\Accept::class
@@ -11,11 +11,11 @@ return [
     },
 
     Aura\Accept\AcceptFactory::class
-    => object()
+    => autowire()
         ->constructorParameter('server', $_SERVER),
 
     Aura\Filter\FilterFactory::class
-    => object()
+    => autowire()
         ->constructorParameter('validate_factories', [
             'after'       => function () {
                 return app(Mopsis\Extensions\Aura\Filter\Rule\Validate\DateTime\After::class);
@@ -70,7 +70,16 @@ return [
             }
 
         ]),
+/*
+Aura\Filter\SubjectFilter::class
+=> factory([Aura\Filter\FilterFactory::class, 'newSubjectFilter']),
 
+Aura\Web\Request::class
+=> factory([Aura\Web\WebFactory::class, 'newRequest']),
+
+Aura\Web\Response::class
+=> factory([Aura\Web\WebFactory::class, 'newResponse']),
+ */
     Aura\Filter\SubjectFilter::class
     => function (ContainerInterface $c) {
         return $c->get(Aura\Filter\FilterFactory::class)->newSubjectFilter();
@@ -114,4 +123,5 @@ return [
             '_SERVER' => $_SERVER
         ]);
     }
+
 ];

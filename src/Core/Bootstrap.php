@@ -17,14 +17,19 @@ class Bootstrap
 
     public function initializeApplication()
     {
+        define(
+            'DEBUG',
+            env('APP_DEBUG', false) ||
+            strpos(env('HTTP_USER_AGENT'), '(DEBUG)') !== false
+        );
+
         $builder = new ContainerBuilder();
         $builder->addDefinitions(FRAMEWORK_PATH . '/definitions.php');
         $builder->addDefinitions(APPLICATION_PATH . '/config/definitions.php');
 
-        define('DEBUG',
-            env('APP_DEBUG', false) ||
-            strpos(env('HTTP_USER_AGENT'), '(DEBUG)') !== false
-        );
+        if (DEBUG === false || DEBUG === true) {
+            $builder->compile(APPLICATION_PATH . '/storage/cache/CompiledContainer.php');
+        }
 
         App::initialize($builder->build());
 

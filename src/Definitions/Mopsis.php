@@ -1,28 +1,26 @@
 <?php
 
-use function DI\dot;
+use function DI\autowire;
+use function DI\create;
+use function DI\factory;
 use function DI\get;
-use function DI\object;
 
 return [
     Mopsis\Components\View::class
-    => object()
+    => autowire()
         ->constructorParameter('extensions', get('twig.extensions')),
 
     Mopsis\Contracts\User::class
-    => function () {
-        return Mopsis\Core\Auth::user();
-    },
+    => factory([Mopsis\Core\Auth::class, 'user']),
 
     Mopsis\Contracts\Payload::class
-    => object(Mopsis\Components\Payload\NotImplemented::class)
-        ->constructor(),
+    => create(Mopsis\Components\Payload\NotImplemented::class),
 
     Mopsis\FormBuilder\FormBuilder::class
-    => object()
-        ->constructorParameter('xmlData', dot('app.forms')),
+    => create()
+        ->constructor(get('app.forms')),
 
     Mopsis\FormBuilder\RulesProvider::class
-    => object()
-        ->constructorParameter('xmlData', dot('app.forms'))
+    => create()
+        ->constructor(get('app.forms'))
 ];

@@ -1,19 +1,16 @@
 <?php
 
-use function DI\dot;
+use function DI\autowire;
+use function DI\create;
 use function DI\get;
-use function DI\object;
-use Interop\Container\ContainerInterface as ContainerInterface;
 
 return [
-    'app' => [
-        'forms'           => APPLICATION_PATH . '/config/forms.xml',
-        'error_log'       => APPLICATION_PATH . '/storage/logs/error.log',
-        'application_log' => APPLICATION_PATH . '/storage/logs/application.log',
-        'views'           => ['resources/html/pages', 'resources/html']
-    ],
+    'app.forms'           => APPLICATION_PATH . '/config/forms.xml',
+    'app.error_log'       => APPLICATION_PATH . '/storage/logs/error.log',
+    'app.application_log' => APPLICATION_PATH . '/storage/logs/application.log',
+    'app.views'           => ['resources/html/pages', 'resources/html'],
 
-    'config' => object(Mopsis\Core\Config::class),
+    'config' => autowire(Mopsis\Core\Config::class),
 
     'classFormats' => [
         'Action'     => 'App\\{{MODULE}}\\Action\\{{SUBTYPE}}Action',
@@ -33,44 +30,36 @@ return [
         503 => FRAMEWORK_PATH . '/Resources/static-pages/service-unavailable-error'
     ],
 
-    'translator' => [
-        'locale' => 'de',
-        'path'   => APPLICATION_PATH . '/resources/lang/'
-    ],
+    'translator.locale' => 'de',
+    'translator.path'   => APPLICATION_PATH . '/resources/lang/',
 
     League\Flysystem\AdapterInterface::class
-    => object(League\Flysystem\Adapter\Local::class)
+    => autowire(League\Flysystem\Adapter\Local::class)
         ->constructor(get('flysystem.local.config')),
 
     Psr\Log\LoggerInterface::class
     => get('Logger'),
 
     Cache::class
-    => object(Stash\Pool::class)
+    => create(Stash\Pool::class)
         ->constructor(get('StashDriver'))
         ->method('setNamespace', md5($_SERVER['HTTP_HOST']))
         ->method('setLogger', get('Logger')),
 
     Cookie::class
-    => object(CodeZero\Cookie\VanillaCookie::class),
+    => autowire(CodeZero\Cookie\VanillaCookie::class),
 
     Database::class
-    => function (ContainerInterface $c) {
+    => function (Illuminate\Database\Capsule\Manager $manager) {
         \Illuminate\Database\Connection::resolverFor('mysql', function (...$args) {
             return new \Mopsis\Extensions\Illuminate\Database\MariaDbConnection(...$args);
         });
-
-        $manager = $c->get(Illuminate\Database\Capsule\Manager::class);
 
         if (is_array(config('connections'))) {
             foreach (config('connections') as $name => $config) {
                 $manager->addConnection($config, $name);
             }
         }
-
-        $manager->setEventDispatcher(new Illuminate\Events\Dispatcher());
-        $manager->bootEloquent();
-        $manager->setAsGlobal();
 
         return $manager;
     },
@@ -79,31 +68,21 @@ return [
     => get(Whoops\Run::class),
 
     Filesystem::class
-    => object(League\Flysystem\Filesystem::class),
+    => autowire(League\Flysystem\Filesystem::class),
 
     Flash::class
-    => object(Mopsis\Extensions\Flash::class),
-
-    HttpClient::class
-    => object(Http\Adapter\Guzzle6\Client::class),
+    => autowire(Mopsis\Extensions\Flash::class),
 
     Json::class
-    => object(Mopsis\Extensions\Json::class),
+    => autowire(Mopsis\Extensions\Json::class),
 
     Logger::class
     => get(Monolog\Logger::class),
 
-    Mailgun::class
-    => object(Mailgun\Mailgun::class)
-        ->constructorParameter('httpClient', get('HttpClient')),
-
     Renderer::class
-    => object(Twig_Environment::class),
+    => autowire(Twig_Environment::class),
 
     Translator::class
-    => object(Illuminate\Translation\Translator::class)
-        ->constructorParameter('locale', dot('translator.locale')),
-
-    Xml::class
-    => object(Mopsis\Extensions\SimpleXML\SimpleXMLElement::class)
+    => autowire(Illuminate\Translation\Translator::class)
+        ->constructorParameter('locale', get('translator.locale'))
 ];
