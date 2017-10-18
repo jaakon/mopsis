@@ -9,6 +9,10 @@
 		{
 			"type": "git",
 			"url": "https://github.com/jaakon/PHP-DI"
+		},
+		{
+			"type": "git",
+			"url": "https://github.com/jaakon/Selectors-Symfony"
 		}
 	],
 	"require": {
@@ -19,7 +23,7 @@
 		"codezero/cookie":             "^1.0",
 		"filp/whoops":                 "^2.0",
 		"fluentdom/fluentdom":         "^7.0",
-		"FluentDOM/Selectors-Symfony": "^2.0",
+		"FluentDOM/Selectors-Symfony": "dev-package-update as 2.0.1",
 		"illuminate/config":           "^5.5",
 		"illuminate/database":         "^5.5",
 		"illuminate/events":           "^5.5",
