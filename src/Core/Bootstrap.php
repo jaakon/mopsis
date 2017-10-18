@@ -8,6 +8,13 @@ use Mopsis\Extensions\Aura\Web\ResponseSender;
 
 class Bootstrap
 {
+    public function initialize()
+    {
+        $this->initializeFramework();
+        $this->initializeEnvironment();
+        $this->initializeApplication();
+    }
+
     public function initializeApplication()
     {
         $builder = new ContainerBuilder();
@@ -56,9 +63,7 @@ class Bootstrap
 
     public function kickstart($flushMode = null)
     {
-        $this->initializeFramework();
-        $this->initializeEnvironment();
-        $this->initializeApplication();
+        $this->initialize();
 
         if (php_sapi_name() === 'cli') {
             return true;

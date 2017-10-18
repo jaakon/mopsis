@@ -94,6 +94,11 @@ function event($event)
     return LaravelHelpers::event($event);
 }
 
+function initialize()
+{
+    return (new Bootstrap())->initialize();
+}
+
 function isHtml($string)
 {
     return StringHelpers::isHtml($string);
