@@ -140,23 +140,23 @@ abstract class Model extends EloquentModel implements ModelInterface
                 switch (true) {
                     case preg_match('/^varchar\(\d+\)$/', $column->Type):
                         $columns[$column->Field] = 'string';
-                        continue;
+                        break;
                     case preg_match('/^int\(10\)( unsigned)?$/', $column->Type):
                         $columns[$column->Field] = 'integer';
-                        continue;
+                        break;
                     case preg_match('/^timestamp|date(time)?$/', $column->Type):
                         $columns[$column->Field] = 'datetime';
-                        continue;
+                        break;
                     case preg_match('/^tinyint\(1\)$/', $column->Type):
                         $columns[$column->Field] = 'boolean';
-                        continue;
+                        break;
                     case preg_match('/^float( unsigned)?$/', $column->Type):
                     case preg_match('/^decimal\(\d+,\d+\)( unsigned)?$/', $column->Type):
                         $columns[$column->Field] = 'float';
-                        continue;
+                        break;
                     default:
                         $columns[$column->Field] = null;
-                        continue;
+                        break;
                 }
             }
 
