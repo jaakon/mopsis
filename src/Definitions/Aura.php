@@ -70,16 +70,7 @@ return [
             }
 
         ]),
-/*
-Aura\Filter\SubjectFilter::class
-=> factory([Aura\Filter\FilterFactory::class, 'newSubjectFilter']),
 
-Aura\Web\Request::class
-=> factory([Aura\Web\WebFactory::class, 'newRequest']),
-
-Aura\Web\Response::class
-=> factory([Aura\Web\WebFactory::class, 'newResponse']),
- */
     Aura\Filter\SubjectFilter::class
     => function (ContainerInterface $c) {
         return $c->get(Aura\Filter\FilterFactory::class)->newSubjectFilter();
@@ -98,7 +89,7 @@ Aura\Web\Response::class
     Aura\Web\WebFactory::class
     => function () {
         if (count($_POST) && !count($_FILES)) {
-// php://input is not available with enctype="multipart/form-data"
+            // php://input is not available with enctype="multipart/form-data"
             // perhaps "enable_post_data_reading = off" can help?
 
             $_POST = [];
@@ -123,5 +114,4 @@ Aura\Web\Response::class
             '_SERVER' => $_SERVER
         ]);
     }
-
 ];

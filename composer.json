@@ -5,12 +5,6 @@
 	"keywords": ["framework", "mopsis"],
 	"homepage": "https://github.com/jaakon/mopsis",
 	"license": "MIT",
-	"repositories": [
-		{
-			"type": "git",
-			"url": "https://github.com/jaakon/Selectors-Symfony"
-		}
-	],
 	"require": {
 		"php":                         ">=7.0",
 		"aura/accept":                 "^2.2",
@@ -19,7 +13,7 @@
 		"codezero/cookie":             "^1.0",
 		"filp/whoops":                 "^2.0",
 		"fluentdom/fluentdom":         "^7.0",
-		"FluentDOM/Selectors-Symfony": "dev-package-update as 2.0.1",
+		"fluentdom/selectors-symfony": "^3.0",
 		"illuminate/config":           "^5.5",
 		"illuminate/database":         "^5.5",
 		"illuminate/events":           "^5.5",

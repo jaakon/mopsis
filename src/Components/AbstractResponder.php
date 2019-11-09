@@ -128,9 +128,9 @@ abstract class AbstractResponder
     private function renderViewForHtml($template = null)
     {
         $content = $this->view
-                        ->setTemplate($this->getViewPath() . ($template ?: $this->template) . '.twig')
-                        ->assign($this->payload->get())
-                        ->__invoke();
+            ->setTemplate($this->getViewPath() . ($template ?: $this->template) . '.twig')
+            ->assign($this->payload->get())
+            ->__invoke();
 
         if ($this->allowHtmlFragments && $this->request->isXhr()) {
             $content = preg_replace('/.*<body[^>]*>(.*)<\/body>.*/is', '$1', $content);
