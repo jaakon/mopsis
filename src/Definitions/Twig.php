@@ -20,9 +20,9 @@ return [
         'strict_variables'    => false
     ],
 
-    'twig.config' => get('twig.config.' . env('APP_ENV')),
+    'twig.config'             => get('twig.config.' . env('APP_ENV')),
 
-    'twig.extensions' => function (ContainerInterface $c) {
+    'twig.extensions'         => function (ContainerInterface $c) {
         $extensions = [
             $c->get(Mopsis\Extensions\Twig\FormBuilder::class)
         ];
@@ -48,9 +48,9 @@ return [
 
     Twig_Environment::class
     => autowire()
-        ->constructor(get(Twig_LoaderInterface::class), get('twig.config')),
+        ->constructor(get(Twig\Loader\LoaderInterface::class), get('twig.config')),
 
-    Twig_LoaderInterface::class
-    => autowire(Twig_Loader_Filesystem::class)
+    Twig\Loader\LoaderInterface::class
+    => autowire(Twig\Loader\FilesystemLoader::class)
         ->constructor(get('app.views'))
 ];
