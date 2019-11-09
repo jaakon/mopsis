@@ -46,7 +46,7 @@ class Bootstrap
         $dotenv->required(['APP_KEY', 'DB_HOST', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD']);
         $dotenv->required('APP_ENV')->allowedValues(['development', 'staging', 'production']);
 
-        $delta = array_diff_keys($_SERVER, $_ENV);
+        $delta = array_diff_key($_SERVER, $_ENV);
 
         if (count($delta)) {
             $_SERVER = $delta;
