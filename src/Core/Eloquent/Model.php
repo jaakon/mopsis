@@ -21,6 +21,8 @@ abstract class Model extends EloquentModel implements ModelInterface
 
     protected static $datatypes;
 
+    protected $appends = [];
+
     protected $guarded = ['id'];
 
     protected $orderBy;
@@ -255,6 +257,10 @@ abstract class Model extends EloquentModel implements ModelInterface
 
         foreach (parent::toArray() as $key => $value) {
             $attributes[camel_case($key)] = $value;
+        }
+
+        foreach ($this->appends as $key) {
+            $attributes[camel_case($key)] = $this->getAttribute($key);
         }
 
         return $attributes;
