@@ -2,7 +2,9 @@
 namespace Mopsis\Components\Domain;
 
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Str;
 use Mopsis\Contracts\Model;
+use ReflectionClass;
 
 abstract class AbstractRepository
 {
@@ -61,6 +63,16 @@ abstract class AbstractRepository
     public function first($sql, array $bindings = [])
     {
         return $this->find(...$this->expandQuery($sql, $bindings))->first();
+    }
+
+    public function getCollectionName()
+    {
+        return lcfirst(Str::before((new ReflectionClass($this->model))->getShortName(), 'Model'));
+    }
+
+    public function getEntityName()
+    {
+        return Str::singular($this->getCollectionName());
     }
 
     public function newInstance(array $attributes = []): Model

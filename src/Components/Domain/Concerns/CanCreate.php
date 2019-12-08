@@ -19,14 +19,14 @@ trait CanCreate
 
             if ($data === null) {
                 return $this->payload->accepted([
-                    'instance' => $instance,
-                    'formId'   => $formId
+                    '#instance' => $instance,
+                    'formId'    => $formId
                 ]);
             }
 
             if (!$this->filter->forInsert($formId, $data)) {
                 return $this->payload->notValid([
-                    'instance'    => $instance,
+                    '#instance'   => $instance,
                     'formId'      => $formId,
                     'errors'      => $this->filter->getMessages(),
                     'requestData' => $data
@@ -35,12 +35,12 @@ trait CanCreate
 
             if (!$this->repository->create($instance, $this->filter->getResult())) {
                 return $this->payload->notCreated([
-                    'instance' => $instance,
-                    'formId'   => $formId
+                    '#instance' => $instance,
+                    'formId'    => $formId
                 ]);
             }
 
-            return $this->payload->created(['instance' => $instance]);
+            return $this->payload->created(['#instance' => $instance]);
         } catch (Exception $e) {
             return $this->payload->error([
                 'exception' => $e,
@@ -68,7 +68,7 @@ trait CanCreate
 
             if ($data === null) {
                 return $this->payload->accepted([
-                    'instance'      => $instance,
+                    '#instance'     => $instance,
                     'formId'        => $formId,
                     'ancestorToken' => $ancestorToken
                 ]);
@@ -76,7 +76,7 @@ trait CanCreate
 
             if (!$this->filter->forInsert($formId, $data)) {
                 return $this->payload->notValid([
-                    'instance'      => $instance,
+                    '#instance'     => $instance,
                     'formId'        => $formId,
                     'ancestorToken' => $ancestorToken,
                     'errors'        => $this->filter->getMessages(),
@@ -89,13 +89,13 @@ trait CanCreate
 
             if (!$this->repository->create($instance, $this->filter->getResult())) {
                 return $this->payload->notCreated([
-                    'instance'      => $instance,
+                    '#instance'     => $instance,
                     'formId'        => $formId,
                     'ancestorToken' => $ancestorToken
                 ]);
             }
 
-            return $this->payload->created(['instance' => $instance]);
+            return $this->payload->created(['#instance' => $instance]);
         } catch (Exception $e) {
             return $this->payload->error([
                 'exception'     => $e,

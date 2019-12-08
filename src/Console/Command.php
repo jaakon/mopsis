@@ -37,12 +37,10 @@ class Command extends ConsoleCommand
         }
 
         return [
-            'module'     => $module,
-            'domain'     => $domain,
-            'action'     => $action,
-            'template'   => $this->stringHelper->snakeCase($action),
-            'collection' => strtolower($module),
-            'instance'   => strtolower($domain)
+            'module'   => $module,
+            'domain'   => $domain,
+            'action'   => $action,
+            'template' => $this->stringHelper->snakeCase($action)
         ];
     }
 }

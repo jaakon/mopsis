@@ -14,7 +14,7 @@ class {{MODULE}}Service extends AbstractService
         $this->repository = $repository;
         $this->payload    = $payload;
 
-        $this->payload->setAlias('{{INSTANCE}}', 'instance');
-        $this->payload->setAlias('{{COLLECTION}}', 'collection');
+        $this->payload->setAlias('#instance', $this->repository->getEntityName());
+        $this->payload->setAlias('#collection', $this->repository->getCollectionName());
     }
 }

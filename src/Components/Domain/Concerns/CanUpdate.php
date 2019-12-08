@@ -21,10 +21,10 @@ trait CanUpdate
             }
 
             if (!$this->repository->set($instance, $key, $value)) {
-                return $this->payload->notUpdated(['instance' => $instance]);
+                return $this->payload->notUpdated(['#instance' => $instance]);
             }
 
-            return $this->payload->updated(['instance' => $instance]);
+            return $this->payload->updated(['#instance' => $instance]);
         } catch (Exception $e) {
             return $this->payload->error([
                 'exception' => $e,
@@ -46,12 +46,12 @@ trait CanUpdate
 
             if (!$this->repository->update($instance, $data)) {
                 return $this->payload->notUpdated([
-                    'instance' => $instance,
-                    'data'     => $data
+                    '#instance' => $instance,
+                    'data'      => $data
                 ]);
             }
 
-            return $this->payload->updated(['instance' => $instance]);
+            return $this->payload->updated(['#instance' => $instance]);
         } catch (Exception $e) {
             return $this->payload->error([
                 'exception' => $e,
@@ -72,14 +72,14 @@ trait CanUpdate
 
             if ($data === null) {
                 return $this->payload->accepted([
-                    'instance' => $instance,
-                    'formId'   => $formId
+                    '#instance' => $instance,
+                    'formId'    => $formId
                 ]);
             }
 
             if (!$this->filter->forUpdate($formId, $data)) {
                 return $this->payload->notValid([
-                    'instance'    => $instance,
+                    '#instance'   => $instance,
                     'formId'      => $formId,
                     'errors'      => $this->filter->getMessages(),
                     'requestData' => $data
@@ -88,12 +88,12 @@ trait CanUpdate
 
             if (!$this->repository->update($instance, $this->filter->getResult())) {
                 return $this->payload->notUpdated([
-                    'instance' => $instance,
-                    'formId'   => $formId
+                    '#instance' => $instance,
+                    'formId'    => $formId
                 ]);
             }
 
-            return $this->payload->updated(['instance' => $instance]);
+            return $this->payload->updated(['#instance' => $instance]);
         } catch (Exception $e) {
             return $this->payload->error([
                 'exception' => $e,

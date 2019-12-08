@@ -21,10 +21,10 @@ trait CanDelete
             }
 
             if (!$this->repository->delete($instance)) {
-                return $this->payload->notDeleted(['instance' => $instance]);
+                return $this->payload->notDeleted(['#instance' => $instance]);
             }
 
-            return $this->payload->deleted(['instance' => $instance]);
+            return $this->payload->deleted(['#instance' => $instance]);
         } catch (Exception $e) {
             return $this->payload->error([
                 'exception' => $e,

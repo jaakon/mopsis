@@ -60,8 +60,8 @@ abstract class AbstractPayload implements Payload
             return $this->redirect;
         }
 
-        if (isset($this->data['instance'])) {
-            $instance = $this->data['instance'];
+        if (isset($this->data['#instance'])) {
+            $instance = $this->data['#instance'];
 
             if ($instance instanceof Hierarchical) {
                 return $instance->getUriRecursive();
@@ -105,10 +105,10 @@ abstract class AbstractPayload implements Payload
     {
         $data = $this->data;
 
-        foreach ($this->aliases as $alias => $target) {
-            if (isset($data[$target]) && !isset($data[$alias])) {
-                $data[$alias] = $data[$target];
-                unset($data[$target]);
+        foreach ($this->aliases as $source => $alias) {
+            if (isset($data[$source]) && !isset($data[$alias])) {
+                $data[$alias] = $data[$source];
+                unset($data[$source]);
             }
         }
 

@@ -25,7 +25,7 @@ abstract class AbstractService
                 return $this->payload->notFound();
             }
 
-            return $this->payload->found(['collection' => $collection]);
+            return $this->payload->found(['#collection' => $collection]);
         } catch (Exception $e) {
             return $this->payload->error([
                 'exception' => $e
@@ -42,7 +42,7 @@ abstract class AbstractService
                 return $this->payload->gone(['token' => $token]);
             }
 
-            return $this->payload->found(['instance' => $instance]);
+            return $this->payload->found(['#instance' => $instance]);
         } catch (Exception $e) {
             return $this->payload->error([
                 'exception' => $e,
@@ -60,7 +60,7 @@ abstract class AbstractService
                 return $this->payload->notFound($attributes);
             }
 
-            return $this->payload->found(['instance' => $instance]);
+            return $this->payload->found(['#instance' => $instance]);
         } catch (Exception $e) {
             return $this->payload->error([
                 'exception'  => $e,
